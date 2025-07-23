@@ -86,6 +86,11 @@ if (installButton) {
         const { outcome } = await deferredPrompt.userChoice;
         // Optionally, send analytics event with outcome of user choice
         console.log(`User response to the install prompt: ${outcome}`);
+        if (outcome === 'accepted') {
+            showToast('Installation', 'App installed successfully!');
+        } else {
+            showToast('Installation', 'App installation cancelled.');
+        }
         // We've used the prompt, and can't use it again, clear it.
         deferredPrompt = null;
     });
@@ -112,19 +117,19 @@ if (checkUpdatesButton) {
                     // Give it a moment to check, then provide feedback if no update immediately
                     setTimeout(() => {
                         if (!navigator.serviceWorker.controller) {
-                            alert('No update found at this time.');
+                            showToast('Update Check', 'No update found at this time.');
                         }
                     }, 2000);
 
                 } else {
-                    alert('No service worker registered. Please refresh the page.');
+                    showToast('Update Check', 'No service worker registered. Please refresh the page.');
                 }
             } catch (error) {
                 console.error('Error checking for service worker updates:', error);
-                alert('Error checking for updates. Please try again later.');
+                showToast('Error', 'Error checking for updates. Please try again later.');
             }
         } else {
-            alert('Service Workers are not supported in this browser.');
+            showToast('Error', 'Service Workers are not supported in this browser.');
         }
     });
 }
@@ -137,7 +142,7 @@ if (clearDataButton) {
         if (confirm('Are you sure you want to clear all your progress data? This cannot be undone.')) {
             localStorage.removeItem('nihon-progress');
             progress = {}; // Reset in-memory progress
-            alert('All progress data has been cleared.');
+            showToast('Data Cleared', 'All progress data has been cleared.');
             showHomePage(); // Go back to home page after clearing data
             // Optionally, close the modal
             const settingsModal = bootstrap.Modal.getInstance(document.getElementById('settings-modal'));
@@ -174,7 +179,7 @@ if (resetAppButton) {
             localStorage.clear();
             console.log('All localStorage data cleared.');
 
-            alert('App has been completely reset. Please refresh the page.');
+            showToast('App Reset', 'App has been completely reset. Please refresh the page.');
             location.reload();
         }
     });
@@ -185,7 +190,7 @@ const uninstallAppButton = document.getElementById('uninstall-app-button');
 
 if (uninstallAppButton) {
     uninstallAppButton.addEventListener('click', () => {
-        alert('To uninstall the app, please go to your browser's settings (e.g., Chrome: Settings > Apps > Manage apps > Nihon) or your device's app management settings and uninstall it from there.');
+        showToast('Uninstall App', 'To uninstall the app, please go to your browser's settings (e.g., Chrome: Settings > Apps > Manage apps > Nihon) or your device's app management settings and uninstall it from there.');
     });
 } else {
     console.log('Install button element not found at script load.');
@@ -341,6 +346,20 @@ function checkAnswer(char, correctAnswer, type) {
 }
 
 showHomePage();
+
+// --- Toast Notification Helper ---
+function showToast(title, message) {
+    const toastLiveExample = document.getElementById('liveToast');
+    const toastTitle = document.getElementById('toast-title');
+    const toastBody = document.getElementById('toast-body');
+
+    if (toastLiveExample && toastTitle && toastBody) {
+        toastTitle.textContent = title;
+        toastBody.textContent = message;
+        const toast = new bootstrap.Toast(toastLiveExample);
+        toast.show();
+    }
+}
 
 // --- Stats Modal Logic ---
 const statsModal = document.getElementById('stats-modal');
