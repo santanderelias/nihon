@@ -14,7 +14,7 @@ if (devModeSwitch) {
 
 if ('serviceWorker' in navigator && !isDevMode()) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
+        navigator.serviceWorker.register('/nihon/sw.js', {scope: '/nihon/'})
             .then(registration => {
                 console.log('ServiceWorker registration successful with scope: ', registration.scope);
             })
