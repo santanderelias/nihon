@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nihon</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#7952b3">
+</head>
+<body>
+
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#" id="home-button">Nihon</a>
+            <div class="d-flex ms-auto">
+                <button class="btn btn-outline-secondary me-2" id="stats-button" data-bs-toggle="modal" data-bs-target="#stats-modal">
+                    📊
+                </button>
+                <button class="btn btn-outline-secondary" id="settings-button" data-bs-toggle="modal" data-bs-target="#settings-modal">
+                    ⚙️
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mt-4">
+        <div id="content-area">
+            <!-- Dynamic content will be loaded here -->
+        </div>
+    </main>
+
+    <!-- Settings Modal -->
+    <div class="modal fade" id="settings-modal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="dark-mode-switch">
+                        <label class="form-check-label" for="dark-mode-switch">Dark Mode</label>
+                    </div>
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" id="dev-mode-switch">
+                        <label class="form-check-label" for="dev-mode-switch">Developer Mode</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Modal -->
+    <div class="modal fade" id="stats-modal" tabindex="-1" aria-labelledby="statsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="statsModalLabel">Statistics</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="accordion" id="statsAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="wrongCharsHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#wrongCharsCollapse" aria-expanded="false" aria-controls="wrongCharsCollapse">
+                                    Characters Answered Wrong
+                                </button>
+                            </h2>
+                            <div id="wrongCharsCollapse" class="accordion-collapse collapse" aria-labelledby="wrongCharsHeading" data-bs-parent="#statsAccordion">
+                                <div class="accordion-body">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Character</th>
+                                                <th>Wrong Count</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="wrong-chars-table-body">
+                                            <!-- Wrong characters will be loaded here by JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>

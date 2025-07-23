@@ -1,0 +1,17 @@
+@font-face {
+    font-family: 'Noto Sans JP Embedded';
+    src: url('../fonts/NotoSansJP.woff2') format('woff2');
+}
+
+/* Custom Styles */
+body {
+    transition: background-color 0.3s ease;
+}
+
+h1#char-display {
+    font-family: 'Noto Sans JP Embedded', sans-serif;
+    font-size: 8rem; /* Make it very large */
+    color: black; /* Ensure it's visible against any background */
+}
+
+
