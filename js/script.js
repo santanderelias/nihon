@@ -190,7 +190,7 @@ const uninstallAppButton = document.getElementById('uninstall-app-button');
 
 if (uninstallAppButton) {
     uninstallAppButton.addEventListener('click', () => {
-        showToast('Uninstall App', 'To uninstall the app, please go to your browser's settings (e.g., Chrome: Settings > Apps > Manage apps > Nihon) or your device's app management settings and uninstall it from there.');
+        showToast('Uninstall App', 'To uninstall the app, please go to your browser\'s settings (e.g., Chrome: Settings > Apps > Manage apps > Nihon) or your device\'s app management settings and uninstall it from there.');
     });
 } else {
     console.log('Install button element not found at script load.');
