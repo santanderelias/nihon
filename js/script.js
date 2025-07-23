@@ -60,7 +60,7 @@ let deferredPrompt;
 const installButton = document.getElementById('install-button');
 
 window.addEventListener('beforeinstallprompt', (e) => {
-    console.log('beforeinstallprompt fired');
+    console.log('beforeinstallprompt fired', e);
     // Prevent the mini-infobar from appearing on mobile
     e.preventDefault();
     // Stash the event so it can be triggered later.
@@ -68,13 +68,16 @@ window.addEventListener('beforeinstallprompt', (e) => {
     // Update UI notify the user they can install the PWA
     if (installButton) {
         installButton.style.display = 'block';
-        console.log('Install button displayed');
+        console.log('Install button displayed. deferredPrompt set.');
+    } else {
+        console.log('Install button element not found.');
     }
 });
 
 if (installButton) {
+    console.log('Install button element found.');
     installButton.addEventListener('click', async () => {
-        console.log('Install button clicked');
+        console.log('Install button clicked. Prompting...');
         // Hide the app install button
         installButton.style.display = 'none';
         // Show the install prompt
@@ -86,6 +89,8 @@ if (installButton) {
         // We've used the prompt, and can't use it again, clear it.
         deferredPrompt = null;
     });
+} else {
+    console.log('Install button element not found at script load.');
 }
 
 
