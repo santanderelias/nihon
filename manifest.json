@@ -1,8 +1,22 @@
 {
   "short_name": "Nihon",
   "name": "Nihon Learning App",
-  "start_url": ".",
+  "description": "Learn Japanese Hiragana, Dakuten, and Han-dakuten.",
+  "start_url": "/nihon/",
+  "scope": "/nihon/",
   "display": "standalone",
   "theme_color": "#7952b3",
-  "background_color": "#ffffff"
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/nihon/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/nihon/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
