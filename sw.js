@@ -1,13 +1,13 @@
-const CACHE_NAME = 'nihon-v3';
+const CACHE_NAME = 'nihon-v5';
 const URLS_TO_CACHE = [
-    '/',
-    '/index.html',
-    '/css/style.css',
-    '/css/bootstrap.min.css',
-    '/js/script.js',
-    '/js/bootstrap.bundle.min.js',
-    '/manifest.json',
-    '/fonts/NotoSansJP.woff2'
+    '/nihon/',
+    '/nihon/index.html',
+    '/nihon/css/style.css',
+    '/nihon/css/bootstrap.min.css',
+    '/nihon/js/script.js',
+    '/nihon/js/bootstrap.bundle.min.js',
+    '/nihon/manifest.json',
+    '/nihon/fonts/NotoSansJP.woff2'
 ];
 
 self.addEventListener('install', event => {
