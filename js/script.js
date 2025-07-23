@@ -405,3 +405,48 @@ if (statsModal) {
         }
     });
 }
+
+
+// --- Back to Home Logic ---
+let isSectionActive = false; // Flag to track if a section is active
+
+function updateHomeButton(isSection) {
+    const appTitle = document.getElementById('home-button');
+    if (isSection) {
+        appTitle.textContent = '⬅️'; // Change to back emoji
+        appTitle.classList.add('back-button'); // Add a class for potential styling
+        isSectionActive = true;
+    } else {
+        appTitle.textContent = 'Nihon'; // Change back to title
+        appTitle.classList.remove('back-button');
+        isSectionActive = false;
+    }
+}
+
+// Modify startQuiz to update the home button
+const originalStartQuiz = startQuiz;
+startQuiz = function(type) {
+    originalStartQuiz(type);
+    updateHomeButton(true); // A section is now active
+};
+
+// Modify showHomePage to update the home button
+const originalShowHomePage = showHomePage;
+showHomePage = function() {
+    originalShowHomePage();
+    updateHomeButton(false); // No section is active
+};
+
+// Event listener for the home button
+homeButton.addEventListener('click', (event) => {
+    event.preventDefault(); // Prevent default link behavior
+    if (isSectionActive) {
+        showHomePage(); // Go back to home page
+    } else {
+        // If already on home page, do nothing or scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+});
+
+// Initial call to set the home button state
+updateHomeButton(false);
