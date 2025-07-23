@@ -91,6 +91,43 @@ if (installButton) {
     });
 }
 
+// --- Check for Updates Button ---
+const checkUpdatesButton = document.getElementById('check-updates-button');
+
+if (checkUpdatesButton) {
+    checkUpdatesButton.addEventListener('click', async () => {
+        if ('serviceWorker' in navigator) {
+            try {
+                const registration = await navigator.serviceWorker.getRegistration();
+                if (registration) {
+                    registration.update(); // Trigger an update check
+                    console.log('Service Worker update check triggered.');
+
+                    // Listen for controllerchange to detect when a new SW takes over
+                    navigator.serviceWorker.addEventListener('controllerchange', () => {
+                        alert('New version available! Please refresh the page to update.');
+                        location.reload();
+                    });
+
+                    // Give it a moment to check, then provide feedback if no update immediately
+                    setTimeout(() => {
+                        if (!navigator.serviceWorker.controller) {
+                            alert('No update found at this time.');
+                        }
+                    }, 2000);
+
+                } else {
+                    alert('No service worker registered. Please refresh the page.');
+                }
+            } catch (error) {
+                console.error('Error checking for service worker updates:', error);
+                alert('Error checking for updates. Please try again later.');
+            }
+        } else {
+            alert('Service Workers are not supported in this browser.');
+        }
+    });
+}
 
 // --- Clear Data Button ---
 const clearDataButton = document.getElementById('clear-data-button');
