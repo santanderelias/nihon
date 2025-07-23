@@ -60,6 +60,7 @@ let deferredPrompt;
 const installButton = document.getElementById('install-button');
 
 window.addEventListener('beforeinstallprompt', (e) => {
+    console.log('beforeinstallprompt fired');
     // Prevent the mini-infobar from appearing on mobile
     e.preventDefault();
     // Stash the event so it can be triggered later.
@@ -67,11 +68,13 @@ window.addEventListener('beforeinstallprompt', (e) => {
     // Update UI notify the user they can install the PWA
     if (installButton) {
         installButton.style.display = 'block';
+        console.log('Install button displayed');
     }
 });
 
 if (installButton) {
     installButton.addEventListener('click', async () => {
+        console.log('Install button clicked');
         // Hide the app install button
         installButton.style.display = 'none';
         // Show the install prompt

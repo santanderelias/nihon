@@ -2,7 +2,7 @@
   "short_name": "Nihon",
   "name": "Nihon Learning App",
   "start_url": ".",
-  "display": "fullscreen",
+  "display": "standalone",
   "theme_color": "#7952b3",
   "background_color": "#ffffff"
 }
