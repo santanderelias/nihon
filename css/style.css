@@ -10,8 +10,7 @@ body {
 
 h1#char-display {
     font-family: 'Noto Sans JP Embedded', sans-serif;
-    font-size: 8rem; /* Make it very large */
-    color: black; /* Ensure it's visible against any background */
+    font-size: 8rem; /* Large font for desktop */
 }
 
 

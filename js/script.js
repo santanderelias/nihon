@@ -215,7 +215,15 @@ if (statsModal) {
         const wrongCharacters = [];
         for (const char in progress) {
             if (progress[char].incorrect > 0) {
-                wrongCharacters.push({ char: char, count: progress[char].incorrect });
+                // Find the romaji for the character
+                let romaji = '';
+                for (const setKey in characterSets) {
+                    if (characterSets[setKey][char]) {
+                        romaji = characterSets[setKey][char];
+                        break;
+                    }
+                }
+                wrongCharacters.push({ char: char, romaji: romaji, count: progress[char].incorrect });
             }
         }
 
@@ -223,14 +231,20 @@ if (statsModal) {
         wrongCharacters.sort((a, b) => b.count - a.count);
 
         if (wrongCharacters.length === 0) {
-            wrongCharsTableBody.innerHTML = '<tr><td colspan="2">No characters answered incorrectly yet!</td></tr>';
+            wrongCharsTableBody.innerHTML = '<tr><td colspan="3">No characters answered incorrectly yet!</td></tr>';
         } else {
             wrongCharacters.forEach(item => {
                 const row = wrongCharsTableBody.insertRow();
                 const charCell = row.insertCell();
+                const romajiCell = row.insertCell();
                 const countCell = row.insertCell();
                 charCell.textContent = item.char;
+                romajiCell.textContent = item.romaji;
                 countCell.textContent = item.count;
+
+                // Apply the font to the character and romaji cells
+                charCell.style.fontFamily = 'Noto Sans JP Embedded, sans-serif';
+                romajiCell.style.fontFamily = 'Noto Sans JP Embedded, sans-serif';
             });
         }
     });
