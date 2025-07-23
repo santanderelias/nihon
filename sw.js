@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nihon-v1';
+const CACHE_NAME = 'nihon-v2';
 const URLS_TO_CACHE = [
     '/',
     '/index.html',
@@ -6,7 +6,8 @@ const URLS_TO_CACHE = [
     '/css/bootstrap.min.css',
     '/js/script.js',
     '/js/bootstrap.bundle.min.js',
-    '/manifest.json'
+    '/manifest.json',
+    '/fonts/NotoSansJP.woff2'
 ];
 
 self.addEventListener('install', event => {
