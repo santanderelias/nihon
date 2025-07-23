@@ -89,6 +89,67 @@ if (installButton) {
         // We've used the prompt, and can't use it again, clear it.
         deferredPrompt = null;
     });
+}
+
+
+// --- Clear Data Button ---
+const clearDataButton = document.getElementById('clear-data-button');
+
+if (clearDataButton) {
+    clearDataButton.addEventListener('click', () => {
+        if (confirm('Are you sure you want to clear all your progress data? This cannot be undone.')) {
+            localStorage.removeItem('nihon-progress');
+            progress = {}; // Reset in-memory progress
+            alert('All progress data has been cleared.');
+            showHomePage(); // Go back to home page after clearing data
+            // Optionally, close the modal
+            const settingsModal = bootstrap.Modal.getInstance(document.getElementById('settings-modal'));
+            if (settingsModal) {
+                settingsModal.hide();
+            }
+        }
+    });
+}
+
+// --- Reset App Completely Button ---
+const resetAppButton = document.getElementById('reset-app-button');
+
+if (resetAppButton) {
+    resetAppButton.addEventListener('click', async () => {
+        if (confirm('Are you sure you want to completely reset the app? This will delete all data, caches, and service workers.')) {
+            // Unregister all service workers
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (let registration of registrations) {
+                    await registration.unregister();
+                    console.log('Service Worker unregistered:', registration.scope);
+                }
+            }
+
+            // Clear all caches
+            const cacheNames = await caches.keys();
+            for (let cacheName of cacheNames) {
+                await caches.delete(cacheName);
+                console.log('Cache deleted:', cacheName);
+            }
+
+            // Clear all localStorage data
+            localStorage.clear();
+            console.log('All localStorage data cleared.');
+
+            alert('App has been completely reset. Please refresh the page.');
+            location.reload();
+        }
+    });
+}
+
+// --- Uninstall App Button ---
+const uninstallAppButton = document.getElementById('uninstall-app-button');
+
+if (uninstallAppButton) {
+    uninstallAppButton.addEventListener('click', () => {
+        alert('To uninstall the app, please go to your browser's settings (e.g., Chrome: Settings > Apps > Manage apps > Nihon) or your device's app management settings and uninstall it from there.');
+    });
 } else {
     console.log('Install button element not found at script load.');
 }
