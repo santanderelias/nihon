@@ -62,7 +62,7 @@ async function cacheDictionaryFiles() {
     const cache = await caches.open(CACHE_NAME);
     let i = 1;
     let count = 0;
-    const BATCH_SIZE = 5; // Process files in batches of 5
+    const BATCH_SIZE = 2; // Process files in batches of 2
 
     while (true) {
         const urlsToFetch = [];
