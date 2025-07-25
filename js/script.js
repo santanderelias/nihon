@@ -117,6 +117,7 @@ if (checkUpdatesButton) {
 
             if (latestVersion !== currentVersion) {
                 if (confirm(`New version ${latestVersion} available! Do you want to update now?`)) {
+                    showToast('Updating...', 'The application will be reloaded after the update is complete.');
                     const registration = await navigator.serviceWorker.getRegistration();
                     if (registration) {
                         registration.update().then(() => {
@@ -147,8 +148,10 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('controllerchange', () => {
         // This event fires when the service worker controlling this page changes.
         // This can happen when a new service worker is activated.
-        console.log('New service worker has taken control. Reloading page.');
-        location.reload();
+        console.log('New service worker has taken control. Reloading page in 5 seconds.');
+        setTimeout(() => {
+            location.reload();
+        }, 5000);
     });
 }
 
