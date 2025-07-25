@@ -699,6 +699,49 @@ const dictionarySearchInput = document.getElementById('dictionary-search-input')
 const dictionarySearchButton = document.getElementById('dictionary-search-button');
 const dictionaryResultArea = document.getElementById('dictionary-result-area');
 
+// --- References Modal Logic ---
+const referencesModal = document.getElementById('references-modal');
+
+if (referencesModal) {
+    referencesModal.addEventListener('show.bs.modal', () => {
+        populateReferencesModal();
+    });
+}
+
+function populateReferencesModal() {
+    const hiraganaTabPane = document.getElementById('hiragana');
+    const dakutenTabPane = document.getElementById('dakuten');
+    const handakutenTabPane = document.getElementById('handakuten');
+    const katakanaTabPane = document.getElementById('katakana');
+    const kanjiTabPane = document.getElementById('kanji');
+    const numbersTabPane = document.getElementById('numbers');
+
+    hiraganaTabPane.innerHTML = generateCharacterCards(characterSets.hiragana);
+    dakutenTabPane.innerHTML = generateCharacterCards(characterSets.dakuten);
+    handakutenTabPane.innerHTML = generateCharacterCards(characterSets.handakuten);
+    katakanaTabPane.innerHTML = generateCharacterCards(characterSets.katakana);
+    kanjiTabPane.innerHTML = generateCharacterCards(characterSets.kanji);
+    numbersTabPane.innerHTML = generateCharacterCards(characterSets.numbers);
+}
+
+function generateCharacterCards(characterSet) {
+    let html = '<div class="row row-cols-3 row-cols-md-4 row-cols-lg-5 g-2">';
+    for (const char in characterSet) {
+        html += `
+            <div class="col">
+                <div class="card text-center h-100">
+                    <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                        <h3 class="card-title" style="font-family: 'Noto Sans JP Embedded', sans-serif;">${char}</h3>
+                        <p class="card-text">${characterSet[char]}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    html += '</div>';
+    return html;
+}
+
 async function searchDictionary(word) {
     await dictionaryLoadPromise; // Ensure IndexedDB is ready
     dictionaryResultArea.innerHTML = 'Searching...';
