@@ -6,7 +6,7 @@
     <title>Nihon</title>
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json?v=11">
     <meta name="theme-color" content="#7952b3">
 </head>
 <body>
@@ -17,9 +17,6 @@
             <div class="d-flex ms-auto">
                 <button class="btn btn-outline-secondary me-2" id="install-button" style="display: none;">
                     Install
-                </button>
-                <button class="btn btn-outline-secondary me-2" id="dictionary-button" data-bs-toggle="modal" data-bs-target="#dictionary-modal">
-                    📚
                 </button>
                 <button class="btn btn-outline-secondary me-2" id="stats-button" data-bs-toggle="modal" data-bs-target="#stats-modal">
                     ⭐
@@ -60,29 +57,6 @@
                         <button class="btn btn-danger" id="clear-data-button">Clear All Progress Data</button>
                         <button class="btn btn-warning" id="reset-app-button">Reset App Completely</button>
                         <button class="btn btn-info" id="uninstall-app-button">Uninstall App</button>
-                    </div>
-                    <hr>
-                    <p class="text-center text-muted" id="version-number">Version 1.0.0</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Dictionary Modal -->
-    <div class="modal fade" id="dictionary-modal" tabindex="-1" aria-labelledby="dictionaryModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="dictionaryModalLabel">Dictionary</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control" id="dictionary-search-input" placeholder="Search for a word...">
-                        <button class="btn btn-primary" id="dictionary-search-button">Search</button>
-                    </div>
-                    <div id="dictionary-result-area">
-                        <!-- Dictionary search results will be loaded here by JavaScript -->
                     </div>
                 </div>
             </div>
@@ -129,7 +103,6 @@
     </div>
 
     <script src="js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/wanakana"></script>
     <script src="js/script.js"></script>
 
     <!-- Toast Container -->

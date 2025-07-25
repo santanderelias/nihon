@@ -12,11 +12,23 @@ if (devModeSwitch) {
     });
 }
 
+let newWorker;
+
 if ('serviceWorker' in navigator && !isDevMode()) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/nihon/sw.js', {scope: '/nihon/'})
             .then(registration => {
                 console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                registration.addEventListener('updatefound', () => {
+                    newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed') {
+                            if (navigator.serviceWorker.controller) {
+                                showToast('New version available!', 'Click the button to update.', true);
+                            }
+                        }
+                    });
+                });
             })
             .catch(error => {
                 console.log('ServiceWorker registration failed: ', error);
@@ -30,7 +42,6 @@ if ('serviceWorker' in navigator && !isDevMode()) {
         }
     });
 }
-
 
 // --- Dark Mode ---
 const darkModeSwitch = document.getElementById('dark-mode-switch');
@@ -109,34 +120,10 @@ fetch('/nihon/version.json')
     });
 
 if (checkUpdatesButton) {
-    checkUpdatesButton.addEventListener('click', async () => {
-        try {
-            const response = await fetch('/nihon/version.json?t=' + new Date().getTime()); // Prevent caching
-            const latestVersionData = await response.json();
-            const latestVersion = latestVersionData.version;
-
-            if (latestVersion !== currentVersion) {
-                showToast('Updating...', `New version ${latestVersion} available! The application will be reloaded after the update is complete.`);
-                const registration = await navigator.serviceWorker.getRegistration();
-                if (registration) {
-                    registration.update().then(() => {
-                        const newWorker = registration.installing;
-                        if (newWorker) {
-                            newWorker.addEventListener('statechange', () => {
-                                if (newWorker.state === 'installed') {
-                                    newWorker.postMessage({ action: 'skipWaiting' });
-                                }
-                            });
-                        }
-                    });
-                }
-            } else {
-                showToast('Update Check', 'You are on the latest version.');
-            }
-        } catch (error) {
-            console.error('Error checking for updates:', error);
-            showToast('Error', 'Error checking for updates. Please try again later.');
-        }
+    checkUpdatesButton.addEventListener('click', () => {
+        navigator.serviceWorker.getRegistration().then(reg => {
+            reg.update();
+        });
     });
 }
 
@@ -432,15 +419,29 @@ function checkAnswer(char, correctAnswer, type) {
 showHomePage();
 
 // --- Toast Notification Helper ---
-function showToast(title, message) {
+function showToast(title, message, showRefreshButton = false) {
     const toastLiveExample = document.getElementById('liveToast');
     const toastTitle = document.getElementById('toast-title');
     const toastBody = document.getElementById('toast-body');
+    const toastContainer = document.querySelector('.toast-container');
 
     if (toastLiveExample && toastTitle && toastBody) {
         toastTitle.textContent = title;
-        toastBody.textContent = message;
-        const toast = new bootstrap.Toast(toastLiveExample);
+        toastBody.innerHTML = message; // Use innerHTML to allow for the button
+
+        if (showRefreshButton) {
+            const refreshButton = document.createElement('button');
+            refreshButton.className = 'btn btn-primary btn-sm mt-2';
+            refreshButton.textContent = 'Refresh';
+            refreshButton.onclick = () => {
+                newWorker.postMessage({ action: 'skipWaiting' });
+                location.reload();
+            };
+            toastBody.appendChild(document.createElement('br'));
+            toastBody.appendChild(refreshButton);
+        }
+
+        const toast = new bootstrap.Toast(toastLiveExample, { autohide: !showRefreshButton });
         toast.show();
     }
 }
@@ -483,8 +484,8 @@ if (statsModal) {
                 countCell.textContent = item.count;
 
                 // Apply the font to the character and romaji cells
-                charCell.style.fontFamily = 'Noto Sans JP Embedded, sans-serif';
-                romajiCell.style.fontFamily = 'Noto Sans JP Embedded, sans-serif';
+                charCell.style.fontFamily = 'Noto Sans JP Embedded', sans-serif';
+                romajiCell.style.fontFamily = 'Noto Sans JP Embedded', sans-serif';
             });
         }
     });
