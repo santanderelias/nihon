@@ -13,4 +13,8 @@ h1#char-display {
     font-size: 8rem; /* Large font for desktop */
 }
 
+input, textarea, .form-control {
+    font-family: 'Noto Sans JP Embedded', sans-serif !important;
+}
+
 
