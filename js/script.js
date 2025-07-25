@@ -419,26 +419,26 @@ const characterSets = {
         '売': 'u', '立': 'ta', '歩': 'aru', '走': 'hashi', '乗': 'no', '降': 'o', '着': 'ki', '渡': 'wata', '通': 'kayo', '帰': 'kae', '働': 'hatara'
     },
     numbers: {
-        '一': '1', '二': '2', '三': '3', '四': '4', '五': '5',
-        '六': '6', '七': '7', '八': '8', '九': '9', '十': '10',
-        '十一': '11', '十二': '12', '十三': '13', '十四': '14', '十五': '15',
-        '十六': '16', '十七': '17', '十八': '18', '十九': '19', '二十': '20',
-        '二十一': '21', '二十二': '22', '二十三': '23', '二十四': '24', '二十五': '25',
-        '二十六': '26', '二十七': '27', '二十八': '28', '二十九': '29', '三十': '30',
-        '三十一': '31', '三十二': '32', '三十三': '33', '三十四': '34', '三十五': '35',
-        '三十六': '36', '三十七': '37', '三十八': '38', '三十九': '39', '四十': '40',
-        '四十一': '41', '四十二': '42', '四十三': '43', '四十四': '44', '四十五': '45',
-        '四十六': '46', '四十七': '47', '四十八': '48', '四十九': '49', '五十': '50',
-        '五十一': '51', '五十二': '52', '五十三': '53', '五十四': '54', '五十五': '55',
-        '五十六': '56', '五十七': '57', '五十八': '58', '五十九': '59', '六十': '60',
-        '六十一': '61', '六十二': '62', '六十三': '63', '六十四': '64', '六十五': '65',
-        '六十六': '66', '六十七': '67', '六十八': '68', '六十九': '69', '七十': '70',
-        '七十一': '71', '七十二': '72', '七十三': '73', '七十四': '74', '七十五': '75',
-        '七十六': '76', '七十七': '77', '七十八': '78', '七十九': '79', '八十': '80',
-        '八十一': '81', '八十二': '82', '八十三': '83', '八十四': '84', '八十五': '85',
-        '八十六': '86', '八十七': '87', '八十八': '88', '八十九': '89', '九十': '90',
-        '九十一': '91', '九十二': '92', '九十三': '93', '九十四': '94', '九十五': '95',
-        '九十六': '96', '九十七': '97', '九十八': '98', '九十九': '99', '百': '100'
+        '一': { latin: '1', romaji: 'ichi' }, '二': { latin: '2', romaji: 'ni' }, '三': { latin: '3', romaji: 'san' }, '四': { latin: '4', romaji: 'shi' }, '五': { latin: '5', romaji: 'go' },
+        '六': { latin: '6', romaji: 'roku' }, '七': { latin: '7', romaji: 'shichi' }, '八': { latin: '8', romaji: 'hachi' }, '九': { latin: '9', romaji: 'kyuu' }, '十': { latin: '10', romaji: 'juu' },
+        '十一': { latin: '11', romaji: 'juuichi' }, '十二': { latin: '12', romaji: 'juuni' }, '十三': { latin: '13', romaji: 'juusan' }, '十四': { latin: '14', romaji: 'juushi' }, '十五': { latin: '15', romaji: 'juugo' },
+        '十六': { latin: '16', romaji: 'juuroku' }, '十七': { latin: '17', romaji: 'juushichi' }, '十八': { latin: '18', romaji: 'juuhachi' }, '十九': { latin: '19', romaji: 'juukyuu' }, '二十': { latin: '20', romaji: 'nijuu' },
+        '二十一': { latin: '21', romaji: 'nijuuichi' }, '二十二': { latin: '22', romaji: 'nijuuni' }, '二十三': { latin: '23', romaji: 'nijuusan' }, '二十四': { latin: '24', romaji: 'nijuushi' }, '二十五': { latin: '25', romaji: 'nijuugo' },
+        '二十六': { latin: '26', romaji: 'nijuuroku' }, '二十七': { latin: '27', romaji: 'nijuushichi' }, '二十八': { latin: '28', romaji: 'nijuuhachi' }, '二十九': { latin: '29', romaji: 'nijuukyuu' }, '三十': { latin: '30', romaji: 'sanjuu' },
+        '三十一': { latin: '31', romaji: 'sanjuuichi' }, '三十二': { latin: '32', romaji: 'sanjuuni' }, '三十三': { latin: '33', romaji: 'sanjuusan' }, '三十四': { latin: '34', romaji: 'sanjuushi' }, '三十五': { latin: '35', romaji: 'sanjuugo' },
+        '三十六': { latin: '36', romaji: 'sanjuuroku' }, '三十七': { latin: '37', romaji: 'sanjuushichi' }, '三十八': { latin: '38', romaji: 'sanjuuhachi' }, '三十九': { latin: '39', romaji: 'sanjuukyuu' }, '四十': { latin: '40', romaji: 'yonjuu' },
+        '四十一': { latin: '41', romaji: 'yonjuuichi' }, '四十二': { latin: '42', romaji: 'yonjuuni' }, '四十三': { latin: '43', romaji: 'yonjuusan' }, '四十四': { latin: '44', romaji: 'yonjuushi' }, '四十五': { latin: '45', romaji: 'yonjuugo' },
+        '四十六': { latin: '46', romaji: 'yonjuuroku' }, '四十七': { latin: '47', romaji: 'yonjuushichi' }, '四十八': { latin: '48', romaji: 'yonjuuhachi' }, '四十九': { latin: '49', romaji: 'yonjuukyuu' }, '五十': { latin: '50', romaji: 'gojuu' },
+        '五十一': { latin: '51', romaji: 'gojuuichi' }, '五十二': { latin: '52', romaji: 'gojuuni' }, '五十三': { latin: '53', romaji: 'gojuusan' }, '五十四': { latin: '54', romaji: 'gojuushi' }, '五十五': { latin: '55', romaji: 'gojuugo' },
+        '五十六': { latin: '56', romaji: 'gojuuroku' }, '五十七': { latin: '57', romaji: 'gojuushichi' }, '五十八': { latin: '58', romaji: 'gojuuhachi' }, '五十九': { latin: '59', romaji: 'gojuukyuu' }, '六十': { latin: '60', romaji: 'rokujuu' },
+        '六十一': { latin: '61', romaji: 'rokujuuichi' }, '六十二': { latin: '62', romaji: 'rokujuuni' }, '六十三': { latin: '63', romaji: 'rokujuusan' }, '六十四': { latin: '64', romaji: 'rokujuushi' }, '六十五': { latin: '65', romaji: 'rokujuugo' },
+        '六十六': { latin: '66', romaji: 'rokujuuroku' }, '六十七': { latin: '67', romaji: 'rokujuushichi' }, '六十八': { latin: '68', romaji: 'rokujuuhachi' }, '六十九': { latin: '69', romaji: 'rokujuukyuu' }, '七十': { latin: '70', romaji: 'nanajuu' },
+        '七十一': { latin: '71', romaji: 'nanajuuichi' }, '七十二': { latin: '72', romaji: 'nanajuuni' }, '七十三': { latin: '73', romaji: 'nanajuusan' }, '七十四': { latin: '74', romaji: 'nanajuushi' }, '七十五': { latin: '75', romaji: 'nanajuugo' },
+        '七十六': { latin: '76', romaji: 'nanajuuroku' }, '七十七': { latin: '77', romaji: 'nanajuushichi' }, '七十八': { latin: '78', romaji: 'nanajuuhachi' }, '七十九': { latin: '79', romaji: 'nanajuukyuu' }, '八十': { latin: '80', romaji: 'hachijuu' },
+        '八十一': { latin: '81', romaji: 'hachijuuichi' }, '八十二': { latin: '82', romaji: 'hachijuuni' }, '八十三': { latin: '83', romaji: 'hachijuusan' }, '八十四': { latin: '84', romaji: 'hachijuushi' }, '八十五': { latin: '85', romaji: 'hachijuugo' },
+        '八十六': { latin: '86', romaji: 'hachijuuroku' }, '八十七': { latin: '87', romaji: 'hachijuushichi' }, '八十八': { latin: '88', romaji: 'hachijuuhachi' }, '八十九': { latin: '89', romaji: 'hachijuukyuu' }, '九十': { latin: '90', romaji: 'kyuujuu' },
+        '九十一': { latin: '91', romaji: 'kyuujuuichi' }, '九十二': { latin: '92', romaji: 'kyuujuuni' }, '九十三': { latin: '93', romaji: 'kyuujuusan' }, '九十四': { latin: '94', romaji: 'kyuujuushi' }, '九十五': { latin: '95', romaji: 'kyuujuugo' },
+        '九十六': { latin: '96', romaji: 'kyuujuuroku' }, '九十七': { latin: '97', romaji: 'kyuujuushichi' }, '九十八': { latin: '98', romaji: 'kyuujuuhachi' }, '九十九': { latin: '99', romaji: 'kyuujuukyuu' }, '百': { latin: '100', romaji: 'hyaku' }
     }
 
 let progress = JSON.parse(localStorage.getItem('nihon-progress')) || {};
@@ -570,7 +570,7 @@ async function loadQuestion(type) {
         return;
     }
 
-    const correctAnswer = currentCharset[charToTest];
+    const correctAnswer = (type === 'numbers') ? currentCharset[charToTest].romaji : currentCharset[charToTest];
     
     document.getElementById('char-display').textContent = charToTest;
     document.getElementById('feedback-area').innerHTML = '';
@@ -670,7 +670,11 @@ if (statsModal) {
                 let romaji = '';
                 for (const setKey in characterSets) {
                     if (characterSets[setKey][char]) {
-                        romaji = characterSets[setKey][char];
+                        if (setKey === 'numbers') {
+                            romaji = characterSets[setKey][char].romaji;
+                        } else {
+                            romaji = characterSets[setKey][char];
+                        }
                         break;
                     }
                 }
@@ -742,10 +746,11 @@ function generateCharacterCards(characterSet) {
 
         // Special handling for numbers
         if (characterSet === characterSets.numbers) {
-            // 'char' is now the Japanese character, 'characterSet[char]' is the Latin number
+            // 'char' is the Japanese character
+            // characterSet[char] is now an object { latin: '...', romaji: '...' }
             displayChar = char; // Japanese character
-            latinNumber = characterSet[char]; // Latin number
-            displayRomaji = characterSets.numbers[char]; // Romaji from the original mapping
+            latinNumber = characterSet[char].latin; // Latin number
+            displayRomaji = characterSet[char].romaji; // Romaji
         }
 
         html += `
@@ -753,7 +758,7 @@ function generateCharacterCards(characterSet) {
                 <div class="card text-center h-100">
                     <div class="card-body d-flex flex-column justify-content-center align-items-center">
                         <h3 class="card-title" style="font-family: 'Noto Sans JP Embedded', sans-serif;">${displayChar}</h3>
-                        <p class="card-text">${latinNumber} (${displayRomaji})</p>
+                        <p class="card-text">${displayRomaji} (${latinNumber})</p>
                     </div>
                 </div>
             </div>
