@@ -257,23 +257,14 @@ async function loadDictionary() {
         for (let i = 1; i <= totalLibraries; i++) {
             showToast('Dictionary', `Downloading ${i} of ${totalLibraries}...`);
             
-            // Remove old script if it exists to redefine DICT
-            const oldScript = document.getElementById(`dict-script-${i}`);
-            if (oldScript) {
-                oldScript.remove();
+            const response = await fetch(`js/dict/dict-${i}.js`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch dict-${i}.js`);
             }
-
-            const script = document.createElement('script');
-            script.id = `dict-script-${i}`;
-            script.src = `js/dict/dict-${i}.js`;
+            const scriptContent = await response.text();
             
-            const loadPromise = new Promise((resolve, reject) => {
-                script.onload = resolve;
-                script.onerror = reject;
-            });
-            
-            document.head.appendChild(script);
-            await loadPromise;
+            // Use eval to get the DICT array from the script content
+            const DICT = eval(scriptContent.replace('const DICT =', ''));
 
             if (typeof DICT !== 'undefined' && Array.isArray(DICT)) {
                 DICT.forEach(entryStr => {
@@ -296,6 +287,7 @@ async function loadDictionary() {
                         const meaning = glossNode?.textContent;
 
                         if (word && reading && meaning) {
+                            // Use the sequence number as the key
                             dictionary[seq] = { word, reading, meaning };
                         }
                     } catch (e) {
