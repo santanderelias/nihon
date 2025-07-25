@@ -108,9 +108,9 @@ if (checkUpdatesButton) {
                     registration.update(); // Trigger an update check
                     console.log('Service Worker update check triggered.');
 
-                    registration.onupdatefound = () => {
+                    registration.addEventListener('updatefound', () => {
                         const newWorker = registration.installing;
-                        newWorker.onstatechange = () => {
+                        newWorker.addEventListener('statechange', () => {
                             if (newWorker.state === 'installed') {
                                 if (navigator.serviceWorker.controller) {
                                     // New update available
@@ -119,8 +119,8 @@ if (checkUpdatesButton) {
                                     }
                                 }
                             }
-                        };
-                    };
+                        });
+                    });
 
                 } else {
                     showToast('Update Check', 'No service worker registered. Please refresh the page.');
@@ -492,14 +492,22 @@ async function searchDictionary(word) {
         const jishoData = JSON.parse(data.contents);
 
         if (jishoData.data && jishoData.data.length > 0) {
-            let html = '';
-            jishoData.data.forEach(entry => {
-                html += '<div class="card mb-3">';
-                html += '<div class="card-body">';
-                // Word and Reading
-                html += `<h5 class="card-title">${entry.japanese[0].word || ''} (${entry.japanese[0].reading || ''})</h5>`;
+            let html = '<div class="accordion" id="dictionary-accordion">';
+            jishoData.data.forEach((entry, i) => {
+                const entryId = `entry-${i}`;
+                const firstSense = entry.senses[0].english_definitions.join(', ');
 
-                // Senses
+                html += `
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading-${entryId}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${entryId}" aria-expanded="false" aria-controls="collapse-${entryId}">
+                                <strong style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.japanese[0].word || ''} (${entry.japanese[0].reading || ''})</strong>: ${firstSense}
+                            </button>
+                        </h2>
+                        <div id="collapse-${entryId}" class="accordion-collapse collapse" aria-labelledby="heading-${entryId}" data-bs-parent="#dictionary-accordion">
+                            <div class="accordion-body">
+                `;
+
                 entry.senses.forEach((sense, index) => {
                     html += `<p class="card-text"><strong>${index + 1}.</strong> ${sense.english_definitions.join(', ')}</p>`;
                     if (sense.parts_of_speech.length > 0) {
@@ -507,9 +515,13 @@ async function searchDictionary(word) {
                     }
                 });
 
-                html += '</div>';
-                html += '</div>';
+                html += `
+                            </div>
+                        </div>
+                    </div>
+                `;
             });
+            html += '</div>';
             dictionaryResultArea.innerHTML = html;
         } else {
             dictionaryResultArea.innerHTML = 'No results found.';
