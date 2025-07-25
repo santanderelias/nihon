@@ -1,21 +1,26 @@
-const CACHE_NAME = 'nihon-v11';
-const URLS_TO_CACHE = [
-    '/nihon/',
-    '/nihon/index.html',
-    '/nihon/css/style.css',
-    '/nihon/css/bootstrap.min.css',
-    '/nihon/js/script.js',
-    '/nihon/js/bootstrap.bundle.min.js',
-    '/nihon/manifest.json',
-    '/nihon/fonts/NotoSansJP.woff2'
-];
+let cacheName;
 
 self.addEventListener('install', event => {
     event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then(cache => {
-                console.log('Opened cache');
-                return cache.addAll(URLS_TO_CACHE);
+        fetch('/nihon/version.json')
+            .then(response => response.json())
+            .then(versionData => {
+                cacheName = `nihon-v${versionData.version}`;
+                const urlsToCache = [
+                    '/nihon/',
+                    '/nihon/index.html',
+                    '/nihon/css/style.css',
+                    '/nihon/css/bootstrap.min.css',
+                    '/nihon/js/script.js',
+                    '/nihon/js/bootstrap.bundle.min.js',
+                    '/nihon/manifest.json',
+                    '/nihon/fonts/NotoSansJP.woff2',
+                    '/nihon/version.json'
+                ];
+                return caches.open(cacheName).then(cache => {
+                    console.log('Opened cache:', cacheName);
+                    return cache.addAll(urlsToCache);
+                });
             })
     );
 });
@@ -33,24 +38,17 @@ self.addEventListener('fetch', event => {
 });
 
 self.addEventListener('activate', event => {
-    const cacheWhitelist = [CACHE_NAME];
     event.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
                 cacheNames.map(cacheName => {
-                    if (cacheWhitelist.indexOf(cacheName) === -1) {
+                    if (cacheName.startsWith('nihon-v') && cacheName !== self.cacheName) {
                         return caches.delete(cacheName);
                     }
                 })
             );
         })
     );
-});
-
-self.addEventListener('message', event => {
-    if (event.data && event.data.action === 'skipWaiting') {
-        self.skipWaiting();
-    }
 });
 
 self.addEventListener('message', event => {

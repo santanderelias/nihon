@@ -98,42 +98,49 @@ if (installButton) {
 
 // --- Check for Updates Button ---
 const checkUpdatesButton = document.getElementById('check-updates-button');
+let currentVersion;
+
+// Fetch the current version from version.json
+fetch('/nihon/version.json')
+    .then(response => response.json())
+    .then(data => {
+        currentVersion = data.version;
+        document.getElementById('version-number').textContent = `Version ${currentVersion}`;
+    });
 
 if (checkUpdatesButton) {
     checkUpdatesButton.addEventListener('click', async () => {
-        if ('serviceWorker' in navigator) {
-            try {
-                const registration = await navigator.serviceWorker.getRegistration();
-                if (registration) {
-                    registration.update(); // Trigger an update check
-                    console.log('Service Worker update check triggered.');
+        try {
+            const response = await fetch('/nihon/version.json?t=' + new Date().getTime()); // Prevent caching
+            const latestVersionData = await response.json();
+            const latestVersion = latestVersionData.version;
 
-                    registration.addEventListener('updatefound', () => {
-                        const newWorker = registration.installing;
-                        newWorker.addEventListener('statechange', () => {
-                            if (newWorker.state === 'installed') {
-                                if (navigator.serviceWorker.controller) {
-                                    // New update available
-                                    if (confirm('New version available! Do you want to update now?')) {
+            if (latestVersion !== currentVersion) {
+                if (confirm(`New version ${latestVersion} available! Do you want to update now?`)) {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    if (registration) {
+                        registration.update().then(() => {
+                            const newWorker = registration.installing;
+                            if (newWorker) {
+                                newWorker.addEventListener('statechange', () => {
+                                    if (newWorker.state === 'installed') {
                                         newWorker.postMessage({ action: 'skipWaiting' });
                                     }
-                                }
+                                });
                             }
                         });
-                    });
-
-                } else {
-                    showToast('Update Check', 'No service worker registered. Please refresh the page.');
+                    }
                 }
-            } catch (error) {
-                console.error('Error checking for service worker updates:', error);
-                showToast('Error', 'Error checking for updates. Please try again later.');
+            } else {
+                showToast('Update Check', 'You are on the latest version.');
             }
-        } else {
-            showToast('Error', 'Service Workers are not supported in this browser.');
+        } catch (error) {
+            console.error('Error checking for updates:', error);
+            showToast('Error', 'Error checking for updates. Please try again later.');
         }
     });
 }
+
 
 // Listen for controllerchange to detect when a new SW takes over
 if ('serviceWorker' in navigator) {
@@ -144,6 +151,7 @@ if ('serviceWorker' in navigator) {
         location.reload();
     });
 }
+
 
 // --- Clear Data Button ---
 const clearDataButton = document.getElementById('clear-data-button');
