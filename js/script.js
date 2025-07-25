@@ -727,12 +727,35 @@ function populateReferencesModal() {
 function generateCharacterCards(characterSet) {
     let html = '<div class="row row-cols-3 row-cols-md-4 row-cols-lg-5 g-2">';
     for (const char in characterSet) {
+        let displayChar = char;
+        let displayRomaji = characterSet[char];
+        let additionalInfo = '';
+
+        // Special handling for numbers
+        if (characterSet === characterSets.numbers) {
+            // Assuming 'char' is the Latin number (e.g., '1', '2')
+            // We need to map this to its Japanese character representation
+            // For simplicity, let's assume a direct mapping for now, or you can provide a separate mapping.
+            // For now, I'll just display the Latin number as the main character
+            // and put the Japanese character in additionalInfo if available.
+            // For this example, I'll hardcode a few Japanese number characters.
+            const japaneseNumbers = {
+                '1': '一', '2': '二', '3': '三', '4': '四', '5': '五',
+                '6': '六', '7': '七', '8': '八', '9': '九', '10': '十'
+            };
+            const japaneseChar = japaneseNumbers[char] || '';
+            if (japaneseChar) {
+                displayChar = japaneseChar; // Display Japanese character as main
+                additionalInfo = `(${char})`; // Latin number in parentheses
+            }
+        }
+
         html += `
             <div class="col">
                 <div class="card text-center h-100">
                     <div class="card-body d-flex flex-column justify-content-center align-items-center">
-                        <h3 class="card-title" style="font-family: 'Noto Sans JP Embedded', sans-serif;">${char}</h3>
-                        <p class="card-text">${characterSet[char]}</p>
+                        <h3 class="card-title" style="font-family: 'Noto Sans JP Embedded', sans-serif;">${displayChar} ${additionalInfo}</h3>
+                        <p class="card-text">${displayRomaji}</p>
                     </div>
                 </div>
             </div>
