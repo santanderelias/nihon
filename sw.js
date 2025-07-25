@@ -1,4 +1,4 @@
-const CACHE_NAME = 'v1.2.16'; // Updated cache name
+const CACHE_NAME = 'v1.2.17'; // Updated cache name
 const URLS_TO_CACHE = [
     '/nihon/',
     '/nihon/index.html',
@@ -10,7 +10,8 @@ const URLS_TO_CACHE = [
     '/nihon/js/wanakana.min.js',
     '/nihon/manifest.json',
     '/nihon/favicon.ico',
-    '/nihon/fonts/NotoSansJP.woff2'
+    '/nihon/fonts/NotoSansJP.woff2',
+    '/nihon/icons/chart.jpg'
 ];
 
 self.addEventListener('install', event => {

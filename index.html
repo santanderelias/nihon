@@ -31,6 +31,9 @@
                 <button class="btn btn-outline-secondary me-2" id="dictionary-button" data-bs-toggle="modal" data-bs-target="#dictionary-modal">
                     &#128214;
                 </button>
+                <button class="btn btn-outline-secondary me-2" id="references-button" data-bs-toggle="modal" data-bs-target="#references-modal">
+                    📚
+                </button>
                 <button class="btn btn-outline-secondary" id="settings-button" data-bs-toggle="modal" data-bs-target="#settings-modal">
                     ⚙️
                 </button>
@@ -43,6 +46,21 @@
             <!-- Dynamic content will be loaded here -->
         </div>
     </main>
+
+    <!-- References Modal -->
+    <div class="modal fade" id="references-modal" tabindex="-1" aria-labelledby="referencesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="referencesModalLabel">References</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <img src="icons/chart.jpg" alt="Japanese Characters Chart" class="img-fluid">
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Settings Modal -->
     <div class="modal fade" id="settings-modal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
