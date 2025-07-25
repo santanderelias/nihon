@@ -239,6 +239,7 @@ async function getDictFileCount() {
                 fileExists = false;
             }
         } catch (error) {
+            // Expected 404 for the last file, or other network errors
             fileExists = false;
         }
     }
@@ -248,7 +249,7 @@ async function getDictFileCount() {
 async function loadDictionary() {
     try {
         const totalLibraries = await getDictFileCount();
-        console.log(`Found ${totalLibraries} dictionary files. The following 404 error for file ${totalLibraries + 1} is expected and indicates the end of the dictionary discovery process.`);
+        console.log(`Found ${totalLibraries} dictionary files.`);
         if (totalLibraries === 0) {
             console.log("No dictionary files found.");
             showToast('Dictionary', 'No dictionary files found.');
@@ -258,11 +259,12 @@ async function loadDictionary() {
         const parser = new DOMParser();
 
         for (let i = 1; i <= totalLibraries; i++) {
-            showToast('Dictionary', `Downloading ${i} of ${totalLibraries}...`);
+            // showToast('Dictionary', `Downloading ${i} of ${totalLibraries}...`); // Service worker will handle this toast
             
             const response = await fetch(`js/dict/dict-${i}.js`);
             if (!response.ok) {
-                throw new Error(`Failed to fetch dict-${i}.js`);
+                console.warn(`Failed to fetch dict-${i}.js. Status: ${response.status}. Skipping.`);
+                continue; // Skip to the next file instead of throwing an error
             }
             const scriptContent = await response.text();
             
@@ -299,10 +301,10 @@ async function loadDictionary() {
                 });
             }
         }
-        showToast('Dictionary', 'Download complete.');
+        // showToast('Dictionary', 'Download complete.'); // Service worker will handle this toast
         console.log('Dictionary loaded successfully.');
     } catch (error) {
-        showToast('Dictionary', 'An error occurred while downloading.');
+        showToast('Dictionary', 'An error occurred while loading dictionary.');
         console.error('Failed to load dictionary:', error);
     }
 }

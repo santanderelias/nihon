@@ -1,4 +1,4 @@
-const CACHE_NAME = 'v1.2.9'; // Updated cache name
+const CACHE_NAME = 'v1.2.10'; // Updated cache name
 const URLS_TO_CACHE = [
     '/nihon/',
     '/nihon/index.html',
@@ -60,19 +60,26 @@ self.addEventListener('message', event => {
 
 async function cacheDictionaryFiles() {
     const cache = await caches.open(CACHE_NAME);
-    const existingCaches = await caches.keys();
-    if (existingCaches.includes(CACHE_NAME)) {
-        const cachedItems = await cache.keys();
-        if (cachedItems.length > URLS_TO_CACHE.length) {
-            console.log('Dictionary files already cached.');
-            self.clients.matchAll().then(clients => {
-                clients.forEach(client => {
-                    client.postMessage({ action: 'show-toast', title: 'Up to date', message: 'All files are cached.' });
-                });
+
+    // Check if dictionary files are already cached
+    const dictFile1Url = `/nihon/js/dict/dict-1.js`;
+    const cachedResponse = await cache.match(dictFile1Url);
+
+    if (cachedResponse) {
+        console.log('Dictionary files already cached.');
+        self.clients.matchAll().then(clients => {
+            clients.forEach(client => {
+                client.postMessage({ action: 'show-toast', title: 'Up to date', message: 'All files are cached.' });
             });
-            return;
-        }
+        });
+        return;
     }
+
+    self.clients.matchAll().then(clients => {
+        clients.forEach(client => {
+            client.postMessage({ action: 'show-toast', title: 'Downloading Libraries', message: 'This may take a moment and use high memory.' });
+        });
+    });
 
     let i = 1;
     let count = 0;
@@ -118,5 +125,10 @@ async function cacheDictionaryFiles() {
     }
 
     console.log(`Successfully cached ${count} dictionary files.`);
+    self.clients.matchAll().then(clients => {
+        clients.forEach(client => {
+            client.postMessage({ action: 'show-toast', title: 'Download Complete', message: `Successfully cached ${count} dictionary files.` });
+        });
+    });
     return count;
 }
