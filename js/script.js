@@ -116,21 +116,19 @@ if (checkUpdatesButton) {
             const latestVersion = latestVersionData.version;
 
             if (latestVersion !== currentVersion) {
-                if (confirm(`New version ${latestVersion} available! Do you want to update now?`)) {
-                    showToast('Updating...', 'The application will be reloaded after the update is complete.');
-                    const registration = await navigator.serviceWorker.getRegistration();
-                    if (registration) {
-                        registration.update().then(() => {
-                            const newWorker = registration.installing;
-                            if (newWorker) {
-                                newWorker.addEventListener('statechange', () => {
-                                    if (newWorker.state === 'installed') {
-                                        newWorker.postMessage({ action: 'skipWaiting' });
-                                    }
-                                });
-                            }
-                        });
-                    }
+                showToast('Updating...', `New version ${latestVersion} available! The application will be reloaded after the update is complete.`);
+                const registration = await navigator.serviceWorker.getRegistration();
+                if (registration) {
+                    registration.update().then(() => {
+                        const newWorker = registration.installing;
+                        if (newWorker) {
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed') {
+                                    newWorker.postMessage({ action: 'skipWaiting' });
+                                }
+                            });
+                        }
+                    });
                 }
             } else {
                 showToast('Update Check', 'You are on the latest version.');
