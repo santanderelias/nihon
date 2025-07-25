@@ -21,6 +21,9 @@
                 <button class="btn btn-outline-secondary me-2" id="stats-button" data-bs-toggle="modal" data-bs-target="#stats-modal">
                     ⭐
                 </button>
+                <button class="btn btn-outline-secondary me-2" id="dictionary-button" data-bs-toggle="modal" data-bs-target="#dictionary-modal">
+                    📖
+                </button>
                 <button class="btn btn-outline-secondary" id="settings-button" data-bs-toggle="modal" data-bs-target="#settings-modal">
                     ⚙️
                 </button>
@@ -53,6 +56,7 @@
                     </div>
                     <hr>
                     <div class="d-grid gap-2 mx-auto">
+                        <button class="btn btn-info" id="check-updates-button">Check for Updates</button>
                         <button class="btn btn-danger" id="clear-data-button">Clear All Progress Data</button>
                         <button class="btn btn-warning" id="reset-app-button">Reset App Completely</button>
                         <button class="btn btn-info" id="uninstall-app-button">Uninstall App</button>
@@ -67,6 +71,27 @@
     </div>
 
     <!-- Stats Modal -->
+    <!-- Dictionary Modal -->
+    <div class="modal fade" id="dictionary-modal" tabindex="-1" aria-labelledby="dictionaryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="dictionaryModalLabel">Dictionary</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="Search for a word..." id="dictionary-search-input">
+                        <button class="btn btn-outline-secondary" type="button" id="dictionary-search-button">Search</button>
+                    </div>
+                    <div id="dictionary-result-area">
+                        <!-- Dictionary search results will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="stats-modal" tabindex="-1" aria-labelledby="statsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -106,6 +131,7 @@
     </div>
 
     <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/wanakana.min.js"></script>
     <script src="js/script.js"></script>
 
     <!-- Toast Container -->

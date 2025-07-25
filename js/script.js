@@ -168,6 +168,31 @@ if (uninstallAppButton) {
     console.log('Install button element not found at script load.');
 }
 
+// --- Check for Updates Button ---
+const checkUpdatesButton = document.getElementById('check-updates-button');
+
+if (checkUpdatesButton) {
+    checkUpdatesButton.addEventListener('click', () => {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistration().then(reg => {
+                if (reg) {
+                    reg.update().then(updated => {
+                        if (updated) {
+                            showToast('Update Found', 'A new version of the app is available. Please restart the app to update.');
+                        } else {
+                            showToast('No Updates', 'You are on the latest version of the app.');
+                        }
+                    });
+                } else {
+                    showToast('Error', 'Service worker not registered.');
+                }
+            });
+        } else {
+            showToast('Error', 'Service workers are not supported in this browser.');
+        }
+    });
+}
+
 
 // --- App Logic ---
 const contentArea = document.getElementById('content-area');
@@ -210,8 +235,14 @@ const characterSets = {
         'ン': 'n'
     },
     kanji: {
-        '一': 'ichi', '二': 'ni', '三': 'san', '四': 'shi', '五': 'go',
-        '六': 'roku', '七': 'shichi', '八': 'hachi', '九': 'kyu', '十': 'juu'
+        '一': 'ichi', '二': 'ni', '三': 'san', '四': 'shi', '五': 'go', '六': 'roku', '七': 'shichi', '八': 'hachi', '九': 'kyu', '十': 'juu',
+        '人': 'hito', '日': 'hi', '月': 'tsuki', '火': 'hi', '水': 'mizu', '木': 'ki', '金': 'kin', '土': 'tsuchi', '年': 'toshi', '時': 'toki',
+        '分': 'fun', '今': 'ima', '前': 'mae', '後': 'ato', '上': 'ue', '下': 'shita', '左': 'hidari', '右': 'migi', '中': 'naka', '外': 'soto',
+        '大': 'dai', '小': 'shou', '高': 'taka', '安': 'yasu', '新': 'atara', '古': 'furu', '長': 'naga', '多': 'oo', '少': 'suku', '早': 'haya',
+        '学': 'gaku', '校': 'kou', '生': 'sei', '先': 'sen', '何': 'nani', '私': 'watashi', '友': 'tomo', '達': 'dachi', '本': 'hon', '語': 'go',
+        '話': 'hana', '見': 'mi', '聞': 'ki', '読': 'yo', '書': 'ka', '食': 'ta', '飲': 'no', '買': 'ka', '行': 'i', '来': 'ku', '出': 'de', '入': 'hai',
+        '会': 'a', '休': 'yasu', '言': 'i', '思': 'omo', '持': 'mo', '待': 'ma', '作': 'tsuku', '使': 'tsuka', '知': 'shi', '死': 'shi', '住': 'su',
+        '売': 'u', '立': 'ta', '歩': 'aru', '走': 'hashi', '乗': 'no', '降': 'o', '着': 'ki', '渡': 'wata', '通': 'kayo', '帰': 'kae', '働': 'hatara'
     },
     numbers: {
         '1': 'ichi', '2': 'ni', '3': 'san', '4': 'yon', '5': 'go', '6': 'roku', '7': 'nana', '8': 'hachi', '9': 'kyuu', '10': 'juu',
@@ -289,7 +320,7 @@ function startQuiz(type) {
                 <h1 id="char-display" class="display-1"></h1>
                 <div id="example-word-area" class="mt-3"></div>
                 <div class="mb-3">
-                    <input type="text" class="form-control text-center" id="answer-input" autofocus oninput="this.value = this.value.toLowerCase()" onkeypress="if(event.key === 'Enter') document.getElementById('check-button').click()">
+                    <input type="text" class="form-control text-center" id="answer-input" autofocus onkeypress="if(event.key === 'Enter') document.getElementById('check-button').click()">
                 </div>
                 <button class="btn btn-success" id="check-button">Check</button>
                 <button class="btn btn-secondary" id="skip-button">Skip</button>
@@ -297,6 +328,24 @@ function startQuiz(type) {
         </div>
     `;
     
+    const answerInput = document.getElementById('answer-input');
+    const options = {
+        customKanaMapping: {
+            shi: 'し',
+            chi: 'ち',
+            tsu: 'つ',
+            fu: 'ふ',
+            ji: 'じ',
+            zu: 'ず'
+        }
+    };
+
+    if (type === 'katakana') {
+        wanakana.bind(answerInput, { ...options, to: 'katakana' });
+    } else {
+        wanakana.bind(answerInput, { ...options, to: 'hiragana' });
+    }
+
     loadQuestion(type);
 }
 
