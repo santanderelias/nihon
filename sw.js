@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nihon-v11';
+const CACHE_NAME = 'nihon-cache';
 const URLS_TO_CACHE = [
     '/nihon/',
     '/nihon/index.html',
@@ -45,10 +45,4 @@ self.addEventListener('activate', event => {
             );
         })
     );
-});
-
-self.addEventListener('message', event => {
-    if (event.data && event.data.action === 'skipWaiting') {
-        self.skipWaiting();
-    }
 });
