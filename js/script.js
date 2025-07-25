@@ -508,6 +508,7 @@ async function searchDictionary(word) {
                 const entryId = `entry-${i}`;
                 const firstSense = entry.senses[0].english_definitions.join(', ');
 
+                const romaji = wanakana.toRomaji(entry.japanese[0].reading);
                 html += `
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="heading-${entryId}">
@@ -515,7 +516,7 @@ async function searchDictionary(word) {
                                 <div>
                                     <strong style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.japanese[0].word || ''} (${entry.japanese[0].reading || ''})</strong>
                                     <br>
-                                    <small class="text-muted">${entry.japanese[0].reading}</small>
+                                    <small class="text-muted">${romaji}</small>
                                 </div>
                                 <div class="ms-auto">: ${firstSense}</div>
                             </button>
@@ -525,9 +526,9 @@ async function searchDictionary(word) {
                 `;
 
                 entry.senses.forEach((sense, index) => {
-                    html += `<p class="card-text"><strong>${index + 1}.</strong> ${sense.english_definitions.join(', ')}</p>`;
+                    html += `<p class="card-text" style="font-family: 'Noto Sans JP Embedded', sans-serif;"><strong>${index + 1}.</strong> ${sense.english_definitions.join(', ')}</p>`;
                     if (sense.parts_of_speech.length > 0) {
-                        html += `<p class="card-text text-muted"><em>${sense.parts_of_speech.join(', ')}</em></p>`;
+                        html += `<p class="card-text text-muted" style="font-family: 'Noto Sans JP Embedded', sans-serif;"><em>${sense.parts_of_speech.join(', ')}</em></p>`;
                     }
                 });
 
