@@ -365,7 +365,7 @@ async function loadQuestion(type) {
     const exampleWordArea = document.getElementById('example-word-area');
     if (example && exampleWordArea) {
         exampleWordArea.innerHTML = `
-            <p class="card-text mt-3">
+            <p class="card-text mt-3" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
                 <strong>Example:</strong> ${example.word} (${example.reading}) - <em>${example.meaning}</em>
             </p>
         `;
