@@ -1,10 +1,11 @@
-const CACHE_NAME = 'v1.2.14'; // Updated cache name
+const CACHE_NAME = 'v1.2.15'; // Updated cache name
 const URLS_TO_CACHE = [
     '/nihon/',
     '/nihon/index.html',
     '/nihon/css/style.css',
     '/nihon/css/bootstrap.min.css',
     '/nihon/js/script.js',
+    '/nihon/js/script.min.js',
     '/nihon/js/bootstrap.bundle.min.js',
     '/nihon/js/wanakana.min.js',
     '/nihon/manifest.json',
