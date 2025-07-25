@@ -1,4 +1,4 @@
-const CACHE_NAME = 'v1.2.2';
+const CACHE_NAME = 'v1.2.4';
 const URLS_TO_CACHE = [
     '/nihon/',
     '/nihon/index.html',
@@ -18,6 +18,11 @@ self.addEventListener('install', event => {
             .then(cache => {
                 console.log('Opened cache');
                 return cache.addAll(URLS_TO_CACHE);
+            })
+            .then(() => {
+                return cacheDictionaryFiles().then(count => {
+                    console.log(`Successfully cached ${count} dictionary files.`);
+                });
             })
     );
 });
@@ -56,3 +61,31 @@ self.addEventListener('message', event => {
         self.skipWaiting();
     }
 });
+
+async function cacheDictionaryFiles() {
+    const cache = await caches.open(CACHE_NAME);
+    let i = 1;
+    let count = 0;
+    while (true) {
+        const url = `/nihon/js/dict/dict-${i}.js`;
+        try {
+            const response = await fetch(url);
+            if (response.ok) {
+                await cache.put(url, response);
+                count++;
+                i++;
+            } else {
+                if (response.status === 404) {
+                    console.log(`Finished caching dictionary files. Last file found: dict-${i - 1}.js`);
+                } else {
+                    console.error(`Failed to cache ${url}. Status: ${response.status}`);
+                }
+                break;
+            }
+        } catch (error) {
+            console.error(`Error fetching ${url}:`, error);
+            break;
+        }
+    }
+    return count;
+}
