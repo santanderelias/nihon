@@ -595,8 +595,13 @@ async function loadQuestion(type) {
 
 function checkAnswer(char, correctAnswer, type) {
     const answerInput = document.getElementById('answer-input');
-    const userAnswer = answerInput.value.trim();
+    let userAnswer = answerInput.value.trim();
     const feedbackArea = document.getElementById('feedback-area');
+
+    // Convert user input to Romaji if Wanakana is enabled
+    if (isWanakanaEnabled()) {
+        userAnswer = wanakana.toRomaji(userAnswer);
+    }
 
     if (userAnswer === correctAnswer) {
         progress[char].correct++;
