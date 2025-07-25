@@ -419,18 +419,27 @@ const characterSets = {
         '売': 'u', '立': 'ta', '歩': 'aru', '走': 'hashi', '乗': 'no', '降': 'o', '着': 'ki', '渡': 'wata', '通': 'kayo', '帰': 'kae', '働': 'hatara'
     },
     numbers: {
-        '1': 'ichi', '2': 'ni', '3': 'san', '4': 'yon', '5': 'go', '6': 'roku', '7': 'nana', '8': 'hachi', '9': 'kyuu', '10': 'juu',
-        '11': 'juuichi', '12': 'juuni', '13': 'juusan', '14': 'juuyon', '15': 'juugo', '16': 'juuroku', '17': 'juunana', '18': 'juuhachi', '19': 'juukyuu', '20': 'nijuu',
-        '21': 'nijuuichi', '22': 'nijuuni', '23': 'nijuusan', '24': 'nijuuyon', '25': 'nijuugo', '26': 'nijuuroku', '27': 'nijuunana', '28': 'nijuuhachi', '29': 'nijuukyuu', '30': 'sanjuu',
-        '31': 'sanjuuichi', '32': 'sanjuuni', '33': 'sanjuusan', '34': 'sanjuuyon', '35': 'sanjuugo', '36': 'sanjuuroku', '37': 'sanjuunana', '38': 'sanjuuhachi', '39': 'sanjuukyuu', '40': 'yonjuu',
-        '41': 'yonjuuichi', '42': 'yonjuuni', '43': 'yonjuusan', '44': 'yonjuuyon', '45': 'yonjuugo', '46': 'yonjuuroku', '47': 'yonjuunana', '48': 'yonjuuhachi', '49': 'yonjuukyuu', '50': 'gojuu',
-        '51': 'gojuuichi', '52': 'gojuuni', '53': 'gojuusan', '54': 'gojuuyon', '55': 'gojuugo', '56': 'gojuuroku', '57': 'gojuunana', '58': 'gojuuhachi', '59': 'gojuukyuu', '60': 'rokujuu',
-        '61': 'rokujuuichi', '62': 'rokujuuni', '63': 'rokujuusan', '64': 'rokujuuyon', '65': 'rokujuugo', '66': 'rokujuuroku', '67': 'rokujuunana', '68': 'rokujuuhachi', '69': 'rokujuukyuu', '70': 'nanajuu',
-        '71': 'nanajuuichi', '72': 'nanajuuni', '73': 'nanajuusan', '74': 'nanajuuyon', '75': 'nanajuugo', '76': 'nanajuuroku', '77': 'nanajuunana', '78': 'nanajuuhachi', '79': 'nanajuukyuu', '80': 'hachijuu',
-        '81': 'hachijuuichi', '82': 'hachijuuni', '83': 'hachijuusan', '84': 'hachijuuyon', '85': 'hachijuugo', '86': 'hachijuuroku', '87': 'hachijuunana', '88': 'hachijuuhachi', '89': 'hachijuukyuu', '90': 'kyuujuu',
-        '91': 'kyuujuuichi', '92': 'kyuujuuni', '93': 'kyuujuusan', '94': 'kyuujuuyon', '95': 'kyuujuugo', '96': 'kyuujuuroku', '97': 'kyuujuunana', '98': 'kyuujuuhachi', '99': 'kyuujuukyuu', '100': 'hyaku'
+        '一': '1', '二': '2', '三': '3', '四': '4', '五': '5',
+        '六': '6', '七': '7', '八': '8', '九': '9', '十': '10',
+        '十一': '11', '十二': '12', '十三': '13', '十四': '14', '十五': '15',
+        '十六': '16', '十七': '17', '十八': '18', '十九': '19', '二十': '20',
+        '二十一': '21', '二十二': '22', '二十三': '23', '二十四': '24', '二十五': '25',
+        '二十六': '26', '二十七': '27', '二十八': '28', '二十九': '29', '三十': '30',
+        '三十一': '31', '三十二': '32', '三十三': '33', '三十四': '34', '三十五': '35',
+        '三十六': '36', '三十七': '37', '三十八': '38', '三十九': '39', '四十': '40',
+        '四十一': '41', '四十二': '42', '四十三': '43', '四十四': '44', '四十五': '45',
+        '四十六': '46', '四十七': '47', '四十八': '48', '四十九': '49', '五十': '50',
+        '五十一': '51', '五十二': '52', '五十三': '53', '五十四': '54', '五十五': '55',
+        '五十六': '56', '五十七': '57', '五十八': '58', '五十九': '59', '六十': '60',
+        '六十一': '61', '六十二': '62', '六十三': '63', '六十四': '64', '六十五': '65',
+        '六十六': '66', '六十七': '67', '六十八': '68', '六十九': '69', '七十': '70',
+        '七十一': '71', '七十二': '72', '七十三': '73', '七十四': '74', '七十五': '75',
+        '七十六': '76', '七十七': '77', '七十八': '78', '七十九': '79', '八十': '80',
+        '八十一': '81', '八十二': '82', '八十三': '83', '八十四': '84', '八十五': '85',
+        '八十六': '86', '八十七': '87', '八十八': '88', '八十九': '89', '九十': '90',
+        '九十一': '91', '九十二': '92', '九十三': '93', '九十四': '94', '九十五': '95',
+        '九十六': '96', '九十七': '97', '九十八': '98', '九十九': '99', '百': '100'
     }
-};
 
 let progress = JSON.parse(localStorage.getItem('nihon-progress')) || {};
 let currentCharset = {};
@@ -733,30 +742,10 @@ function generateCharacterCards(characterSet) {
 
         // Special handling for numbers
         if (characterSet === characterSets.numbers) {
-            const japaneseNumbers = {
-                '1': '一', '2': '二', '3': '三', '4': '四', '5': '五',
-                '6': '六', '7': '七', '8': '八', '9': '九', '10': '十',
-                '11': '十一', '12': '十二', '13': '十三', '14': '十四', '15': '十五',
-                '16': '十六', '17': '十七', '18': '十八', '19': '十九', '20': '二十',
-                '21': '二十一', '22': '二十二', '23': '二十三', '24': '二十四', '25': '二十五',
-                '26': '二十六', '27': '二十七', '28': '二十八', '29': '二十九', '30': '三十',
-                '31': '三十一', '32': '三十二', '33': '三十三', '34': '三十四', '35': '三十五',
-                '36': '三十六', '37': '三十七', '38': '三十八', '39': '三十九', '40': '四十',
-                '41': '四十一', '42': '四十二', '43': '四十三', '44': '四十四', '45': '四十五',
-                '46': '四十六', '47': '四十七', '48': '四十八', '49': '四十九', '50': '五十',
-                '51': '五十一', '52': '五十二', '53': '五十三', '54': '五十四', '55': '五十五',
-                '56': '五十六', '57': '五十七', '58': '五十八', '59': '五十九', '60': '六十',
-                '61': '六十一', '62': '六十二', '63': '六十三', '64': '六十四', '65': '六十五',
-                '66': '六十六', '67': '六十七', '68': '六十八', '69': '六十九', '70': '七十',
-                '71': '七十一', '72': '七十二', '73': '七十三', '74': '七十四', '75': '七十五',
-                '76': '七十六', '77': '七十七', '78': '七十八', '79': '七十九', '80': '八十',
-                '81': '八十一', '82': '八十二', '83': '八十三', '84': '八十四', '85': '八十五',
-                '86': '八十六', '87': '八十七', '88': '八十八', '89': '八十九', '90': '九十',
-                '91': '九十一', '92': '九十二', '93': '九十三', '94': '九十四', '95': '九十五',
-                '96': '九十六', '97': '九十七', '98': '九十八', '99': '九十九', '100': '百'
-            };
-            displayChar = japaneseNumbers[char] || char; // Japanese character as main, fallback to Latin
-            latinNumber = char; // Latin number for display below
+            // 'char' is now the Japanese character, 'characterSet[char]' is the Latin number
+            displayChar = char; // Japanese character
+            latinNumber = characterSet[char]; // Latin number
+            displayRomaji = characterSets.numbers[char]; // Romaji from the original mapping
         }
 
         html += `
@@ -764,7 +753,7 @@ function generateCharacterCards(characterSet) {
                 <div class="card text-center h-100">
                     <div class="card-body d-flex flex-column justify-content-center align-items-center">
                         <h3 class="card-title" style="font-family: 'Noto Sans JP Embedded', sans-serif;">${displayChar}</h3>
-                        <p class="card-text">${latinNumber} - ${displayRomaji}</p>
+                        <p class="card-text">${latinNumber} (${displayRomaji})</p>
                     </div>
                 </div>
             </div>
