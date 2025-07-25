@@ -212,6 +212,18 @@ const characterSets = {
     kanji: {
         '一': 'ichi', '二': 'ni', '三': 'san', '四': 'shi', '五': 'go',
         '六': 'roku', '七': 'shichi', '八': 'hachi', '九': 'kyu', '十': 'juu'
+    },
+    numbers: {
+        '1': 'ichi', '2': 'ni', '3': 'san', '4': 'yon', '5': 'go', '6': 'roku', '7': 'nana', '8': 'hachi', '9': 'kyuu', '10': 'juu',
+        '11': 'juuichi', '12': 'juuni', '13': 'juusan', '14': 'juuyon', '15': 'juugo', '16': 'juuroku', '17': 'juunana', '18': 'juuhachi', '19': 'juukyuu', '20': 'nijuu',
+        '21': 'nijuuichi', '22': 'nijuuni', '23': 'nijuusan', '24': 'nijuuyon', '25': 'nijuugo', '26': 'nijuuroku', '27': 'nijuunana', '28': 'nijuuhachi', '29': 'nijuukyuu', '30': 'sanjuu',
+        '31': 'sanjuuichi', '32': 'sanjuuni', '33': 'sanjuusan', '34': 'sanjuuyon', '35': 'sanjuugo', '36': 'sanjuuroku', '37': 'sanjuunana', '38': 'sanjuuhachi', '39': 'sanjuukyuu', '40': 'yonjuu',
+        '41': 'yonjuuichi', '42': 'yonjuuni', '43': 'yonjuusan', '44': 'yonjuuyon', '45': 'yonjuugo', '46': 'yonjuuroku', '47': 'yonjuunana', '48': 'yonjuuhachi', '49': 'yonjuukyuu', '50': 'gojuu',
+        '51': 'gojuuichi', '52': 'gojuuni', '53': 'gojuusan', '54': 'gojuuyon', '55': 'gojuugo', '56': 'gojuuroku', '57': 'gojuunana', '58': 'gojuuhachi', '59': 'gojuukyuu', '60': 'rokujuu',
+        '61': 'rokujuuichi', '62': 'rokujuuni', '63': 'rokujuusan', '64': 'rokujuuyon', '65': 'rokujuugo', '66': 'rokujuuroku', '67': 'rokujuunana', '68': 'rokujuuhachi', '69': 'rokujuukyuu', '70': 'nanajuu',
+        '71': 'nanajuuichi', '72': 'nanajuuni', '73': 'nanajuusan', '74': 'nanajuuyon', '75': 'nanajuugo', '76': 'nanajuuroku', '77': 'nanajuunana', '78': 'nanajuuhachi', '79': 'nanajuukyuu', '80': 'hachijuu',
+        '81': 'hachijuuichi', '82': 'hachijuuni', '83': 'hachijuusan', '84': 'hachijuuyon', '85': 'hachijuugo', '86': 'hachijuuroku', '87': 'hachijuunana', '88': 'hachijuuhachi', '89': 'hachijuukyuu', '90': 'kyuujuu',
+        '91': 'kyuujuuichi', '92': 'kyuujuuni', '93': 'kyuujuusan', '94': 'kyuujuuyon', '95': 'kyuujuugo', '96': 'kyuujuuroku', '97': 'kyuujuunana', '98': 'kyuujuuhachi', '99': 'kyuujuukyuu', '100': 'hyaku'
     }
 };
 
@@ -259,6 +271,7 @@ function showHomePage() {
                     <button class="btn btn-primary" onclick="startQuiz('handakuten')">Han-dakuten</button>
                     <button class="btn btn-info" onclick="startQuiz('katakana')">Katakana</button>
                     <button class="btn btn-warning" onclick="startQuiz('kanji')">Kanji</button>
+                    <button class="btn btn-success" onclick="startQuiz('numbers')">Numbers</button>
                 </div>
             </div>
         </div>
