@@ -53,6 +53,8 @@ if ('serviceWorker' in navigator && !isDevMode()) {
             if (versionSpan) {
                 versionSpan.textContent = `Version: ${event.data.version}`;
             }
+        } else if (event.data.action === 'show-toast') {
+            showToast(event.data.title, event.data.message);
         }
     });
 
@@ -246,6 +248,7 @@ async function getDictFileCount() {
 async function loadDictionary() {
     try {
         const totalLibraries = await getDictFileCount();
+        console.log(`Found ${totalLibraries} dictionary files. The following 404 error for file ${totalLibraries + 1} is expected and indicates the end of the dictionary discovery process.`);
         if (totalLibraries === 0) {
             console.log("No dictionary files found.");
             showToast('Dictionary', 'No dictionary files found.');
@@ -560,7 +563,7 @@ function showToast(title, message, showRestartButton = false) {
             toastBody.appendChild(restartButton);
         }
 
-        const toast = new bootstrap.Toast(toastLiveExample, { autohide: !showRestartButton });
+        const toast = new bootstrap.Toast(toastLiveExample, { autohide: !showRestartButton, delay: 5000 });
         toast.show();
     }
 }

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'v1.2.7'; // Updated cache name
+const CACHE_NAME = 'v1.2.9'; // Updated cache name
 const URLS_TO_CACHE = [
     '/nihon/',
     '/nihon/index.html',
@@ -65,6 +65,11 @@ async function cacheDictionaryFiles() {
         const cachedItems = await cache.keys();
         if (cachedItems.length > URLS_TO_CACHE.length) {
             console.log('Dictionary files already cached.');
+            self.clients.matchAll().then(clients => {
+                clients.forEach(client => {
+                    client.postMessage({ action: 'show-toast', title: 'Up to date', message: 'All files are cached.' });
+                });
+            });
             return;
         }
     }
