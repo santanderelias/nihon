@@ -8,6 +8,7 @@ const URLS_TO_CACHE = [
     '/nihon/js/bootstrap.bundle.min.js',
     '/nihon/js/wanakana.min.js',
     '/nihon/manifest.json',
+    '/nihon/favicon.ico',
     '/nihon/fonts/NotoSansJP.woff2'
 ];
 
