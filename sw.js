@@ -1,4 +1,4 @@
-const CACHE_NAME = 'v1.2.5'; // Updated cache name
+const CACHE_NAME = 'v1.2.7'; // Updated cache name
 const URLS_TO_CACHE = [
     '/nihon/',
     '/nihon/index.html',
@@ -60,6 +60,15 @@ self.addEventListener('message', event => {
 
 async function cacheDictionaryFiles() {
     const cache = await caches.open(CACHE_NAME);
+    const existingCaches = await caches.keys();
+    if (existingCaches.includes(CACHE_NAME)) {
+        const cachedItems = await cache.keys();
+        if (cachedItems.length > URLS_TO_CACHE.length) {
+            console.log('Dictionary files already cached.');
+            return;
+        }
+    }
+
     let i = 1;
     let count = 0;
     const BATCH_SIZE = 2; // Process files in batches of 2
