@@ -17,10 +17,24 @@ if ('serviceWorker' in navigator && !isDevMode()) {
         navigator.serviceWorker.register('/nihon/sw.js', {scope: '/nihon/'})
             .then(registration => {
                 console.log('ServiceWorker registration successful with scope: ', registration.scope);
+
+                // Request version from service worker
+                if (navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.controller.postMessage({ action: 'get-version' });
+                }
             })
             .catch(error => {
                 console.log('ServiceWorker registration failed: ', error);
             });
+    });
+
+    navigator.serviceWorker.addEventListener('message', event => {
+        if (event.data.version) {
+            const versionSpan = document.querySelector('#settings-modal .modal-footer .text-muted');
+            if (versionSpan) {
+                versionSpan.textContent = `Version: ${event.data.version}`;
+            }
+        }
     });
 }
 
