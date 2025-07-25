@@ -224,9 +224,10 @@ if (checkUpdatesButton) {
 let dictionary = {};
 
 async function loadDictionary() {
-    const totalLibraries = 2; // We'll assume there are 2 dictionary files for now
+    const totalLibraries = 8;
     showToast('Downloading Dictionary', `Downloading library 1 of ${totalLibraries}...`);
     try {
+        let dictionaries = [];
         for (let i = 1; i <= totalLibraries; i++) {
             if (i > 1) {
                 showToast('Downloading Dictionary', `Downloading library ${i} of ${totalLibraries}...`);
@@ -235,8 +236,10 @@ async function loadDictionary() {
             script.src = `js/dict/dict-${i}.js`;
             document.head.appendChild(script);
             await new Promise(resolve => script.onload = resolve);
+            showToast('Download Complete', `Library ${i} of ${totalLibraries} downloaded.`);
+            dictionaries.push(eval(`dictionaryPart${i}`));
         }
-        dictionary = { ...dictionaryPart1, ...dictionaryPart2 };
+        dictionary = Object.assign({}, ...dictionaries);
         showToast('Download Complete', 'The dictionary has been downloaded successfully.');
         console.log('Dictionary loaded successfully.');
     } catch (error) {
