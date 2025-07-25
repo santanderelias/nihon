@@ -234,6 +234,23 @@ const characterSets = {
     },
     handakuten: {
         'ぱ': 'pa', 'ぴ': 'pi', 'ぷ': 'pu', 'ぺ': 'pe', 'ぽ': 'po'
+    },
+    katakana: {
+        'ア': 'a', 'イ': 'i', 'ウ': 'u', 'エ': 'e', 'オ': 'o',
+        'カ': 'ka', 'キ': 'ki', 'ク': 'ku', 'ケ': 'ke', 'コ': 'ko',
+        'サ': 'sa', 'シ': 'shi', 'ス': 'su', 'セ': 'se', 'ソ': 'so',
+        'タ': 'ta', 'チ': 'chi', 'ツ': 'tsu', 'テ': 'te', 'ト': 'to',
+        'ナ': 'na', 'ニ': 'ni', 'ヌ': 'nu', 'ネ': 'ne', 'ノ': 'no',
+        'ハ': 'ha', 'ヒ': 'hi', 'フ': 'fu', 'ヘ': 'he', 'ホ': 'ho',
+        'マ': 'ma', 'ミ': 'mi', 'ム': 'mu', 'メ': 'me', 'モ': 'mo',
+        'ヤ': 'ya', 'ユ': 'yu', 'ヨ': 'yo',
+        'ラ': 'ra', 'リ': 'ri', 'ル': 'ru', 'レ': 're', 'ロ': 'ro',
+        'ワ': 'wa', 'ヲ': 'wo',
+        'ン': 'n'
+    },
+    kanji: {
+        '一': 'ichi', '二': 'ni', '三': 'san', '四': 'shi', '五': 'go',
+        '六': 'roku', '七': 'shichi', '八': 'hachi', '九': 'kyu', '十': 'juu'
     }
 };
 
@@ -276,9 +293,11 @@ function showHomePage() {
                 <h5 class="card-title">Welcome to Nihon</h5>
                 <p class="card-text">Select a section to start your personalized quiz.</p>
                 <div class="d-grid gap-2">
-                    <button class="btn btn-primary" onclick="startQuiz('hiragana')">Hiragana (Romaji)</button>
+                    <button class="btn btn-primary" onclick="startQuiz('hiragana')">Hiragana</button>
                     <button class="btn btn-primary" onclick="startQuiz('dakuten')">Dakuten</button>
                     <button class="btn btn-primary" onclick="startQuiz('handakuten')">Han-dakuten</button>
+                    <button class="btn btn-info" onclick="startQuiz('katakana')">Katakana</button>
+                    <button class="btn btn-warning" onclick="startQuiz('kanji')">Kanji</button>
                 </div>
             </div>
         </div>
@@ -294,6 +313,7 @@ function startQuiz(type) {
             <div class="card-body">
                 <div id="feedback-area" class="mb-2" style="height: 24px;"></div>
                 <h1 id="char-display" class="display-1"></h1>
+                <div id="example-word-area" class="mt-3"></div>
                 <div class="mb-3">
                     <input type="text" class="form-control text-center" id="answer-input" autofocus oninput="this.value = this.value.toLowerCase()" onkeypress="if(event.key === 'Enter') document.getElementById('check-button').click()">
                 </div>
@@ -305,7 +325,34 @@ function startQuiz(type) {
     loadQuestion(type);
 }
 
-function loadQuestion(type) {
+async function getExampleWord(character) {
+    try {
+        const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://jisho.org/api/v1/search/words?keyword=${character}`)}`);
+        const data = await response.json();
+        const jishoData = JSON.parse(data.contents);
+        if (jishoData.data && jishoData.data.length > 0) {
+            // Find an example that is not too long and preferably contains the character
+            const example = jishoData.data.find(entry =>
+                entry.japanese[0].word &&
+                entry.japanese[0].word.includes(character) &&
+                entry.senses[0].english_definitions[0].length < 50
+            );
+            if (example) {
+                return {
+                    word: example.japanese[0].word,
+                    reading: example.japanese[0].reading,
+                    meaning: example.senses[0].english_definitions.join(', ')
+                };
+            }
+        }
+        return null;
+    } catch (error) {
+        console.error('Failed to fetch example word:', error);
+        return null;
+    }
+}
+
+async function loadQuestion(type) {
     const charToTest = getNextCharacter();
 
     if (!charToTest) {
@@ -334,6 +381,19 @@ function loadQuestion(type) {
     checkButton.onclick = () => checkAnswer(charToTest, correctAnswer, type);
 
     answerInput.focus();
+
+    // Fetch and display an example word
+    const example = await getExampleWord(charToTest);
+    const exampleWordArea = document.getElementById('example-word-area');
+    if (example && exampleWordArea) {
+        exampleWordArea.innerHTML = `
+            <p class="card-text mt-3">
+                <strong>Example:</strong> ${example.word} (${example.reading}) - <em>${example.meaning}</em>
+            </p>
+        `;
+    } else if (exampleWordArea) {
+        exampleWordArea.innerHTML = ''; // Clear if no example is found
+    }
 }
 
 function checkAnswer(char, correctAnswer, type) {
@@ -417,6 +477,63 @@ if (statsModal) {
     });
 }
 
+
+// --- Dictionary Modal Logic ---
+const dictionaryModal = document.getElementById('dictionary-modal');
+const dictionarySearchInput = document.getElementById('dictionary-search-input');
+const dictionarySearchButton = document.getElementById('dictionary-search-button');
+const dictionaryResultArea = document.getElementById('dictionary-result-area');
+
+async function searchDictionary(word) {
+    dictionaryResultArea.innerHTML = 'Searching...';
+    try {
+        const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://jisho.org/api/v1/search/words?keyword=${word}`)}`);
+        const data = await response.json();
+        const jishoData = JSON.parse(data.contents);
+
+        if (jishoData.data && jishoData.data.length > 0) {
+            let html = '';
+            jishoData.data.forEach(entry => {
+                html += '<div class="card mb-3">';
+                html += '<div class="card-body">';
+                // Word and Reading
+                html += `<h5 class="card-title">${entry.japanese[0].word || ''} (${entry.japanese[0].reading || ''})</h5>`;
+
+                // Senses
+                entry.senses.forEach((sense, index) => {
+                    html += `<p class="card-text"><strong>${index + 1}.</strong> ${sense.english_definitions.join(', ')}</p>`;
+                    if (sense.parts_of_speech.length > 0) {
+                        html += `<p class="card-text text-muted"><em>${sense.parts_of_speech.join(', ')}</em></p>`;
+                    }
+                });
+
+                html += '</div>';
+                html += '</div>';
+            });
+            dictionaryResultArea.innerHTML = html;
+        } else {
+            dictionaryResultArea.innerHTML = 'No results found.';
+        }
+    } catch (error) {
+        console.error('Dictionary search failed:', error);
+        dictionaryResultArea.innerHTML = 'Failed to fetch dictionary results. Please try again later.';
+    }
+}
+
+if (dictionarySearchButton && dictionarySearchInput) {
+    dictionarySearchButton.addEventListener('click', () => {
+        const searchTerm = dictionarySearchInput.value.trim();
+        if (searchTerm) {
+            searchDictionary(searchTerm);
+        }
+    });
+
+    dictionarySearchInput.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            dictionarySearchButton.click();
+        }
+    });
+}
 
 // --- Back to Home Logic ---
 let isSectionActive = false; // Flag to track if a section is active
