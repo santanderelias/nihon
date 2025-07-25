@@ -222,33 +222,97 @@ if (checkUpdatesButton) {
 
 // --- App Logic ---
 let dictionary = {};
+let dictionaryLoadPromise = null;
+
+async function getDictFileCount() {
+    let count = 0;
+    let fileExists = true;
+    while (fileExists) {
+        const nextFileIndex = count + 1;
+        try {
+            const response = await fetch(`js/dict/dict-${nextFileIndex}.js`, { method: 'HEAD' });
+            if (response.ok) {
+                count++;
+            } else {
+                fileExists = false;
+            }
+        } catch (error) {
+            fileExists = false;
+        }
+    }
+    return count;
+}
 
 async function loadDictionary() {
-    const totalLibraries = 8;
-    showToast('Downloading Dictionary', `Downloading library 1 of ${totalLibraries}...`);
     try {
-        let dictionaries = [];
-        for (let i = 1; i <= totalLibraries; i++) {
-            if (i > 1) {
-                showToast('Downloading Dictionary', `Downloading library ${i} of ${totalLibraries}...`);
-            }
-            const script = document.createElement('script');
-            script.src = `js/dict/dict-${i}.js`;
-            document.head.appendChild(script);
-            await new Promise(resolve => script.onload = resolve);
-            showToast('Download Complete', `Library ${i} of ${totalLibraries} downloaded.`);
-            dictionaries.push(eval(`dictionaryPart${i}`));
+        const totalLibraries = await getDictFileCount();
+        if (totalLibraries === 0) {
+            console.log("No dictionary files found.");
+            showToast('Dictionary', 'No dictionary files found.');
+            return;
         }
-        dictionary = Object.assign({}, ...dictionaries);
-        showToast('Download Complete', 'The dictionary has been downloaded successfully.');
+
+        const parser = new DOMParser();
+
+        for (let i = 1; i <= totalLibraries; i++) {
+            showToast('Dictionary', `Downloading ${i} of ${totalLibraries}...`);
+            
+            // Remove old script if it exists to redefine DICT
+            const oldScript = document.getElementById(`dict-script-${i}`);
+            if (oldScript) {
+                oldScript.remove();
+            }
+
+            const script = document.createElement('script');
+            script.id = `dict-script-${i}`;
+            script.src = `js/dict/dict-${i}.js`;
+            
+            const loadPromise = new Promise((resolve, reject) => {
+                script.onload = resolve;
+                script.onerror = reject;
+            });
+            
+            document.head.appendChild(script);
+            await loadPromise;
+
+            if (typeof DICT !== 'undefined' && Array.isArray(DICT)) {
+                DICT.forEach(entryStr => {
+                    try {
+                        const xmlDoc = parser.parseFromString(entryStr, "text/xml");
+                        const entryElement = xmlDoc.getElementsByTagName('entry')[0];
+                        if (!entryElement) return;
+
+                        const seq = entryElement.getElementsByTagName('ent_seq')[0]?.textContent;
+                        if (!seq) return;
+
+                        const kebNode = entryElement.getElementsByTagName('keb')[0];
+                        const rebNode = entryElement.getElementsByTagName('reb')[0];
+                        
+                        const word = kebNode?.textContent || rebNode?.textContent;
+                        const reading = rebNode?.textContent;
+                        
+                        const senseNode = entryElement.getElementsByTagName('sense')[0];
+                        const glossNode = senseNode?.getElementsByTagName('gloss')[0];
+                        const meaning = glossNode?.textContent;
+
+                        if (word && reading && meaning) {
+                            dictionary[seq] = { word, reading, meaning };
+                        }
+                    } catch (e) {
+                        console.error("Failed to parse dictionary entry:", e);
+                    }
+                });
+            }
+        }
+        showToast('Dictionary', 'Download complete.');
         console.log('Dictionary loaded successfully.');
     } catch (error) {
-        showToast('Download Failed', 'There was an error while downloading the dictionary.');
+        showToast('Dictionary', 'An error occurred while downloading.');
         console.error('Failed to load dictionary:', error);
     }
 }
 
-loadDictionary();
+dictionaryLoadPromise = loadDictionary();
 
 const contentArea = document.getElementById('content-area');
 const homeButton = document.getElementById('home-button');
@@ -407,10 +471,10 @@ function startQuiz(type) {
 }
 
 async function getExampleWord(character) {
-    if (dictionary[character]) {
-        return dictionary[character];
-    }
-    return null;
+    await dictionaryLoadPromise; // Ensure dictionary is loaded
+    // Find an entry where the word starts with the character being quizzed.
+    const example = Object.values(dictionary).find(entry => entry.word && entry.word.startsWith(character));
+    return example || null;
 }
 
 async function loadQuestion(type) {
@@ -562,36 +626,45 @@ const dictionarySearchButton = document.getElementById('dictionary-search-button
 const dictionaryResultArea = document.getElementById('dictionary-result-area');
 
 async function searchDictionary(word) {
-    dictionaryResultArea.innerHTML = '';
+    await dictionaryLoadPromise; // Ensure dictionary is loaded
+    dictionaryResultArea.innerHTML = 'Searching...';
+
+    const searchTerm = word.toLowerCase();
     const results = Object.values(dictionary).filter(entry => {
-        return entry.word.includes(word) || entry.reading.includes(word) || entry.meaning.includes(word);
+        return entry.word.toLowerCase().includes(searchTerm) || 
+               entry.reading.toLowerCase().includes(searchTerm) || 
+               entry.meaning.toLowerCase().includes(searchTerm);
     });
 
     if (results.length > 0) {
         let html = '<div class="accordion" id="dictionary-accordion">';
-        results.forEach((entry, i) => {
+        // Limit to 100 results for performance
+        results.slice(0, 100).forEach((entry, i) => {
             const entryId = `entry-${i}`;
             const romaji = wanakana.toRomaji(entry.reading);
             html += `
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="heading-${entryId}">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${entryId}" aria-expanded="false" aria-controls="collapse-${entryId}">
-                            <div>
+                            <div class="w-100">
                                 <strong style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.word} (${entry.reading})</strong>
                                 <br>
                                 <small class="text-muted">${romaji}</small>
+                                <div class="text-truncate">${entry.meaning}</div>
                             </div>
-                            <div class="ms-auto">: ${entry.meaning}</div>
                         </button>
                     </h2>
                     <div id="collapse-${entryId}" class="accordion-collapse collapse" aria-labelledby="heading-${entryId}" data-bs-parent="#dictionary-accordion">
                         <div class="accordion-body">
-                            <p class="card-text" style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.meaning}</p>
+                            <p style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.meaning}</p>
                         </div>
                     </div>
                 </div>
             `;
         });
+        if (results.length > 100) {
+            html += `<p class="text-center mt-2">More than 100 results found. Please refine your search.</p>`;
+        }
         html += '</div>';
         dictionaryResultArea.innerHTML = html;
     } else {
