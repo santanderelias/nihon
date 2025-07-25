@@ -1,4 +1,4 @@
-const CACHE_NAME = 'v1.2.10'; // Updated cache name
+const CACHE_NAME = 'v1.2.11'; // Updated cache name
 const URLS_TO_CACHE = [
     '/nihon/',
     '/nihon/index.html',
@@ -61,7 +61,7 @@ self.addEventListener('message', event => {
 async function cacheDictionaryFiles() {
     const cache = await caches.open(CACHE_NAME);
 
-    // Check if dictionary files are already cached
+    // Check if dictionary files are already cached by checking for dict-1.js
     const dictFile1Url = `/nihon/js/dict/dict-1.js`;
     const cachedResponse = await cache.match(dictFile1Url);
 
@@ -83,45 +83,30 @@ async function cacheDictionaryFiles() {
 
     let i = 1;
     let count = 0;
-    const BATCH_SIZE = 2; // Process files in batches of 2
+    const BATCH_SIZE = 1; // Process files one by one for memory optimization
 
     while (true) {
-        const urlsToFetch = [];
-        for (let j = 0; j < BATCH_SIZE; j++) {
-            urlsToFetch.push(`/nihon/js/dict/dict-${i + j}.js`);
+        const urlToFetch = `/nihon/js/dict/dict-${i}.js`;
+        let response;
+        try {
+            response = await fetch(urlToFetch);
+        } catch (error) {
+            console.error(`Error fetching ${urlToFetch}:`, error);
+            break; // Stop if there's a network error
         }
 
-        const responses = await Promise.all(
-            urlsToFetch.map(url => fetch(url).catch(e => e))
-        );
-
-        let batchFinished = false;
-        for (const response of responses) {
-            if (response instanceof Response) {
-                if (response.ok) {
-                    await cache.put(response.url, response);
-                    count++;
-                } else {
-                    if (response.status === 404) {
-                        console.log(`Dictionary file not found: ${response.url}`);
-                    } else {
-                        console.error(`Failed to cache ${response.url}. Status: ${response.status}`);
-                    }
-                    batchFinished = true;
-                    break;
-                }
+        if (response.ok) {
+            await cache.put(urlToFetch, response);
+            count++;
+            i++;
+        } else {
+            if (response.status === 404) {
+                console.log(`Dictionary file not found: ${urlToFetch}. Assuming end of dictionary files.`);
             } else {
-                console.error(`Error fetching a dictionary file:`, response);
-                batchFinished = true;
-                break;
+                console.error(`Failed to cache ${urlToFetch}. Status: ${response.status}`);
             }
+            break; // Stop on 404 or other non-OK responses
         }
-
-        if (batchFinished) {
-            break;
-        }
-
-        i += BATCH_SIZE;
     }
 
     console.log(`Successfully cached ${count} dictionary files.`);
