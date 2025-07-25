@@ -327,6 +327,7 @@ function startQuiz(type) {
                     <input type="text" class="form-control text-center" id="answer-input" autofocus oninput="this.value = this.value.toLowerCase()" onkeypress="if(event.key === 'Enter') document.getElementById('check-button').click()">
                 </div>
                 <button class="btn btn-success" id="check-button">Check</button>
+                <button class="btn btn-secondary" id="skip-button">Skip</button>
             </div>
         </div>
     `;
@@ -388,6 +389,9 @@ async function loadQuestion(type) {
     const checkButton = document.getElementById('check-button');
     checkButton.disabled = false;
     checkButton.onclick = () => checkAnswer(charToTest, correctAnswer, type);
+
+    const skipButton = document.getElementById('skip-button');
+    skipButton.onclick = () => loadQuestion(type);
 
     answerInput.focus();
 
