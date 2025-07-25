@@ -179,6 +179,12 @@ if (resetAppButton) {
             localStorage.clear();
             console.log('All localStorage data cleared.');
 
+            // Clear IndexedDB
+            const dbRequest = indexedDB.deleteDatabase('nihonDictionary');
+            dbRequest.onsuccess = () => console.log('IndexedDB deleted.');
+            dbRequest.onerror = (event) => console.error('Error deleting IndexedDB:', event.target.error);
+
+
             showToast('App Reset', 'App has been completely reset. Please refresh the page.');
             location.reload();
         }
@@ -190,7 +196,7 @@ const uninstallAppButton = document.getElementById('uninstall-app-button');
 
 if (uninstallAppButton) {
     uninstallAppButton.addEventListener('click', () => {
-        showToast('Uninstall App', 'To uninstall the app, please go to your browser\'s settings (e.g., Chrome: Settings > Apps > Manage apps > Nihon) or your device\'s app management settings and uninstall it from there.');
+        showToast('Uninstall App', 'To uninstall the app, please go to your browser's settings (e.g., Chrome: Settings > Apps > Manage apps > Nihon) or your device's app management settings and uninstall it from there.');
     });
 } else {
     console.log('Install button element not found at script load.');
@@ -223,8 +229,39 @@ if (checkUpdatesButton) {
 
 
 // --- App Logic ---
-let dictionary = {};
-let dictionaryLoadPromise = null;
+let dictionaryLoadPromise = null; // This will now resolve when IndexedDB is ready
+
+const DB_NAME = 'nihonDictionary';
+const DB_VERSION = 1;
+const STORE_NAME = 'entries';
+
+let db;
+
+function openDatabase() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+        request.onupgradeneeded = (event) => {
+            db = event.target.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+                const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'seq' });
+                objectStore.createIndex('word', 'word', { unique: false });
+                objectStore.createIndex('reading', 'reading', { unique: false });
+                objectStore.createIndex('meaning', 'meaning', { unique: false });
+            }
+        };
+
+        request.onsuccess = (event) => {
+            db = event.target.result;
+            resolve(db);
+        };
+
+        request.onerror = (event) => {
+            console.error('IndexedDB error:', event.target.error);
+            reject(event.target.error);
+        };
+    });
+}
 
 async function getDictFileCount() {
     let count = 0;
@@ -248,61 +285,82 @@ async function getDictFileCount() {
 
 async function loadDictionary() {
     try {
-        const totalLibraries = await getDictFileCount();
-        console.log(`Found ${totalLibraries} dictionary files.`);
-        if (totalLibraries === 0) {
-            console.log("No dictionary files found.");
-            showToast('Dictionary', 'No dictionary files found.');
-            return;
-        }
+        db = await openDatabase();
+        const transaction = db.transaction(STORE_NAME, 'readonly');
+        const objectStore = transaction.objectStore(STORE_NAME);
+        const countRequest = objectStore.count();
 
-        const parser = new DOMParser();
+        return new Promise(async (resolve, reject) => {
+            countRequest.onsuccess = async () => {
+                if (countRequest.result > 0) {
+                    console.log('Dictionary already loaded in IndexedDB.');
+                    resolve();
+                    return;
+                }
 
-        for (let i = 1; i <= totalLibraries; i++) {
-            // showToast('Dictionary', `Downloading ${i} of ${totalLibraries}...`); // Service worker will handle this toast
-            
-            const response = await fetch(`js/dict/dict-${i}.js`);
-            if (!response.ok) {
-                console.warn(`Failed to fetch dict-${i}.js. Status: ${response.status}. Skipping.`);
-                continue; // Skip to the next file instead of throwing an error
-            }
-            const scriptContent = await response.text();
-            
-            // Use eval to get the DICT array from the script content
-            const DICT = eval(scriptContent.replace('const DICT =', ''));
+                console.log('Populating IndexedDB with dictionary data...');
+                const totalLibraries = await getDictFileCount();
+                console.log(`Found ${totalLibraries} dictionary files.`);
+                if (totalLibraries === 0) {
+                    console.log("No dictionary files found.");
+                    showToast('Dictionary', 'No dictionary files found.');
+                    resolve();
+                    return;
+                }
 
-            if (typeof DICT !== 'undefined' && Array.isArray(DICT)) {
-                DICT.forEach(entryStr => {
-                    try {
-                        const xmlDoc = parser.parseFromString(entryStr, "text/xml");
-                        const entryElement = xmlDoc.getElementsByTagName('entry')[0];
-                        if (!entryElement) return;
+                const parser = new DOMParser();
 
-                        const seq = entryElement.getElementsByTagName('ent_seq')[0]?.textContent;
-                        if (!seq) return;
-
-                        const kebNode = entryElement.getElementsByTagName('keb')[0];
-                        const rebNode = entryElement.getElementsByTagName('reb')[0];
-                        
-                        const word = kebNode?.textContent || rebNode?.textContent;
-                        const reading = rebNode?.textContent;
-                        
-                        const senseNode = entryElement.getElementsByTagName('sense')[0];
-                        const glossNode = senseNode?.getElementsByTagName('gloss')[0];
-                        const meaning = glossNode?.textContent;
-
-                        if (word && reading && meaning) {
-                            // Use the sequence number as the key
-                            dictionary[seq] = { word, reading, meaning };
-                        }
-                    } catch (e) {
-                        console.error("Failed to parse dictionary entry:", e);
+                for (let i = 1; i <= totalLibraries; i++) {
+                    const response = await fetch(`js/dict/dict-${i}.js`);
+                    if (!response.ok) {
+                        console.warn(`Failed to fetch dict-${i}.js. Status: ${response.status}. Skipping.`);
+                        continue;
                     }
-                });
-            }
-        }
-        // showToast('Dictionary', 'Download complete.'); // Service worker will handle this toast
-        console.log('Dictionary loaded successfully.');
+                    const scriptContent = await response.text();
+                    
+                    const DICT = eval(scriptContent.replace('const DICT =', ''));
+
+                    if (typeof DICT !== 'undefined' && Array.isArray(DICT)) {
+                        const addTransaction = db.transaction(STORE_NAME, 'readwrite');
+                        const addObjectStore = addTransaction.objectStore(STORE_NAME);
+                        DICT.forEach(entryStr => {
+                            try {
+                                const xmlDoc = parser.parseFromString(entryStr, "text/xml");
+                                const entryElement = xmlDoc.getElementsByTagName('entry')[0];
+                                if (!entryElement) return;
+
+                                const seq = entryElement.getElementsByTagName('ent_seq')[0]?.textContent;
+                                if (!seq) return;
+
+                                const kebNode = entryElement.getElementsByTagName('keb')[0];
+                                const rebNode = entryElement.getElementsByTagName('reb')[0];
+                                
+                                const word = kebNode?.textContent || rebNode?.textContent;
+                                const reading = rebNode?.textContent;
+                                
+                                const senseNode = entryElement.getElementsByTagName('sense')[0];
+                                const glossNode = senseNode?.getElementsByTagName('gloss')[0];
+                                const meaning = glossNode?.textContent;
+
+                                if (word && reading && meaning) {
+                                    addObjectStore.add({ seq, word, reading, meaning });
+                                }
+                            } catch (e) {
+                                console.error("Failed to parse dictionary entry:", e);
+                            }
+                        });
+                        await new Promise(res => addTransaction.oncomplete = res); // Wait for transaction to complete
+                    }
+                }
+                console.log('Dictionary loaded successfully into IndexedDB.');
+                resolve();
+            };
+
+            countRequest.onerror = (event) => {
+                console.error('IndexedDB count error:', event.target.error);
+                reject(event.target.error);
+            };
+        });
     } catch (error) {
         showToast('Dictionary', 'An error occurred while loading dictionary.');
         console.error('Failed to load dictionary:', error);
@@ -470,8 +528,22 @@ function startQuiz(type) {
 async function getExampleWord(character) {
     await dictionaryLoadPromise; // Ensure dictionary is loaded
     // Find an entry where the word starts with the character being quizzed.
-    const example = Object.values(dictionary).find(entry => entry.word && entry.word.startsWith(character));
-    return example || null;
+    const transaction = db.transaction(STORE_NAME, 'readonly');
+    const objectStore = transaction.objectStore(STORE_NAME);
+    const wordIndex = objectStore.index('word');
+    const request = wordIndex.openCursor(IDBKeyRange.bound(character, character + '\uffff', false, true)); // Search for words starting with character
+    
+    return new Promise((resolve) => {
+        request.onsuccess = (event) => {
+            const cursor = event.target.result;
+            if (cursor) {
+                resolve(cursor.value);
+            } else {
+                resolve(null);
+            }
+        };
+        request.onerror = () => resolve(null);
+    });
 }
 
 async function loadQuestion(type) {
@@ -623,20 +695,107 @@ const dictionarySearchButton = document.getElementById('dictionary-search-button
 const dictionaryResultArea = document.getElementById('dictionary-result-area');
 
 async function searchDictionary(word) {
-    await dictionaryLoadPromise; // Ensure dictionary is loaded
+    await dictionaryLoadPromise; // Ensure IndexedDB is ready
     dictionaryResultArea.innerHTML = 'Searching...';
 
     const searchTerm = word.toLowerCase();
-    const results = Object.values(dictionary).filter(entry => {
-        return entry.word.toLowerCase().includes(searchTerm) || 
-               entry.reading.toLowerCase().includes(searchTerm) || 
-               entry.meaning.toLowerCase().includes(searchTerm);
+    const transaction = db.transaction(STORE_NAME, 'readonly');
+    const objectStore = transaction.objectStore(STORE_NAME);
+    const results = [];
+
+    // Search by word, reading, and meaning
+    const searchPromises = [];
+
+    // Search by word
+    searchPromises.push(new Promise(resolve => {
+        const wordIndex = objectStore.index('word');
+        const request = wordIndex.openCursor();
+        request.onsuccess = (event) => {
+            const cursor = event.target.result;
+            if (cursor) {
+                if (cursor.value.word.toLowerCase().includes(searchTerm)) {
+                    results.push(cursor.value);
+                }
+                cursor.continue();
+            } else {
+                resolve();
+            }
+        };
+        request.onerror = () => resolve();
+    }));
+
+    // Search by reading
+    searchPromises.push(new Promise(resolve => {
+        const readingIndex = objectStore.index('reading');
+        const request = readingIndex.openCursor();
+        request.onsuccess = (event) => {
+            const cursor = event.target.result;
+            if (cursor) {
+                if (cursor.value.reading.toLowerCase().includes(searchTerm)) {
+                    results.push(cursor.value);
+                }
+                cursor.continue();
+            } else {
+                resolve();
+            }
+        };
+        request.onerror = () => resolve();
+    }));
+
+    // Search by meaning
+    searchPromises.push(new Promise(resolve => {
+        const meaningIndex = objectStore.index('meaning');
+        const request = meaningIndex.openCursor();
+        request.onsuccess = (event) => {
+            const cursor = event.target.result;
+            if (cursor) {
+                if (cursor.value.meaning.toLowerCase().includes(searchTerm)) {
+                    results.push(cursor.value);
+                }
+                cursor.continue();
+            } else {
+                resolve();
+            }
+        };
+        request.onerror = () => resolve();
+    }));
+
+    await Promise.all(searchPromises);
+
+    // Remove duplicates and sort for display
+    const uniqueResults = Array.from(new Map(results.map(item => [item.seq, item])).values());
+
+    // Simple sorting for now: exact matches first, then startsWith, then includes
+    uniqueResults.sort((a, b) => {
+        const aWordLower = a.word.toLowerCase();
+        const bWordLower = b.word.toLowerCase();
+        const aReadingLower = a.reading.toLowerCase();
+        const bReadingLower = b.reading.toLowerCase();
+        const aMeaningLower = a.meaning.toLowerCase();
+        const bMeaningLower = b.meaning.toLowerCase();
+
+        const searchTermLower = searchTerm.toLowerCase();
+
+        // Exact matches
+        if (aWordLower === searchTermLower || aReadingLower === searchTermLower) return -1;
+        if (bWordLower === searchTermLower || bReadingLower === searchTermLower) return 1;
+
+        // Starts with
+        if (aWordLower.startsWith(searchTermLower) || aReadingLower.startsWith(searchTermLower)) return -1;
+        if (bWordLower.startsWith(searchTermLower) || bReadingLower.startsWith(searchTermLower)) return 1;
+
+        // Includes
+        if (aWordLower.includes(searchTermLower) || aReadingLower.includes(searchTermLower) || aMeaningLower.includes(searchTermLower)) return -1;
+        if (bWordLower.includes(searchTermLower) || bReadingLower.includes(searchTermLower) || bMeaningLower.includes(searchTermLower)) return 1;
+
+        return 0;
     });
 
-    if (results.length > 0) {
+
+    if (uniqueResults.length > 0) {
         let html = '<div class="accordion" id="dictionary-accordion">';
         // Limit to 100 results for performance
-        results.slice(0, 100).forEach((entry, i) => {
+        uniqueResults.slice(0, 100).forEach((entry, i) => {
             const entryId = `entry-${i}`;
             const romaji = wanakana.toRomaji(entry.reading);
             html += `
@@ -659,7 +818,7 @@ async function searchDictionary(word) {
                 </div>
             `;
         });
-        if (results.length > 100) {
+        if (uniqueResults.length > 100) {
             html += `<p class="text-center mt-2">More than 100 results found. Please refine your search.</p>`;
         }
         html += '</div>';
