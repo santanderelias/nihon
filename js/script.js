@@ -22,6 +22,7 @@ if (wanakanaSwitch) {
 }
 
 if ('serviceWorker' in navigator && !isDevMode()) {
+    let newWorker;
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/nihon/sw.js', {scope: '/nihon/'})
             .then(registration => {
@@ -31,6 +32,15 @@ if ('serviceWorker' in navigator && !isDevMode()) {
                 if (navigator.serviceWorker.controller) {
                     navigator.serviceWorker.controller.postMessage({ action: 'get-version' });
                 }
+
+                registration.addEventListener('updatefound', () => {
+                    newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            showToast('Update Available', 'A new version is available.', true);
+                        }
+                    });
+                });
             })
             .catch(error => {
                 console.log('ServiceWorker registration failed: ', error);
@@ -44,6 +54,13 @@ if ('serviceWorker' in navigator && !isDevMode()) {
                 versionSpan.textContent = `Version: ${event.data.version}`;
             }
         }
+    });
+
+    let refreshing;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (refreshing) return;
+        window.location.reload();
+        refreshing = true;
     });
 }
 
@@ -204,6 +221,23 @@ if (checkUpdatesButton) {
 
 
 // --- App Logic ---
+let dictionary = {};
+
+async function loadDictionary() {
+    showToast('Downloading Dictionary', 'Please wait while the dictionary is being downloaded...');
+    try {
+        const response = await fetch('dictionary.json');
+        dictionary = await response.json();
+        showToast('Download Complete', 'The dictionary has been downloaded successfully.');
+        console.log('Dictionary loaded successfully.');
+    } catch (error) {
+        showToast('Download Failed', 'There was an error while downloading the dictionary.');
+        console.error('Failed to load dictionary:', error);
+    }
+}
+
+loadDictionary();
+
 const contentArea = document.getElementById('content-area');
 const homeButton = document.getElementById('home-button');
 
@@ -329,7 +363,7 @@ function startQuiz(type) {
                 <h1 id="char-display" class="display-1"></h1>
                 <div id="example-word-area" class="mt-3"></div>
                 <div class="mb-3">
-                    <input type="text" class="form-control text-center" id="answer-input" autofocus onkeypress="if(event.key === 'Enter') document.getElementById('check-button').click()">
+                    <input type="text" class="form-control text-center" id="answer-input" onkeypress="if(event.key === 'Enter') document.getElementById('check-button').click()">
                 </div>
                 <button class="btn btn-success" id="check-button">Check</button>
                 <button class="btn btn-secondary" id="skip-button">Skip</button>
@@ -361,30 +395,10 @@ function startQuiz(type) {
 }
 
 async function getExampleWord(character) {
-    try {
-        const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://jisho.org/api/v1/search/words?keyword=${character}`)}`);
-        const data = await response.json();
-        const jishoData = JSON.parse(data.contents);
-        if (jishoData.data && jishoData.data.length > 0) {
-            // Find an example that is not too long and preferably contains the character
-            const example = jishoData.data.find(entry =>
-                entry.japanese[0].word &&
-                entry.japanese[0].word.includes(character) &&
-                entry.senses[0].english_definitions[0].length < 50
-            );
-            if (example) {
-                return {
-                    word: example.japanese[0].word,
-                    reading: example.japanese[0].reading,
-                    meaning: example.senses[0].english_definitions.join(', ')
-                };
-            }
-        }
-        return null;
-    } catch (error) {
-        console.error('Failed to fetch example word:', error);
-        return null;
+    if (dictionary[character]) {
+        return dictionary[character];
     }
+    return null;
 }
 
 async function loadQuestion(type) {
@@ -457,7 +471,7 @@ function checkAnswer(char, correctAnswer, type) {
 showHomePage();
 
 // --- Toast Notification Helper ---
-function showToast(title, message) {
+function showToast(title, message, showRestartButton = false) {
     const toastLiveExample = document.getElementById('liveToast');
     const toastTitle = document.getElementById('toast-title');
     const toastBody = document.getElementById('toast-body');
@@ -467,7 +481,18 @@ function showToast(title, message) {
         toastTitle.textContent = title;
         toastBody.innerHTML = message;
 
-        const toast = new bootstrap.Toast(toastLiveExample);
+        if (showRestartButton) {
+            const restartButton = document.createElement('button');
+            restartButton.className = 'btn btn-primary btn-sm mt-2';
+            restartButton.textContent = 'Restart';
+            restartButton.onclick = () => {
+                newWorker.postMessage({ action: 'skipWaiting' });
+            };
+            toastBody.appendChild(document.createElement('br'));
+            toastBody.appendChild(restartButton);
+        }
+
+        const toast = new bootstrap.Toast(toastLiveExample, { autohide: !showRestartButton });
         toast.show();
     }
 }
@@ -525,56 +550,40 @@ const dictionarySearchButton = document.getElementById('dictionary-search-button
 const dictionaryResultArea = document.getElementById('dictionary-result-area');
 
 async function searchDictionary(word) {
-    dictionaryResultArea.innerHTML = 'Searching...';
-    try {
-        const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://jisho.org/api/v1/search/words?keyword=${word}`)}`);
-        const data = await response.json();
-        const jishoData = JSON.parse(data.contents);
+    dictionaryResultArea.innerHTML = '';
+    const results = Object.values(dictionary).filter(entry => {
+        return entry.word.includes(word) || entry.reading.includes(word) || entry.meaning.includes(word);
+    });
 
-        if (jishoData.data && jishoData.data.length > 0) {
-            let html = '<div class="accordion" id="dictionary-accordion">';
-            jishoData.data.forEach((entry, i) => {
-                const entryId = `entry-${i}`;
-                const firstSense = entry.senses[0].english_definitions.join(', ');
-
-                const romaji = wanakana.toRomaji(entry.japanese[0].reading);
-                html += `
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading-${entryId}">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${entryId}" aria-expanded="false" aria-controls="collapse-${entryId}">
-                                <div>
-                                    <strong style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.japanese[0].word || ''} (${entry.japanese[0].reading || ''})</strong>
-                                    <br>
-                                    <small class="text-muted">${romaji}</small>
-                                </div>
-                                <div class="ms-auto">: ${firstSense}</div>
-                            </button>
-                        </h2>
-                        <div id="collapse-${entryId}" class="accordion-collapse collapse" aria-labelledby="heading-${entryId}" data-bs-parent="#dictionary-accordion">
-                            <div class="accordion-body">
-                `;
-
-                entry.senses.forEach((sense, index) => {
-                    html += `<p class="card-text" style="font-family: 'Noto Sans JP Embedded', sans-serif;"><strong>${index + 1}.</strong> ${sense.english_definitions.join(', ')}</p>`;
-                    if (sense.parts_of_speech.length > 0) {
-                        html += `<p class="card-text text-muted" style="font-family: 'Noto Sans JP Embedded', sans-serif;"><em>${sense.parts_of_speech.join(', ')}</em></p>`;
-                    }
-                });
-
-                html += `
+    if (results.length > 0) {
+        let html = '<div class="accordion" id="dictionary-accordion">';
+        results.forEach((entry, i) => {
+            const entryId = `entry-${i}`;
+            const romaji = wanakana.toRomaji(entry.reading);
+            html += `
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading-${entryId}">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${entryId}" aria-expanded="false" aria-controls="collapse-${entryId}">
+                            <div>
+                                <strong style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.word} (${entry.reading})</strong>
+                                <br>
+                                <small class="text-muted">${romaji}</small>
                             </div>
+                            <div class="ms-auto">: ${entry.meaning}</div>
+                        </button>
+                    </h2>
+                    <div id="collapse-${entryId}" class="accordion-collapse collapse" aria-labelledby="heading-${entryId}" data-bs-parent="#dictionary-accordion">
+                        <div class="accordion-body">
+                            <p class="card-text" style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.meaning}</p>
                         </div>
                     </div>
-                `;
-            });
-            html += '</div>';
-            dictionaryResultArea.innerHTML = html;
-        } else {
-            dictionaryResultArea.innerHTML = 'No results found.';
-        }
-    } catch (error) {
-        console.error('Dictionary search failed:', error);
-        dictionaryResultArea.innerHTML = 'Failed to fetch dictionary results. Please try again later.';
+                </div>
+            `;
+        });
+        html += '</div>';
+        dictionaryResultArea.innerHTML = html;
+    } else {
+        dictionaryResultArea.innerHTML = 'No results found.';
     }
 }
 

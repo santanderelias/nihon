@@ -1,0 +1,27 @@
+{
+    "一": {
+        "word": "一",
+        "reading": "いち",
+        "meaning": "one"
+    },
+    "二": {
+        "word": "二",
+        "reading": "に",
+        "meaning": "two"
+    },
+    "三": {
+        "word": "三",
+        "reading": "さん",
+        "meaning": "three"
+    },
+    "人": {
+        "word": "人",
+        "reading": "ひと",
+        "meaning": "person"
+    },
+    "日": {
+        "word": "日",
+        "reading": "ひ",
+        "meaning": "day, sun"
+    }
+}
