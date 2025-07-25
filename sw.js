@@ -1,26 +1,21 @@
-let cacheName;
+const CACHE_NAME = 'nihon-v11';
+const URLS_TO_CACHE = [
+    '/nihon/',
+    '/nihon/index.html',
+    '/nihon/css/style.css',
+    '/nihon/css/bootstrap.min.css',
+    '/nihon/js/script.js',
+    '/nihon/js/bootstrap.bundle.min.js',
+    '/nihon/manifest.json',
+    '/nihon/fonts/NotoSansJP.woff2'
+];
 
 self.addEventListener('install', event => {
     event.waitUntil(
-        fetch('/nihon/version.json')
-            .then(response => response.json())
-            .then(versionData => {
-                cacheName = `nihon-v${versionData.version}`;
-                const urlsToCache = [
-                    '/nihon/',
-                    '/nihon/index.html',
-                    '/nihon/css/style.css',
-                    '/nihon/css/bootstrap.min.css',
-                    '/nihon/js/script.js',
-                    '/nihon/js/bootstrap.bundle.min.js',
-                    '/nihon/manifest.json',
-                    '/nihon/fonts/NotoSansJP.woff2',
-                    '/nihon/version.json'
-                ];
-                return caches.open(cacheName).then(cache => {
-                    console.log('Opened cache:', cacheName);
-                    return cache.addAll(urlsToCache);
-                });
+        caches.open(CACHE_NAME)
+            .then(cache => {
+                console.log('Opened cache');
+                return cache.addAll(URLS_TO_CACHE);
             })
     );
 });
@@ -38,11 +33,12 @@ self.addEventListener('fetch', event => {
 });
 
 self.addEventListener('activate', event => {
+    const cacheWhitelist = [CACHE_NAME];
     event.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
                 cacheNames.map(cacheName => {
-                    if (cacheName.startsWith('nihon-v') && cacheName !== self.cacheName) {
+                    if (cacheWhitelist.indexOf(cacheName) === -1) {
                         return caches.delete(cacheName);
                     }
                 })
