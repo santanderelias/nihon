@@ -2,6 +2,7 @@
 const devModeSwitch = document.getElementById('dev-mode-switch');
 
 const isDevMode = () => localStorage.getItem('devMode') === 'true';
+const isWanakanaEnabled = () => localStorage.getItem('wanakanaEnabled') === 'true';
 
 if (devModeSwitch) {
     devModeSwitch.checked = isDevMode();
@@ -9,6 +10,14 @@ if (devModeSwitch) {
         localStorage.setItem('devMode', devModeSwitch.checked);
         alert('Developer mode setting changed. Please reload the page for it to take effect.');
         location.reload();
+    });
+}
+
+const wanakanaSwitch = document.getElementById('wanakana-switch');
+if (wanakanaSwitch) {
+    wanakanaSwitch.checked = isWanakanaEnabled();
+    wanakanaSwitch.addEventListener('change', () => {
+        localStorage.setItem('wanakanaEnabled', wanakanaSwitch.checked);
     });
 }
 
@@ -329,21 +338,23 @@ function startQuiz(type) {
     `;
     
     const answerInput = document.getElementById('answer-input');
-    const options = {
-        customKanaMapping: {
-            shi: 'し',
-            chi: 'ち',
-            tsu: 'つ',
-            fu: 'ふ',
-            ji: 'じ',
-            zu: 'ず'
-        }
-    };
+    if (isWanakanaEnabled()) {
+        const options = {
+            customKanaMapping: {
+                shi: 'し',
+                chi: 'ち',
+                tsu: 'つ',
+                fu: 'ふ',
+                ji: 'じ',
+                zu: 'ず'
+            }
+        };
 
-    if (type === 'katakana') {
-        wanakana.bind(answerInput, { ...options, to: 'katakana' });
-    } else {
-        wanakana.bind(answerInput, { ...options, to: 'hiragana' });
+        if (type === 'katakana') {
+            wanakana.bind(answerInput, { ...options, to: 'katakana' });
+        } else {
+            wanakana.bind(answerInput, { ...options, to: 'hiragana' });
+        }
     }
 
     loadQuestion(type);
