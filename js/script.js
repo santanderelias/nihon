@@ -512,7 +512,12 @@ async function searchDictionary(word) {
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="heading-${entryId}">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${entryId}" aria-expanded="false" aria-controls="collapse-${entryId}">
-                                <strong style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.japanese[0].word || ''} (${entry.japanese[0].reading || ''})</strong>: ${firstSense}
+                                <div>
+                                    <strong style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.japanese[0].word || ''} (${entry.japanese[0].reading || ''})</strong>
+                                    <br>
+                                    <small class="text-muted">${entry.japanese[0].reading}</small>
+                                </div>
+                                <div class="ms-auto">: ${firstSense}</div>
                             </button>
                         </h2>
                         <div id="collapse-${entryId}" class="accordion-collapse collapse" aria-labelledby="heading-${entryId}" data-bs-parent="#dictionary-accordion">
