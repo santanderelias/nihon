@@ -7,6 +7,7 @@
   "display": "standalone",
   "theme_color": "#7952b3",
   "background_color": "#ffffff",
+  "version": "1.0.0",
   "icons": [
     {
       "src": "/nihon/icons/icon-192x192.png",
