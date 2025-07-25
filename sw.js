@@ -1,4 +1,4 @@
-const CACHE_NAME = 'v1.2.4';
+const CACHE_NAME = 'v1.2.5'; // Updated cache name
 const URLS_TO_CACHE = [
     '/nihon/',
     '/nihon/index.html',
@@ -14,16 +14,15 @@ const URLS_TO_CACHE = [
 
 self.addEventListener('install', event => {
     event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then(cache => {
+        Promise.all([
+            caches.open(CACHE_NAME).then(cache => {
                 console.log('Opened cache');
                 return cache.addAll(URLS_TO_CACHE);
-            })
-            .then(() => {
-                return cacheDictionaryFiles().then(count => {
-                    console.log(`Successfully cached ${count} dictionary files.`);
-                });
-            })
+            }),
+            cacheDictionaryFiles()
+        ]).catch(error => {
+            console.error('Installation failed:', error);
+        })
     );
 });
 
@@ -31,10 +30,7 @@ self.addEventListener('fetch', event => {
     event.respondWith(
         caches.match(event.request)
             .then(response => {
-                if (response) {
-                    return response;
-                }
-                return fetch(event.request);
+                return response || fetch(event.request);
             })
     );
 });
@@ -66,26 +62,47 @@ async function cacheDictionaryFiles() {
     const cache = await caches.open(CACHE_NAME);
     let i = 1;
     let count = 0;
+    const BATCH_SIZE = 5; // Process files in batches of 5
+
     while (true) {
-        const url = `/nihon/js/dict/dict-${i}.js`;
-        try {
-            const response = await fetch(url);
-            if (response.ok) {
-                await cache.put(url, response);
-                count++;
-                i++;
-            } else {
-                if (response.status === 404) {
-                    console.log(`Finished caching dictionary files. Last file found: dict-${i - 1}.js`);
+        const urlsToFetch = [];
+        for (let j = 0; j < BATCH_SIZE; j++) {
+            urlsToFetch.push(`/nihon/js/dict/dict-${i + j}.js`);
+        }
+
+        const responses = await Promise.all(
+            urlsToFetch.map(url => fetch(url).catch(e => e))
+        );
+
+        let batchFinished = false;
+        for (const response of responses) {
+            if (response instanceof Response) {
+                if (response.ok) {
+                    await cache.put(response.url, response);
+                    count++;
                 } else {
-                    console.error(`Failed to cache ${url}. Status: ${response.status}`);
+                    if (response.status === 404) {
+                        console.log(`Dictionary file not found: ${response.url}`);
+                    } else {
+                        console.error(`Failed to cache ${response.url}. Status: ${response.status}`);
+                    }
+                    batchFinished = true;
+                    break;
                 }
+            } else {
+                console.error(`Error fetching a dictionary file:`, response);
+                batchFinished = true;
                 break;
             }
-        } catch (error) {
-            console.error(`Error fetching ${url}:`, error);
+        }
+
+        if (batchFinished) {
             break;
         }
+
+        i += BATCH_SIZE;
     }
+
+    console.log(`Successfully cached ${count} dictionary files.`);
     return count;
 }
