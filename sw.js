@@ -1,4 +1,4 @@
-const CACHE_NAME = 'v1.2.0';
+const CACHE_NAME = 'v1.2.1';
 const URLS_TO_CACHE = [
     '/nihon/',
     '/nihon/index.html',
@@ -6,6 +6,7 @@ const URLS_TO_CACHE = [
     '/nihon/css/bootstrap.min.css',
     '/nihon/js/script.js',
     '/nihon/js/bootstrap.bundle.min.js',
+    '/nihon/js/wanakana.min.js',
     '/nihon/manifest.json',
     '/nihon/fonts/NotoSansJP.woff2'
 ];
