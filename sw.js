@@ -1,4 +1,4 @@
-const CACHE_NAME = 'v1.2.1';
+const CACHE_NAME = 'v1.2.2';
 const URLS_TO_CACHE = [
     '/nihon/',
     '/nihon/index.html',
