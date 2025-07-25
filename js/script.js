@@ -512,12 +512,14 @@ let isSectionActive = false; // Flag to track if a section is active
 function updateHomeButton(isSection) {
     const appTitle = document.getElementById('home-button');
     if (isSection) {
-        appTitle.textContent = '⬅️'; // Change to back emoji
+        appTitle.textContent = '◀️'; // Change to back emoji
         appTitle.classList.add('back-button'); // Add a class for potential styling
+        appTitle.style.fontSize = '1.5rem'; // Increase font size
         isSectionActive = true;
     } else {
         appTitle.textContent = 'Nihon'; // Change back to title
         appTitle.classList.remove('back-button');
+        appTitle.style.fontSize = ''; // Reset font size
         isSectionActive = false;
     }
 }
