@@ -282,11 +282,11 @@ function showHomePage() {
                 <h5 class="card-title">Welcome to Nihon</h5>
                 <p class="card-text">Select a section to start your personalized quiz.</p>
                 <div class="d-grid gap-2">
-                    <button class="btn btn-primary" onclick="startQuiz('hiragana')">Hiragana (Romaji)</button>
-                    <button class="btn btn-info" onclick="startQuiz('katakana')">Katakana (Romaji)</button>
-                    <button class="btn btn-warning" onclick="startQuiz('kanji')">Kanji (Romaji)</button>
+                    <button class="btn btn-primary" onclick="startQuiz('hiragana')">Hiragana</button>
                     <button class="btn btn-primary" onclick="startQuiz('dakuten')">Dakuten</button>
                     <button class="btn btn-primary" onclick="startQuiz('handakuten')">Han-dakuten</button>
+                    <button class="btn btn-info" onclick="startQuiz('katakana')">Katakana</button>
+                    <button class="btn btn-warning" onclick="startQuiz('kanji')">Kanji</button>
                 </div>
             </div>
         </div>
@@ -475,7 +475,7 @@ const dictionaryResultArea = document.getElementById('dictionary-result-area');
 async function searchDictionary(word) {
     dictionaryResultArea.innerHTML = 'Searching...';
     try {
-        const response = await fetch(`https://api.jisho.org/v1/search/words?keyword=${encodeURIComponent(word)}`);
+        const response = await fetch(`https://cors-anywhere.herokuapp.com/https://jisho.org/api/v1/search/words?keyword=${encodeURIComponent(word)}`);
         const data = await response.json();
 
         if (data.data && data.data.length > 0) {
