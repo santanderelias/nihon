@@ -12,23 +12,11 @@ if (devModeSwitch) {
     });
 }
 
-let newWorker;
-
 if ('serviceWorker' in navigator && !isDevMode()) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/nihon/sw.js', {scope: '/nihon/'})
             .then(registration => {
                 console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                registration.addEventListener('updatefound', () => {
-                    newWorker = registration.installing;
-                    newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed') {
-                            if (navigator.serviceWorker.controller) {
-                                showToast('New version available!', 'Click the button to update.', true);
-                            }
-                        }
-                    });
-                });
             })
             .catch(error => {
                 console.log('ServiceWorker registration failed: ', error);
@@ -107,38 +95,9 @@ if (installButton) {
     });
 }
 
-// --- Check for Updates Button ---
-const checkUpdatesButton = document.getElementById('check-updates-button');
-let currentVersion;
-
-// Fetch the current version from version.json
-fetch('/nihon/version.json')
-    .then(response => response.json())
-    .then(data => {
-        currentVersion = data.version;
-        document.getElementById('version-number').textContent = `Version ${currentVersion}`;
-    });
-
-if (checkUpdatesButton) {
-    checkUpdatesButton.addEventListener('click', () => {
-        navigator.serviceWorker.getRegistration().then(reg => {
-            reg.update();
-        });
-    });
-}
+document.getElementById('version-number').textContent = `Version 1.1.0`;
 
 
-// Listen for controllerchange to detect when a new SW takes over
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-        // This event fires when the service worker controlling this page changes.
-        // This can happen when a new service worker is activated.
-        console.log('New service worker has taken control. Reloading page in 5 seconds.');
-        setTimeout(() => {
-            location.reload();
-        }, 5000);
-    });
-}
 
 
 // --- Clear Data Button ---
@@ -419,7 +378,7 @@ function checkAnswer(char, correctAnswer, type) {
 showHomePage();
 
 // --- Toast Notification Helper ---
-function showToast(title, message, showRefreshButton = false) {
+function showToast(title, message) {
     const toastLiveExample = document.getElementById('liveToast');
     const toastTitle = document.getElementById('toast-title');
     const toastBody = document.getElementById('toast-body');
@@ -427,21 +386,9 @@ function showToast(title, message, showRefreshButton = false) {
 
     if (toastLiveExample && toastTitle && toastBody) {
         toastTitle.textContent = title;
-        toastBody.innerHTML = message; // Use innerHTML to allow for the button
+        toastBody.innerHTML = message;
 
-        if (showRefreshButton) {
-            const refreshButton = document.createElement('button');
-            refreshButton.className = 'btn btn-primary btn-sm mt-2';
-            refreshButton.textContent = 'Refresh';
-            refreshButton.onclick = () => {
-                newWorker.postMessage({ action: 'skipWaiting' });
-                location.reload();
-            };
-            toastBody.appendChild(document.createElement('br'));
-            toastBody.appendChild(refreshButton);
-        }
-
-        const toast = new bootstrap.Toast(toastLiveExample, { autohide: !showRefreshButton });
+        const toast = new bootstrap.Toast(toastLiveExample);
         toast.show();
     }
 }
@@ -484,8 +431,8 @@ if (statsModal) {
                 countCell.textContent = item.count;
 
                 // Apply the font to the character and romaji cells
-                charCell.style.fontFamily = 'Noto Sans JP Embedded', sans-serif';
-                romajiCell.style.fontFamily = 'Noto Sans JP Embedded', sans-serif';
+                charCell.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
+                romajiCell.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
             });
         }
     });
