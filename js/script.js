@@ -22,13 +22,6 @@ if ('serviceWorker' in navigator && !isDevMode()) {
                 console.log('ServiceWorker registration failed: ', error);
             });
     });
-} else if ('serviceWorker' in navigator && isDevMode()) {
-    navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for(let registration of registrations) {
-            registration.unregister();
-            console.log('ServiceWorker unregistered.');
-        }
-    });
 }
 
 // --- Dark Mode ---
@@ -95,7 +88,6 @@ if (installButton) {
     });
 }
 
-document.getElementById('version-number').textContent = `Version 1.1.0`;
 
 
 
