@@ -239,12 +239,17 @@ function setupDictionaryPromise() {
 }
 const loadingOverlay = document.getElementById('loading-overlay');
 const loadingProgressBar = document.getElementById('loading-progress-bar');
+const loadingProgressText = document.getElementById('loading-progress-text');
 const loadingStatus = document.getElementById('loading-status');
 
 function updateLoadingProgress(percentage, statusText) {
+    const percent = Math.round(percentage);
     if (loadingProgressBar) {
-        loadingProgressBar.style.width = `${percentage}%`;
-        loadingProgressBar.setAttribute('aria-valuenow', percentage);
+        loadingProgressBar.style.width = `${percent}%`;
+        loadingProgressBar.setAttribute('aria-valuenow', percent);
+    }
+    if (loadingProgressText) {
+        loadingProgressText.textContent = `${percent}%`;
     }
     if (loadingStatus) {
         loadingStatus.textContent = statusText;
@@ -305,7 +310,7 @@ async function getDictFileCount() {
 }
 
 async function loadDictionary(progressCallback) {
-    const forceUIRender = () => new Promise(resolve => setTimeout(resolve, 0));
+    const forceUIRender = () => new Promise(resolve => requestAnimationFrame(resolve));
 
     try {
         if (progressCallback) progressCallback(0, 'Opening database...');
