@@ -306,6 +306,7 @@ async function getDictFileCount() {
 
 async function loadDictionary(progressCallback) {
     try {
+        if (progressCallback) progressCallback(0, 'Opening database...');
         db = await openDatabase();
         const transaction = db.transaction(STORE_NAME, 'readonly');
         const objectStore = transaction.objectStore(STORE_NAME);
@@ -320,7 +321,7 @@ async function loadDictionary(progressCallback) {
                     return;
                 }
 
-                console.log('Populating IndexedDB with dictionary data...');
+                if (progressCallback) progressCallback(0, 'Counting dictionary files...');
                 const totalLibraries = await getDictFileCount();
                 console.log(`Found ${totalLibraries} dictionary files.`);
                 if (totalLibraries === 0) {
@@ -333,6 +334,10 @@ async function loadDictionary(progressCallback) {
                 const parser = new DOMParser();
 
                 for (let i = 1; i <= totalLibraries; i++) {
+                    if (progressCallback) {
+                        const progress = Math.round(((i - 1) / totalLibraries) * 100);
+                        progressCallback(progress, `Downloading dictionary ${i}/${totalLibraries}...`);
+                    }
                     const response = await fetch(`js/dict/dict-${i}.js`);
                     if (!response.ok) {
                         console.warn(`Failed to fetch dict-${i}.js. Status: ${response.status}. Skipping.`);
@@ -340,6 +345,11 @@ async function loadDictionary(progressCallback) {
                     }
                     const scriptContent = await response.text();
                     
+                    if (progressCallback) {
+                        const progress = Math.round(((i - 0.5) / totalLibraries) * 100);
+                        progressCallback(progress, `Processing dictionary ${i}/${totalLibraries}...`);
+                    }
+
                     const DICT = eval(scriptContent.replace('const DICT =', ''));
 
                     if (typeof DICT !== 'undefined' && Array.isArray(DICT)) {
@@ -373,12 +383,9 @@ async function loadDictionary(progressCallback) {
                         });
                         await new Promise(res => addTransaction.oncomplete = res);
                     }
-                    if (progressCallback) {
-                        const progress = Math.round((i / totalLibraries) * 100);
-                        progressCallback(progress, `Loading dictionary ${i}/${totalLibraries}...`);
-                    }
                 }
                 console.log('Dictionary loaded successfully into IndexedDB.');
+                if (progressCallback) progressCallback(100, 'Dictionary loaded!');
                 resolve();
             };
 
