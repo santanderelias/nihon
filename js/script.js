@@ -305,9 +305,13 @@ async function getDictFileCount() {
 }
 
 async function loadDictionary(progressCallback) {
+    const forceUIRender = () => new Promise(resolve => setTimeout(resolve, 0));
+
     try {
         if (progressCallback) progressCallback(0, 'Opening database...');
+        await forceUIRender();
         db = await openDatabase();
+        
         const transaction = db.transaction(STORE_NAME, 'readonly');
         const objectStore = transaction.objectStore(STORE_NAME);
         const countRequest = objectStore.count();
@@ -317,16 +321,19 @@ async function loadDictionary(progressCallback) {
                 if (countRequest.result > 0) {
                     console.log('Dictionary already loaded in IndexedDB.');
                     if (progressCallback) progressCallback(100, 'Dictionary ready.');
+                    await forceUIRender();
                     resolve();
                     return;
                 }
 
                 if (progressCallback) progressCallback(0, 'Counting dictionary files...');
+                await forceUIRender();
                 const totalLibraries = await getDictFileCount();
                 console.log(`Found ${totalLibraries} dictionary files.`);
                 if (totalLibraries === 0) {
                     console.log("No dictionary files found.");
                     if (progressCallback) progressCallback(100, 'No dictionary files found.');
+                    await forceUIRender();
                     resolve();
                     return;
                 }
@@ -338,6 +345,8 @@ async function loadDictionary(progressCallback) {
                         const progress = Math.round(((i - 1) / totalLibraries) * 100);
                         progressCallback(progress, `Downloading dictionary ${i}/${totalLibraries}...`);
                     }
+                    await forceUIRender();
+
                     const response = await fetch(`js/dict/dict-${i}.js`);
                     if (!response.ok) {
                         console.warn(`Failed to fetch dict-${i}.js. Status: ${response.status}. Skipping.`);
@@ -349,6 +358,7 @@ async function loadDictionary(progressCallback) {
                         const progress = Math.round(((i - 0.5) / totalLibraries) * 100);
                         progressCallback(progress, `Processing dictionary ${i}/${totalLibraries}...`);
                     }
+                    await forceUIRender();
 
                     const DICT = eval(scriptContent.replace('const DICT =', ''));
 
@@ -386,6 +396,7 @@ async function loadDictionary(progressCallback) {
                 }
                 console.log('Dictionary loaded successfully into IndexedDB.');
                 if (progressCallback) progressCallback(100, 'Dictionary loaded!');
+                await forceUIRender();
                 resolve();
             };
 
