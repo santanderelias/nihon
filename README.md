@@ -1,46 +1,33 @@
 # Nihon - Japanese Language Learning App
 
-Nihon is a simple and effective web application designed to help you learn and practice Japanese characters, including Hiragana, Katakana, Kanji, and numbers. The app uses a personalized quiz system that adapts to your learning progress, making it an ideal tool for beginners and those looking to reinforce their knowledge.
+Nihon is a web application designed to help users learn and practice Japanese characters, including Hiragana, Katakana, Kanji, and numbers. The app features a personalized quiz system that adapts to the user's learning progress.
 
-## Features
+## Core Features
 
-- **Character Quizzes:** Practice your knowledge of Japanese characters with interactive quizzes. The app currently includes:
-  - **Hiragana:** The basic Japanese phonetic script.
-  - **Katakana:** Used for foreign loanwords, emphasis, and onomatopoeia.
-  - **Kanji:** Logographic characters borrowed from Chinese.
-  - **Dakuten and Handakuten:** Modified characters to represent different sounds.
-  - **Numbers:** Learn to read Japanese numbers from 1 to 100.
+*   **Quizzes:** The application provides quizzes for learning Japanese characters. The quiz types include:
+    *   Hiragana
+    *   Katakana
+    *   Kanji
+    *   Dakuten and Handakuten (modified characters)
+    *   Numbers (1-100)
+*   **Personalized Learning:** The app uses a weighted system to prioritize characters that the user has answered incorrectly, providing more practice on difficult characters.
+*   **Example Words:** For each character in a quiz, an example word is shown with its reading and meaning, providing context.
+*   **Dictionary:** A built-in dictionary allows users to search for Japanese words.
+*   **Romaji to Japanese Conversion:** The app uses the `wanakana.js` library to automatically convert Romaji input to Hiragana or Katakana in the quiz and dictionary search.
+*   **Dark Mode:** The application has a dark mode option for user comfort.
+*   **Progress Tracking:** The app tracks correct and incorrect answers for each character and displays statistics.
+*   **PWA (Progressive Web App):** The application can be installed on a device for an app-like experience with offline access.
+*   **Settings:**
+    *   Enable/disable Developer Mode (loads `script.js` instead of `script.min.js`).
+    *   Enable/disable Wanakana for input conversion.
+    *   Check for updates.
+    *   Clear all progress data.
+    *   Reset the app completely (clears data, caches, and service workers).
+    *   Uninstall the app.
 
-- **Personalized Learning:** The app tracks your performance on each character. It uses a weighted system to prioritize characters you've answered incorrectly, ensuring you get more practice where you need it most.
+## Technical Details
 
-- **Example Words:** To help you build your vocabulary, the app displays example words that use the character you are currently being quizzed on. This provides context and helps you understand how characters are used in real words.
-
-- **Built-in Dictionary:** Look up Japanese words and their meanings using the integrated dictionary. This feature allows you to search for words, view their readings (in Hiragana or Katakana), and see their English definitions.
-
-- **Romaji to Japanese Conversion:** As you type in Romaji, the app automatically converts your input to the corresponding Hiragana or Katakana, helping you to learn the correct characters as you type.
-
-- **Dark Mode:** Switch between light and dark themes for a comfortable viewing experience at any time of day.
-
-- **Progress Tracking:** The app keeps track of your correct and incorrect answers for each character. You can view your statistics to see which characters you need to work on.
-
-- **PWA (Progressive Web App):** Install Nihon on your device for a native-app-like experience. This allows for offline access and easy launching from your home screen.
-
-## How to Use
-
-1. **Select a Quiz:** From the home page, choose a character set you want to practice (e.g., Hiragana, Katakana, Kanji, Numbers).
-2. **Answer the Questions:** For each character displayed, type the corresponding Romaji (the Romanized spelling of the Japanese word) into the input field. The app will automatically convert your input to Japanese characters. Click "Check" to submit your answer.
-3. **Review Feedback:** The app will tell you if your answer is correct or incorrect. If you're wrong, it will show you the correct answer.
-4. **Use the Dictionary:** Click the "📖" icon to open the dictionary. You can search for any Japanese word to see its meaning and reading.
-5. **Track Your Progress:** Click the "⭐" icon to view your statistics, including a list of characters you have answered incorrectly.
-
-## Future Features
-
-We are always looking to improve Nihon. Here are some features we are considering for future updates:
-
-- **Expanded Kanji Library:** Adding more Kanji, grouped by JLPT (Japanese-Language Proficiency Test) levels.
-- **Example Sentences:** Including example sentences to provide more context for vocabulary.
-- **Audio Pronunciation:** Adding audio clips for characters and words to help with listening skills.
-- **Writing Practice:** A feature that allows users to practice writing characters on a digital canvas.
-- **More Quiz Modes:** Introducing different types of quizzes, such as multiple-choice or matching games.
-
-We hope you find Nihon to be a helpful tool in your Japanese language learning journey!
+*   **Frontend:** The application is built with HTML, CSS, and JavaScript. It uses the Bootstrap framework for styling.
+*   **Service Worker:** A service worker is used for caching application files for offline use and to manage updates.
+*   **Dictionary Data:** The dictionary data is stored in multiple JavaScript files (`dict-*.js`) and is loaded into an IndexedDB for efficient searching.
+*   **Wanakana.js:** This library is used for converting Romaji to Kana.

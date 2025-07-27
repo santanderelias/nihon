@@ -229,7 +229,28 @@ if (checkUpdatesButton) {
 
 
 // --- App Logic ---
-let dictionaryLoadPromise = null; // This will now resolve when IndexedDB is ready
+let dictionaryReadyPromise;
+let resolveDictionaryReady;
+
+function setupDictionaryPromise() {
+    dictionaryReadyPromise = new Promise(resolve => {
+        resolveDictionaryReady = resolve;
+    });
+}
+const loadingOverlay = document.getElementById('loading-overlay');
+const loadingProgressBar = document.getElementById('loading-progress-bar');
+const loadingStatus = document.getElementById('loading-status');
+
+function updateLoadingProgress(percentage, statusText) {
+    if (loadingProgressBar) {
+        loadingProgressBar.style.width = `${percentage}%`;
+        loadingProgressBar.setAttribute('aria-valuenow', percentage);
+    }
+    if (loadingStatus) {
+        loadingStatus.textContent = statusText;
+    }
+}
+
 
 const DB_NAME = 'nihonDictionary';
 const DB_VERSION = 1;
@@ -283,7 +304,7 @@ async function getDictFileCount() {
     return count;
 }
 
-async function loadDictionary() {
+async function loadDictionary(progressCallback) {
     try {
         db = await openDatabase();
         const transaction = db.transaction(STORE_NAME, 'readonly');
@@ -294,6 +315,7 @@ async function loadDictionary() {
             countRequest.onsuccess = async () => {
                 if (countRequest.result > 0) {
                     console.log('Dictionary already loaded in IndexedDB.');
+                    if (progressCallback) progressCallback(100, 'Dictionary ready.');
                     resolve();
                     return;
                 }
@@ -303,7 +325,7 @@ async function loadDictionary() {
                 console.log(`Found ${totalLibraries} dictionary files.`);
                 if (totalLibraries === 0) {
                     console.log("No dictionary files found.");
-                    showToast('Dictionary', 'No dictionary files found.');
+                    if (progressCallback) progressCallback(100, 'No dictionary files found.');
                     resolve();
                     return;
                 }
@@ -349,7 +371,11 @@ async function loadDictionary() {
                                 console.error("Failed to parse dictionary entry:", e);
                             }
                         });
-                        await new Promise(res => addTransaction.oncomplete = res); // Wait for transaction to complete
+                        await new Promise(res => addTransaction.oncomplete = res);
+                    }
+                    if (progressCallback) {
+                        const progress = Math.round((i / totalLibraries) * 100);
+                        progressCallback(progress, `Loading dictionary ${i}/${totalLibraries}...`);
                     }
                 }
                 console.log('Dictionary loaded successfully into IndexedDB.');
@@ -366,8 +392,6 @@ async function loadDictionary() {
         console.error('Failed to load dictionary:', error);
     }
 }
-
-dictionaryLoadPromise = loadDictionary();
 
 const contentArea = document.getElementById('content-area');
 const homeButton = document.getElementById('home-button');
@@ -535,7 +559,7 @@ function startQuiz(type) {
 }
 
 async function getExampleWord(character) {
-    await dictionaryLoadPromise; // Ensure dictionary is loaded
+    await dictionaryReadyPromise; // Ensure dictionary is loaded
     // Find an entry where the word starts with the character being quizzed.
     const transaction = db.transaction(STORE_NAME, 'readonly');
     const objectStore = transaction.objectStore(STORE_NAME);
@@ -627,7 +651,31 @@ function checkAnswer(char, correctAnswer, type) {
     setTimeout(() => loadQuestion(type), 1200);
 }
 
-showHomePage();
+async function main() {
+    setupDictionaryPromise();
+    updateLoadingProgress(5, 'Core assets loaded.');
+
+    const dictionaryProgressCallback = (progress, status) => {
+        const overallProgress = 5 + Math.round(progress * 0.9);
+        updateLoadingProgress(overallProgress, status);
+    };
+
+    await loadDictionary(dictionaryProgressCallback);
+    resolveDictionaryReady();
+
+    updateLoadingProgress(100, 'Ready!');
+
+    setTimeout(() => {
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'none';
+        }
+        showHomePage();
+        updateHomeButton(false);
+    }, 500);
+}
+
+document.addEventListener('DOMContentLoaded', main);
+
 
 // --- Toast Notification Helper ---
 function showToast(title, message, showRestartButton = false) {
@@ -769,7 +817,7 @@ function generateCharacterCards(characterSet) {
 }
 
 async function searchDictionary(word) {
-    await dictionaryLoadPromise; // Ensure IndexedDB is ready
+    await dictionaryReadyPromise; // Ensure IndexedDB is ready
     dictionaryResultArea.innerHTML = 'Searching...';
 
     const searchTerm = word.toLowerCase();

@@ -68,17 +68,13 @@ async function cacheDictionaryFiles() {
 
     if (cachedResponse) {
         console.log('Dictionary files already cached.');
-        self.clients.matchAll().then(clients => {
-            clients.forEach(client => {
-                client.postMessage({ action: 'show-toast', title: 'Up to date', message: 'All files are cached.' });
-            });
-        });
         return;
     }
 
     self.clients.matchAll().then(clients => {
         clients.forEach(client => {
-            client.postMessage({ action: 'show-toast', title: 'Downloading Libraries', message: 'This may take a moment and use high memory.' });
+            // Inform the client that dictionary download is starting, but without a toast
+            // client.postMessage({ action: 'show-toast', title: 'Downloading Libraries', message: 'This may take a moment and use high memory.' });
         });
     });
 
@@ -111,10 +107,5 @@ async function cacheDictionaryFiles() {
     }
 
     console.log(`Successfully cached ${count} dictionary files.`);
-    self.clients.matchAll().then(clients => {
-        clients.forEach(client => {
-            client.postMessage({ action: 'show-toast', title: 'Download Complete', message: `Successfully cached ${count} dictionary files.` });
-        });
-    });
     return count;
 }
