@@ -1,0 +1,27 @@
+{
+    "version": "1.0.0",
+    "files": [
+        "jmdict_1.sqlite",
+        "jmdict_2.sqlite",
+        "jmdict_3.sqlite",
+        "jmdict_4.sqlite",
+        "jmdict_5.sqlite",
+        "jmdict_6.sqlite",
+        "jmdict_7.sqlite",
+        "jmdict_8.sqlite",
+        "jmdict_9.sqlite",
+        "jmdict_10.sqlite",
+        "jmdict_11.sqlite",
+        "jmdict_12.sqlite",
+        "jmdict_13.sqlite",
+        "jmdict_14.sqlite",
+        "jmdict_15.sqlite",
+        "jmdict_16.sqlite",
+        "jmdict_17.sqlite",
+        "jmdict_18.sqlite",
+        "jmdict_19.sqlite",
+        "jmdict_20.sqlite",
+        "jmdict_21.sqlite",
+        "jmdict_22.sqlite"
+    ]
+}
