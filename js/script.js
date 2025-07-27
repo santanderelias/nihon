@@ -49,6 +49,7 @@ if ('serviceWorker' in navigator && !isDevMode()) {
 
     navigator.serviceWorker.addEventListener('message', event => {
         if (event.data.version) {
+            console.log('App Version:', event.data.version);
             const versionSpan = document.querySelector('#settings-modal .modal-footer .text-muted');
             if (versionSpan) {
                 versionSpan.textContent = `Version: ${event.data.version}`;
