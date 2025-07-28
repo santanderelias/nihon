@@ -628,30 +628,29 @@ async function main() {
         const registration = await navigator.serviceWorker.ready;
         console.log('script.js: Service worker ready.', registration);
 
+        console.log('script.js: Service worker ready.', registration);
+        console.log('script.js: registration.active:', registration.active);
+
         if (registration.active) {
-            const messageChannel = new MessageChannel();
-            let resolveCacheNamePromise;
-            const cacheNamePromise = new Promise(resolve => {
-                resolveCacheNamePromise = resolve;
-            });
+            // Use a simple promise to wait for the version message
+            const getVersionPromise = new Promise(resolve => {
+                const messageChannel = new MessageChannel();
+                messageChannel.port1.onmessage = event => {
+                    if (event.data.version) {
+                        currentCacheName = event.data.version;
+                        console.log('script.js: Received CACHE_NAME from SW:', currentCacheName);
+                        resolve();
+                    }
+                };
+                registration.active.postMessage({ action: 'get-version' }, [messageChannel.port2]);
 
-            messageChannel.port1.onmessage = event => {
-                if (event.data.version) {
-                    currentCacheName = event.data.version;
-                    console.log('script.js: Received CACHE_NAME from SW:', currentCacheName);
-                    resolveCacheNamePromise(); // Resolve the promise when message is received
-                }
-            };
-            registration.active.postMessage({ action: 'get-version' }, [messageChannel.port2]);
-
-            // Wait for the message or timeout
-            await Promise.race([
-                cacheNamePromise,
-                new Promise(resolve => setTimeout(() => {
-                    console.log('script.js: Timeout waiting for currentCacheName. Proceeding without it.');
+                // Add a timeout in case the message is not received
+                setTimeout(() => {
+                    console.log('script.js: Timeout waiting for SW version. Proceeding without it.');
                     resolve();
-                }, 2000)) // 2 second timeout
-            ]);
+                }, 2000); // 2 second timeout
+            });
+            await getVersionPromise;
         }
     }
 
