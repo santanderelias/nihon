@@ -1,10 +1,10 @@
-const CACHE_NAME = 'v1.0.4';
+const CACHE_NAME = 'v1.0.5';
 const URLS_TO_CACHE = [
     '/nihon/',
     '/nihon/index.html',
     '/nihon/css/style.css',
     '/nihon/css/bootstrap.min.css',
-    '/nihon/js/script.js',
+    '/nihon/js/ni_script.js',
     '/nihon/js/bootstrap.bundle.min.js',
     '/nihon/js/wanakana.min.js',
     '/nihon/js/ni_sql-wasm.js',
