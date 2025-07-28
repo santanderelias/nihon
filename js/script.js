@@ -282,7 +282,7 @@ const loadingProgressBar = document.getElementById('loading-progress-bar');
 const loadingProgressText = document.getElementById('loading-progress-text');
 const loadingStatus = document.getElementById('loading-status');
 
-const CACHE_NAME = 'v1.0.4'; // Must match CACHE_NAME in ni_sw.js
+const CACHE_NAME = 'v1.0.7'; // Must match CACHE_NAME in sw.js
 
 let isInitialDownload = false;
 
@@ -694,16 +694,14 @@ async function main() {
         updateOverlayProgress(100, 'Ready!');
     }
 
-    setTimeout(() => {
-        if (loadingOverlay) {
-            loadingOverlay.style.display = 'none';
-        }
-        if (smallLoadingMessage) {
-            smallLoadingMessage.style.display = 'none'; // Hide small message after full load
-        }
-        showHomePage();
-        updateHomeButton(false);
-    }, 500);
+    if (loadingOverlay) {
+        loadingOverlay.style.display = 'none';
+    }
+    if (smallLoadingMessage) {
+        smallLoadingMessage.style.display = 'none'; // Hide small message after full load
+    }
+    showHomePage();
+    updateHomeButton(false);
 }
 
 document.addEventListener('DOMContentLoaded', main);
