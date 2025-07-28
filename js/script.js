@@ -621,94 +621,18 @@ function checkAnswer(char, correctAnswer, type) {
 async function main() {
     setupDictionaryPromise();
 
-    let currentCacheName = null;
-
-    if ('serviceWorker' in navigator) {
-        console.log('script.js: Waiting for service worker to be ready...');
-        const registration = await navigator.serviceWorker.ready;
-        console.log('script.js: Service worker ready.', registration);
-
-        console.log('script.js: Service worker ready.', registration);
-        console.log('script.js: registration.active:', registration.active);
-
-        if (registration.active) {
-            await new Promise(resolve => {
-                if (registration.active.state === 'activated') {
-                    console.log('script.js: Service worker already activated.');
-                    resolve();
-                } else {
-                    console.log('script.js: Waiting for service worker to activate...');
-                    registration.active.addEventListener('statechange', function handler() {
-                        if (registration.active.state === 'activated') {
-                            console.log('script.js: Service worker activated.');
-                            registration.active.removeEventListener('statechange', handler);
-                            resolve();
-                        }
-                    });
-                }
-            });
-
-            // Now that the service worker is activated, send the message
-            const getVersionPromise = new Promise(resolve => {
-                const messageChannel = new MessageChannel();
-                messageChannel.port1.onmessage = event => {
-                    if (event.data.version) {
-                        currentCacheName = event.data.version;
-                        console.log('script.js: Received CACHE_NAME from SW:', currentCacheName);
-                        resolve();
-                    }
-                };
-                registration.active.postMessage({ action: 'get-version' }, [messageChannel.port2]);
-
-                // Add a timeout in case the message is not received
-                setTimeout(() => {
-                    console.log('script.js: Timeout waiting for SW version. Proceeding without it.');
-                    resolve();
-                }, 2000); // 2 second timeout
-            });
-            await getVersionPromise;
-        }
-    }
-
-    console.log('script.js: Before main dictionary loading logic check.');
-    // Check if service worker is active and has the cache
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller && currentCacheName) {
-        console.log('script.js: Entering main dictionary loading logic.');
-        // Assume initial download is needed unless proven otherwise by successful dictionary load
-    isInitialDownload = true;
-
-    console.log('script.js: Final isInitialDownload state:', isInitialDownload);
-
-    if (isInitialDownload) {
-        console.log('script.js: Displaying full overlay.');
-        updateOverlayProgress(5, 'Core assets loaded.');
-    } else {
-        console.log('script.js: Displaying small message.');
-        if (loadingOverlay) {
-            loadingOverlay.style.display = 'none';
-        }
-        updateSmallMessageProgress('Initializing...');
-    }
+    // Initial display of loading overlay
+    console.log('script.js: Displaying full overlay.');
+    updateOverlayProgress(5, 'Core assets loaded.');
 
     const dictionaryProgressCallback = (progress, status) => {
-        const overallProgress = 5 + Math.round(progress * 0.9);
-        if (isInitialDownload) {
-            updateOverlayProgress(overallProgress, status);
-        } else {
-            updateSmallMessageProgress(status);
-        }
+        updateOverlayProgress(progress, status);
     };
 
     console.log('script.js: Calling loadDictionary...');
     await loadDictionary(dictionaryProgressCallback);
     console.log('script.js: loadDictionary completed.');
     resolveDictionaryReady();
-
-    // After successful dictionary load, if it was an initial download, mark it as complete
-    if (isInitialDownload) {
-        isInitialDownload = false; // Dictionary has been downloaded and is now cached
-        updateOverlayProgress(100, 'Ready!');
-    }
 
     console.log('script.js: Attempting to hide loading overlay.');
     if (loadingOverlay) {
