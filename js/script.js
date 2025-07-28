@@ -657,10 +657,10 @@ async function main() {
     if (isInitialDownload) {
         updateOverlayProgress(5, 'Core assets loaded.');
     } else {
-        updateSmallMessageProgress('Initializing...');
         if (loadingOverlay) {
             loadingOverlay.style.display = 'none';
         }
+        updateSmallMessageProgress('Initializing...');
     }
 
     const dictionaryProgressCallback = (progress, status) => {
