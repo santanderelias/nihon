@@ -25,19 +25,7 @@ if ('serviceWorker' in navigator && !isDevMode()) {
     let newWorker; // Declare newWorker in a broader scope
     navigator.serviceWorker.addEventListener('message', event => {
         if (event.data.version) {
-            console.log('debug version', event.data.version);
-        } else if (event.data.action === 'show-toast') {
-            showToast(event.data.title, event.data.message);
-        } else if (event.data.action === 'download-progress') {
-            isInitialDownload = true;
-            const { file, current, total } = event.data;
-            const progress = Math.round((current / total) * 100);
-            updateOverlayProgress(progress, `Downloading file ${current} of ${total}: ${file}`);
             
-            const loadingFile = document.getElementById('loading-file');
-            if (loadingFile) {
-                loadingFile.textContent = `Downloading file ${current} of ${total}: ${file}`;
-            }
         }
     });
 
@@ -633,93 +621,6 @@ async function main() {
                 if (event.data.version) {
                     currentCacheName = event.data.version;
                     console.log('script.js: Received CACHE_NAME from SW:', currentCacheName);
-                }
-            };
-            registration.active.postMessage({ action: 'get-version' }, [messageChannel.port2]);
-
-            // Wait for the message to be received
-            await new Promise(resolve => {
-                const checkCacheName = setInterval(() => {
-                    if (currentCacheName) {
-                        clearInterval(checkCacheName);
-                        resolve();
-                    }
-                }, 50);
-            });
-        }
-    }
-
-    // Now that currentCacheName is resolved, proceed with cache check
-    if (currentCacheName) {
-        console.log('script.js: Checking cache with CACHE_NAME:', currentCacheName);
-        const cache = await caches.open(currentCacheName); // Use dynamic CACHE_NAME
-        const dbManifestResponse = await cache.match('/nihon/db/db_manifest.json');
-        console.log('script.js: dbManifestResponse found:', !!dbManifestResponse);
-        if (dbManifestResponse) {
-            const manifest = await dbManifestResponse.json();
-            const dbFiles = manifest.files;
-            let allDbFilesCached = true;
-            for (const file of dbFiles) {
-                const cachedResponse = await cache.match(`/nihon/db/${file}`);
-                if (!cachedResponse) {
-                    allDbFilesCached = false;
-                    break;
-                }
-            }
-            if (allDbFilesCached) {
-                isInitialDownload = false; // All DB files are already in cache
-            } else {
-                isInitialDownload = true; // Some DB files need to be downloaded
-            }
-        } else {
-            isInitialDownload = true; // Manifest not cached, assume download needed
-        }
-    } else {
-        isInitialDownload = true; // currentCacheName not resolved, assume download needed
-    }
-
-    console.log('script.js: Final isInitialDownload state:', isInitialDownload);
-
-    if (isInitialDownload) {
-        console.log('script.js: Displaying full overlay.');
-        updateOverlayProgress(5, 'Core assets loaded.');
-    } else {
-        console.log('script.js: Displaying small message.');
-        if (loadingOverlay) {
-            loadingOverlay.style.display = 'none';
-        }
-        updateSmallMessageProgress('Initializing...');
-    }
-
-    const dictionaryProgressCallback = (progress, status) => {
-        const overallProgress = 5 + Math.round(progress * 0.9);
-        if (isInitialDownload) {
-            updateOverlayProgress(overallProgress, status);
-        } else {
-            updateSmallMessageProgress(status);
-        }
-    };
-
-    await loadDictionary(dictionaryProgressCallback);
-    resolveDictionaryReady();
-
-    if (isInitialDownload) {
-        updateOverlayProgress(100, 'Ready!');
-    }
-
-    if (loadingOverlay) {
-        loadingOverlay.style.display = 'none';
-    }
-    if (smallLoadingMessage) {
-            smallLoadingMessage.style.display = 'none'; // Hide small message after full load
-        }
-        const topBarLoadingMessage = document.getElementById('top-bar-loading-message');
-        if (topBarLoadingMessage) {
-            topBarLoadingMessage.style.display = 'none';
-        }
-    showHomePage();
-    updateHomeButton(false);
-}
 
     const dictionaryProgressCallback = (progress, status) => {
         const overallProgress = 5 + Math.round(progress * 0.9);
