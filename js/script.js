@@ -49,7 +49,7 @@ if ('serviceWorker' in navigator && !isDevMode()) {
 
     let newWorker;
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/nihon/ni_sw.js', {scope: '/nihon/'})
+        navigator.serviceWorker.register('/nihon/sw.js', {scope: '/nihon/'})
             .then(registration => {
                 console.log('ServiceWorker registration successful with scope: ', registration.scope);
 
@@ -287,7 +287,7 @@ async function loadDictionary(progressCallback) {
 
     try {
         const sqlPromise = initSqlJs({
-            locateFile: file => `/nihon/js/ni_sql-wasm.wasm`
+            locateFile: file => `/nihon/js/sql-wasm.wasm`
         });
 
         if (progressCallback) progressCallback(0, 'Loading SQLite library...');
