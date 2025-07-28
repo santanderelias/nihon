@@ -630,16 +630,6 @@ async function main() {
 
         if (registration.active) {
             const messageChannel = new MessageChannel();
-            messageChannel.port1.onmessage = event => {
-                if (event.data.version) {
-                    currentCacheName = event.data.version;
-                    console.log('script.js: Received CACHE_NAME from SW:', currentCacheName);
-                }
-            };
-            registration.active.postMessage({ action: 'get-version' }, [messageChannel.port2]);
-
-            // Wait for the message to be received
-            const messageChannel = new MessageChannel();
             let resolveCacheNamePromise;
             const cacheNamePromise = new Promise(resolve => {
                 resolveCacheNamePromise = resolve;
