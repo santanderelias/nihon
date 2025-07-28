@@ -72,8 +72,10 @@ self.addEventListener('fetch', event => {
 });
 
 self.addEventListener('activate', event => {
+    console.log('[Service Worker] Activating with CACHE_NAME:', CACHE_NAME);
     const cacheWhitelist = [CACHE_NAME]; // Re-introducing the definition
     self.clients.claim(); // Take control of uncontrolled clients immediately
+    console.log('[Service Worker] Clients claimed.');
     event.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(

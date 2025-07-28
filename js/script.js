@@ -629,12 +629,14 @@ async function main() {
 
     // Get CACHE_NAME from service worker
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        console.log('script.js: Requesting CACHE_NAME from service worker...');
         const registration = await navigator.serviceWorker.getRegistration();
         if (registration) {
             const messageChannel = new MessageChannel();
             messageChannel.port1.onmessage = event => {
                 if (event.data.version) {
                     currentCacheName = event.data.version;
+                    console.log('script.js: Received CACHE_NAME from SW:', currentCacheName);
                 }
             };
             navigator.serviceWorker.controller.postMessage({ action: 'get-version' }, [messageChannel.port2]);
@@ -653,10 +655,12 @@ async function main() {
 
     // Check if service worker is active and has the cache
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller && currentCacheName) {
+        console.log('script.js: Checking cache with CACHE_NAME:', currentCacheName);
         const registration = await navigator.serviceWorker.getRegistration();
         if (registration) {
             const cache = await caches.open(currentCacheName); // Use dynamic CACHE_NAME
             const dbManifestResponse = await cache.match('/nihon/db/db_manifest.json');
+            console.log('script.js: dbManifestResponse found:', !!dbManifestResponse);
             if (dbManifestResponse) {
                 const manifest = await dbManifestResponse.json();
                 const dbFiles = manifest.files;
@@ -683,9 +687,13 @@ async function main() {
         isInitialDownload = true; // Service worker not supported or not controlled, assume download needed
     }
 
+    console.log('script.js: Final isInitialDownload state:', isInitialDownload);
+
     if (isInitialDownload) {
+        console.log('script.js: Displaying full overlay.');
         updateOverlayProgress(5, 'Core assets loaded.');
     } else {
+        console.log('script.js: Displaying small message.');
         if (loadingOverlay) {
             loadingOverlay.style.display = 'none';
         }
