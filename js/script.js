@@ -776,13 +776,13 @@ async function searchDictionary(word) {
     const searchTerm = `%${word.toLowerCase()}%`;
     const query = `
         SELECT * FROM entries 
-        WHERE word LIKE ? OR reading LIKE ? OR meaning LIKE ?
+        WHERE kanji LIKE ? OR reading LIKE ? OR meaning LIKE ?
         ORDER BY 
-            CASE WHEN word = ? THEN 1
-                 WHEN word LIKE ? THEN 2
+            CASE WHEN kanji = ? THEN 1
+                 WHEN reading LIKE ? THEN 2
                  ELSE 3
             END,
-            word
+            kanji
         LIMIT 100;
     `;
 
