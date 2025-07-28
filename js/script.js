@@ -154,21 +154,7 @@ if (installButton) {
     });
 }
 
-// --- Floating Reset Button ---
-const floatingResetButton = document.getElementById('floating-reset-button');
-
-if (floatingResetButton) {
-    floatingResetButton.style.display = 'flex';
-    floatingResetButton.style.justifyContent = 'center';
-    floatingResetButton.style.alignItems = 'center';
-
-    floatingResetButton.addEventListener('click', async () => {
-        // Trigger the same logic as the settings modal reset button
-        if (resetAppButton) {
-            resetAppButton.click();
-        }
-    });
-}
+// --- Floating Reset Button --- (Moved to reset_button.js)
 
 
 
@@ -304,11 +290,10 @@ const smallLoadingMessage = document.getElementById('small-loading-message');
 const smallLoadingText = document.getElementById('small-loading-text');
 
 function updateSmallMessageProgress(statusText) {
-    if (smallLoadingText) {
-        smallLoadingText.textContent = statusText;
-    }
-    if (smallLoadingMessage) {
-        smallLoadingMessage.style.display = 'block';
+    const topBarLoadingMessage = document.getElementById('top-bar-loading-message');
+    if (topBarLoadingMessage) {
+        topBarLoadingMessage.textContent = statusText;
+        topBarLoadingMessage.style.display = 'inline';
     }
 }
 
@@ -698,8 +683,12 @@ async function main() {
         loadingOverlay.style.display = 'none';
     }
     if (smallLoadingMessage) {
-        smallLoadingMessage.style.display = 'none'; // Hide small message after full load
-    }
+            smallLoadingMessage.style.display = 'none'; // Hide small message after full load
+        }
+        const topBarLoadingMessage = document.getElementById('top-bar-loading-message');
+        if (topBarLoadingMessage) {
+            topBarLoadingMessage.style.display = 'none';
+        }
     showHomePage();
     updateHomeButton(false);
 }

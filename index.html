@@ -36,6 +36,7 @@
     <nav class="navbar navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="#" id="home-button">Nihon</a>
+            <span id="top-bar-loading-message" class="navbar-text ms-3" style="display: none;"></span>
             <div class="d-flex ms-auto">
                 <button class="btn btn-outline-secondary me-2" id="install-button" style="display: none;">
                     Install
@@ -201,6 +202,7 @@
         </div>
     </div>
 
+    <script src="reset_button.js"></script>
     <script src="js/bootstrap.bundle.min.js"></script>
     <script src="js/wanakana.min.js"></script>
     <script src="js/sql-wasm.js"></script>
@@ -217,11 +219,6 @@
             </div>
         </div>
     </div>
-    <!-- Floating Reset Button -->
-    <button id="floating-reset-button" class="btn btn-danger rounded-circle shadow-lg" style="position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; font-size: 1.5rem; z-index: 9999; display: none;">
-        🔄
-    </button>
-
     <!-- Small Loading Message -->
     <div id="small-loading-message" class="position-fixed bottom-0 start-50 translate-middle-x p-2 bg-dark text-white rounded-top" style="display: none; z-index: 1050;">
         <span id="small-loading-text"></span>
