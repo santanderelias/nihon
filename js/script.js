@@ -21,70 +21,7 @@ if (wanakanaSwitch) {
     });
 }
 
-if ('serviceWorker' in navigator && !isDevMode()) {
-    let newWorker; // Declare newWorker in a broader scope
-    navigator.serviceWorker.addEventListener('message', event => {
-        if (event.data.version) {
-            console.log('App Version:', event.data.version);
-            const versionSpan = document.querySelector('#settings-modal .modal-footer .text-muted');
-            if (versionSpan) {
-                versionSpan.textContent = `Version: ${event.data.version}`;
-            }
-            const loadingVersion = document.getElementById('loading-version');
-            if (loadingVersion) {
-                loadingVersion.textContent = `Version: ${event.data.version}`;
-            }
-        } else if (event.data.action === 'show-toast') {
-            showToast(event.data.title, event.data.message);
-        } else if (event.data.action === 'download-progress') {
-            isInitialDownload = true;
-            const { file, current, total } = event.data;
-            const progress = Math.round((current / total) * 100);
-            updateOverlayProgress(progress, `Downloading file ${current} of ${total}: ${file}`);
-            
-            const loadingFile = document.getElementById('loading-file');
-            if (loadingFile) {
-                loadingFile.textContent = `Downloading file ${current} of ${total}: ${file}`;
-            }
-        }
-    });
 
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/nihon/sw.js', {scope: '/nihon/'})
-            .then(registration => {
-                console.log('ServiceWorker registration successful with scope: ', registration.scope);
-
-                // Request version from service worker
-                if (navigator.serviceWorker.controller) {
-                    navigator.serviceWorker.controller.postMessage({ action: 'get-version' });
-                } else {
-                    // If there's no controller, it's a fresh install.
-                    // The new service worker might still be installing.
-                    // We can listen for the controllerchange event.
-                    navigator.serviceWorker.addEventListener('controllerchange', () => {
-                        if (navigator.serviceWorker.controller) {
-                            navigator.serviceWorker.controller.postMessage({ action: 'get-version' });
-                        }
-                    });
-                }
-
-                registration.addEventListener('updatefound', () => {
-                    newWorker = registration.installing;
-                    newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            showToast('Update Available', 'A new version is available.', true);
-                        }
-                    });
-                });
-            })
-            .catch(error => {
-                console.log('ServiceWorker registration failed: ', error);
-            });
-    });
-}
-
-    // Removed forced reload on controllerchange to prevent infinite loop.
-    // A new version notification is handled by showToast in updatefound event.
 
 // --- Dark Mode ---
 const darkModeSwitch = document.getElementById('dark-mode-switch');
@@ -259,36 +196,14 @@ function setupDictionaryPromise() {
         resolveDictionaryReady = resolve;
     });
 }
-const loadingOverlay = document.getElementById('loading-overlay');
-const loadingProgressBar = document.getElementById('loading-progress-bar');
-const loadingProgressText = document.getElementById('loading-progress-text');
-const loadingStatus = document.getElementById('loading-status');
 
 
 
-let isInitialDownload = false;
-
-function updateOverlayProgress(percentage, statusText) {
-    if (loadingStatus) {
-        loadingStatus.textContent = statusText;
-    }
-}
-
-const smallLoadingMessage = document.getElementById('small-loading-message');
-const smallLoadingText = document.getElementById('small-loading-text');
-
-function updateSmallMessageProgress(statusText) {
-    const topBarLoadingMessage = document.getElementById('top-bar-loading-message');
-    if (topBarLoadingMessage) {
-        topBarLoadingMessage.textContent = statusText;
-        topBarLoadingMessage.style.display = 'inline';
-    }
-}
 
 
 var db;
 
-async function loadDictionary(progressCallback) {
+async function loadDictionary() {
     const forceUIRender = () => new Promise(resolve => requestAnimationFrame(resolve));
 
     try {
@@ -296,7 +211,6 @@ async function loadDictionary(progressCallback) {
             locateFile: file => `/nihon/js/sql-wasm.wasm`
         });
 
-        if (progressCallback) progressCallback(0, 'Loading SQLite library...');
         await forceUIRender();
         const SQL = await sqlPromise;
         
@@ -310,14 +224,6 @@ async function loadDictionary(progressCallback) {
             const dbName = dbFiles[i];
             const dbUrl = `/nihon/db/${dbName}`;
             
-            if (progressCallback) {
-                const progress = Math.round(((i) / dbFiles.length) * 100);
-                if (isInitialDownload) {
-                    progressCallback(progress, `Downloading ${i + 1} of ${dbFiles.length}...`);
-                } else {
-                    progressCallback(progress, `Processing dictionary part ${i + 1} of ${dbFiles.length}...`);
-                }
-            }
             await forceUIRender();
 
             const response = await fetch(dbUrl);
@@ -342,7 +248,6 @@ async function loadDictionary(progressCallback) {
         }
         
         console.log('All dictionary parts loaded into SQLite.');
-        if (progressCallback) progressCallback(100, 'Dictionary ready.');
         await forceUIRender();
 
         db = mainDb;
@@ -610,33 +515,10 @@ function checkAnswer(char, correctAnswer, type) {
 async function main() {
     setupDictionaryPromise();
 
-    // Initial display of loading overlay
-    console.log('script.js: Displaying full overlay.');
-    updateOverlayProgress(5, 'Core assets loaded.');
-
-    const dictionaryProgressCallback = (progress, status) => {
-        updateOverlayProgress(progress, status);
-    };
-
     console.log('script.js: Calling loadDictionary...');
-    await loadDictionary(dictionaryProgressCallback);
+    await loadDictionary();
     console.log('script.js: loadDictionary completed.');
     resolveDictionaryReady();
-
-    console.log('script.js: Attempting to hide loading overlay.');
-    if (loadingOverlay) {
-        loadingOverlay.style.display = 'none';
-        console.log('script.js: loadingOverlay hidden.');
-    }
-    if (smallLoadingMessage) {
-            smallLoadingMessage.style.display = 'none'; // Hide small message after full load
-            console.log('script.js: smallLoadingMessage hidden.');
-        }
-        const topBarLoadingMessage = document.getElementById('top-bar-loading-message');
-        if (topBarLoadingMessage) {
-            topBarLoadingMessage.style.display = 'none';
-            console.log('script.js: topBarLoadingMessage hidden.');
-        }
     showHomePage();
     updateHomeButton(false);
 }
