@@ -69,6 +69,7 @@ self.addEventListener('fetch', event => {
 });
 
 self.addEventListener('activate', event => {
+    const cacheWhitelist = [CACHE_NAME]; // Re-introducing the definition
     self.clients.claim(); // Take control of uncontrolled clients immediately
     event.waitUntil(
         caches.keys().then(cacheNames => {
