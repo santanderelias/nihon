@@ -640,9 +640,11 @@ async function main() {
 
             // Wait for the message to be received
             await new Promise(resolve => {
+                console.log('script.js: Waiting for currentCacheName...');
                 const checkCacheName = setInterval(() => {
                     if (currentCacheName) {
                         clearInterval(checkCacheName);
+                        console.log('script.js: currentCacheName resolved.');
                         resolve();
                     }
                 }, 50);
@@ -650,8 +652,10 @@ async function main() {
         }
     }
 
+    console.log('script.js: Before main dictionary loading logic check.');
     // Check if service worker is active and has the cache
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller && currentCacheName) {
+        console.log('script.js: Entering main dictionary loading logic.');
         // Assume initial download is needed unless proven otherwise by successful dictionary load
     isInitialDownload = true;
 
@@ -677,7 +681,9 @@ async function main() {
         }
     };
 
+    console.log('script.js: Calling loadDictionary...');
     await loadDictionary(dictionaryProgressCallback);
+    console.log('script.js: loadDictionary completed.');
     resolveDictionaryReady();
 
     // After successful dictionary load, if it was an initial download, mark it as complete
@@ -686,15 +692,19 @@ async function main() {
         updateOverlayProgress(100, 'Ready!');
     }
 
+    console.log('script.js: Attempting to hide loading overlay.');
     if (loadingOverlay) {
         loadingOverlay.style.display = 'none';
+        console.log('script.js: loadingOverlay hidden.');
     }
     if (smallLoadingMessage) {
             smallLoadingMessage.style.display = 'none'; // Hide small message after full load
+            console.log('script.js: smallLoadingMessage hidden.');
         }
         const topBarLoadingMessage = document.getElementById('top-bar-loading-message');
         if (topBarLoadingMessage) {
             topBarLoadingMessage.style.display = 'none';
+            console.log('script.js: topBarLoadingMessage hidden.');
         }
     showHomePage();
     updateHomeButton(false);
@@ -750,7 +760,8 @@ if (statsModal) {
                     if (characterSets[setKey][char]) {
                         if (setKey === 'numbers') {
                             romaji = characterSets[setKey][char].romaji;
-                        } else {
+                        } 
+                        else {
                             romaji = characterSets[setKey][char];
                         }
                         break;
@@ -765,7 +776,8 @@ if (statsModal) {
 
         if (wrongCharacters.length === 0) {
             wrongCharsTableBody.innerHTML = '<tr><td colspan="3">No characters answered incorrectly yet!</td></tr>';
-        } else {
+        } 
+        else {
             wrongCharacters.forEach(item => {
                 const row = wrongCharsTableBody.insertRow();
                 const charCell = row.insertCell();
