@@ -268,7 +268,7 @@ const loadingProgressBar = document.getElementById('loading-progress-bar');
 const loadingProgressText = document.getElementById('loading-progress-text');
 const loadingStatus = document.getElementById('loading-status');
 
-const CACHE_NAME = 'v1.0.8'; // Must match CACHE_NAME in sw.js
+
 
 let isInitialDownload = false;
 
@@ -625,11 +625,37 @@ function checkAnswer(char, correctAnswer, type) {
 async function main() {
     setupDictionaryPromise();
 
-    // Check if service worker is active and has the cache
+    let currentCacheName = null;
+
+    // Get CACHE_NAME from service worker
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
         const registration = await navigator.serviceWorker.getRegistration();
         if (registration) {
-            const cache = await caches.open(CACHE_NAME); // CACHE_NAME needs to be accessible here
+            const messageChannel = new MessageChannel();
+            messageChannel.port1.onmessage = event => {
+                if (event.data.version) {
+                    currentCacheName = event.data.version;
+                }
+            };
+            navigator.serviceWorker.controller.postMessage({ action: 'get-version' }, [messageChannel.port2]);
+
+            // Wait for the message to be received
+            await new Promise(resolve => {
+                const checkCacheName = setInterval(() => {
+                    if (currentCacheName) {
+                        clearInterval(checkCacheName);
+                        resolve();
+                    }
+                }, 50);
+            });
+        }
+    }
+
+    // Check if service worker is active and has the cache
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller && currentCacheName) {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration) {
+            const cache = await caches.open(currentCacheName); // Use dynamic CACHE_NAME
             const dbManifestResponse = await cache.match('/nihon/db/db_manifest.json');
             if (dbManifestResponse) {
                 const manifest = await dbManifestResponse.json();
@@ -686,8 +712,12 @@ async function main() {
         loadingOverlay.style.display = 'none';
     }
     if (smallLoadingMessage) {
-        smallLoadingMessage.style.display = 'none'; // Hide small message after full load
-    }
+            smallLoadingMessage.style.display = 'none'; // Hide small message after full load
+        }
+        const topBarLoadingMessage = document.getElementById('top-bar-loading-message');
+        if (topBarLoadingMessage) {
+            topBarLoadingMessage.style.display = 'none';
+        }
     showHomePage();
     updateHomeButton(false);
 }
