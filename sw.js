@@ -66,7 +66,10 @@ self.addEventListener('fetch', event => {
                     return response;
                 }
                 console.log('[Service Worker] Serving from network:', event.request.url);
-                return fetch(event.request);
+                return fetch(event.request).catch(error => {
+                    console.error('[Service Worker] Fetch failed for:', event.request.url, error);
+                    throw error; // Re-throw the error so the main thread can catch it
+                });
             })
     );
 });
