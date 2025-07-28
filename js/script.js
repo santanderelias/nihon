@@ -632,7 +632,23 @@ async function main() {
         console.log('script.js: registration.active:', registration.active);
 
         if (registration.active) {
-            // Use a simple promise to wait for the version message
+            await new Promise(resolve => {
+                if (registration.active.state === 'activated') {
+                    console.log('script.js: Service worker already activated.');
+                    resolve();
+                } else {
+                    console.log('script.js: Waiting for service worker to activate...');
+                    registration.active.addEventListener('statechange', function handler() {
+                        if (registration.active.state === 'activated') {
+                            console.log('script.js: Service worker activated.');
+                            registration.active.removeEventListener('statechange', handler);
+                            resolve();
+                        }
+                    });
+                }
+            });
+
+            // Now that the service worker is activated, send the message
             const getVersionPromise = new Promise(resolve => {
                 const messageChannel = new MessageChannel();
                 messageChannel.port1.onmessage = event => {
