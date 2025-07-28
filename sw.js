@@ -1,4 +1,4 @@
-const CACHE_NAME = 'v1.3.0'; // Updated cache name for SQLite migration
+const CACHE_NAME = 'v1.3.1'; // Updated cache name for SQLite migration
 const URLS_TO_CACHE = [
     '/nihon/',
     '/nihon/index.html',
