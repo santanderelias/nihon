@@ -268,7 +268,7 @@ const loadingProgressBar = document.getElementById('loading-progress-bar');
 const loadingProgressText = document.getElementById('loading-progress-text');
 const loadingStatus = document.getElementById('loading-status');
 
-const CACHE_NAME = 'v1.0.7'; // Must match CACHE_NAME in sw.js
+const CACHE_NAME = 'v1.0.8'; // Must match CACHE_NAME in sw.js
 
 let isInitialDownload = false;
 
@@ -686,12 +686,8 @@ async function main() {
         loadingOverlay.style.display = 'none';
     }
     if (smallLoadingMessage) {
-            smallLoadingMessage.style.display = 'none'; // Hide small message after full load
-        }
-        const topBarLoadingMessage = document.getElementById('top-bar-loading-message');
-        if (topBarLoadingMessage) {
-            topBarLoadingMessage.style.display = 'none';
-        }
+        smallLoadingMessage.style.display = 'none'; // Hide small message after full load
+    }
     showHomePage();
     updateHomeButton(false);
 }
