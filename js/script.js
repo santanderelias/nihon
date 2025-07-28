@@ -802,7 +802,7 @@ async function searchDictionary(word) {
     const searchTerm = `%${word.toLowerCase()}%`;
     const query = `
         SELECT * FROM entries 
-        WHERE kanji LIKE ? OR reading LIKE ? OR meaning LIKE ?
+        WHERE kanji LIKE ? OR reading LIKE ? OR gloss LIKE ?
         ORDER BY 
             CASE WHEN kanji = ? THEN 1
                  WHEN reading LIKE ? THEN 2
@@ -834,13 +834,13 @@ async function searchDictionary(word) {
                                 <strong style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.word} (${entry.reading})</strong>
                                 <br>
                                 <small class="text-muted">${romaji}</small>
-                                <div class="text-truncate">${entry.meaning}</div>
+                                <div class="text-truncate">${entry.gloss}</div>
                             </div>
                         </button>
                     </h2>
                     <div id="collapse-${entryId}" class="accordion-collapse collapse" aria-labelledby="heading-${entryId}" data-bs-parent="#dictionary-accordion">
                         <div class="accordion-body">
-                            <p style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.meaning}</p>
+                            <p style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.gloss}</p>
                         </div>
                     </div>
                 </div>
