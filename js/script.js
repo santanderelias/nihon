@@ -306,7 +306,7 @@ async function loadDictionary(progressCallback) {
             
             if (progressCallback) {
                 const progress = Math.round(((i) / dbFiles.length) * 100);
-                progressCallback(progress, `Loading dictionary ${dbName}...`);
+                progressCallback(progress, `Downloading ${i + 1} of ${dbFiles.length}...`);
             }
             await forceUIRender();
 
