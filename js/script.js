@@ -627,11 +627,12 @@ async function main() {
 
     let currentCacheName = null;
 
-    // Get CACHE_NAME from service worker
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        console.log('script.js: Requesting CACHE_NAME from service worker...');
-        const registration = await navigator.serviceWorker.getRegistration();
-        if (registration) {
+    if ('serviceWorker' in navigator) {
+        console.log('script.js: Waiting for service worker to be ready...');
+        const registration = await navigator.serviceWorker.ready;
+        console.log('script.js: Service worker ready.', registration);
+
+        if (registration.active) {
             const messageChannel = new MessageChannel();
             messageChannel.port1.onmessage = event => {
                 if (event.data.version) {
@@ -639,7 +640,7 @@ async function main() {
                     console.log('script.js: Received CACHE_NAME from SW:', currentCacheName);
                 }
             };
-            navigator.serviceWorker.controller.postMessage({ action: 'get-version' }, [messageChannel.port2]);
+            registration.active.postMessage({ action: 'get-version' }, [messageChannel.port2]);
 
             // Wait for the message to be received
             await new Promise(resolve => {
