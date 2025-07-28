@@ -316,6 +316,7 @@ async function loadDictionary(progressCallback) {
         const SQL = await sqlPromise;
         
         const manifestResponse = await fetch('/nihon/db/db_manifest.json');
+        console.log('script.js: Fetched db_manifest.json. Status:', manifestResponse.status, 'OK:', manifestResponse.ok);
         const manifest = await manifestResponse.json();
         const dbFiles = manifest.files;
 
@@ -335,7 +336,9 @@ async function loadDictionary(progressCallback) {
             }
             await forceUIRender();
 
+            console.log('script.js: Fetching dictionary part:', dbUrl);
             const response = await fetch(dbUrl);
+            console.log('script.js: Fetched dictionary part. Status:', response.status, 'OK:', response.ok);
             const dbData = await response.arrayBuffer();
             
             const tempDb = new SQL.Database(new Uint8Array(dbData));
