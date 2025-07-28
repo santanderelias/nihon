@@ -641,13 +641,20 @@ async function main() {
             // Wait for the message to be received
             await new Promise(resolve => {
                 console.log('script.js: Waiting for currentCacheName...');
+                let timeoutId;
                 const checkCacheName = setInterval(() => {
                     if (currentCacheName) {
                         clearInterval(checkCacheName);
+                        clearTimeout(timeoutId);
                         console.log('script.js: currentCacheName resolved.');
                         resolve();
                     }
                 }, 50);
+                timeoutId = setTimeout(() => {
+                    clearInterval(checkCacheName);
+                    console.log('script.js: Timeout waiting for currentCacheName. Proceeding without it.');
+                    resolve();
+                }, 2000); // 2 second timeout
             });
         }
     }

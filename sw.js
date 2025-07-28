@@ -94,14 +94,7 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('message', event => {
     if (event.data.action === 'get-version') {
-        event.source.postMessage({ version: CACHE_NAME });
-    } else if (event.data.action === 'skipWaiting') {
-        self.skipWaiting();
-    }
-});
-
-self.addEventListener('message', event => {
-    if (event.data.action === 'get-version') {
+        console.log('[Service Worker] Sending version:', CACHE_NAME);
         event.source.postMessage({ version: CACHE_NAME });
     } else if (event.data.action === 'skipWaiting') {
         self.skipWaiting();
