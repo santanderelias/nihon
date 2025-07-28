@@ -82,12 +82,8 @@ if ('serviceWorker' in navigator && !isDevMode()) {
             });
     });
 
-    let refreshing;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (refreshing) return;
-        window.location.reload();
-        refreshing = true;
-    });
+    // Removed forced reload on controllerchange to prevent infinite loop.
+    // A new version notification is handled by showToast in updatefound event.
 }
 
 // --- Dark Mode ---
