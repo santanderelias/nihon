@@ -280,7 +280,7 @@ function updateLoadingProgress(percentage, statusText) {
 }
 
 
-let db;
+var db;
 
 async function loadDictionary(progressCallback) {
     const forceUIRender = () => new Promise(resolve => requestAnimationFrame(resolve));
@@ -335,7 +335,7 @@ async function loadDictionary(progressCallback) {
         if (progressCallback) progressCallback(100, 'Dictionary ready.');
         await forceUIRender();
 
-        self.db = mainDb;
+        db = mainDb;
 
     } catch (error) {
         showToast('Dictionary', 'An error occurred while loading the dictionary.');
