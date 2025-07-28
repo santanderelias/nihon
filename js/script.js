@@ -534,8 +534,8 @@ function checkAnswer(char, correctAnswer, type) {
 }
 
 async function main() {
-    showLoadingIndicator('Loading Dictionary...');
-    document.getElementById('content-area').style.display = 'none';
+    showHomePage();
+    updateHomeButton(false);
 
     setupDictionaryPromise();
 
@@ -543,11 +543,6 @@ async function main() {
     await loadDictionary();
     console.log('script.js: loadDictionary completed.');
     resolveDictionaryReady();
-
-    hideLoadingIndicator();
-    document.getElementById('content-area').style.display = 'block';
-    showHomePage();
-    updateHomeButton(false);
 }
 
 
