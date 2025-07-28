@@ -901,14 +901,15 @@ async function searchDictionary(word) {
                 </div>
             `;
         });
-        if (results.length >= 100) {
-            html += `<p class="text-center mt-2">More than 100 results found. Please refine your search.</p>`;
-        }
+        if (results.length >= 100) { 
+		html += `<p class="text-center mt-2">More than 100 results found. Please refine your search.</p>`;
         html += '</div>';
         dictionaryResultArea.innerHTML = html;
-    } else {
+		}
+		else {
         dictionaryResultArea.innerHTML = 'No results found.';
-    }
+		}
+	}
 }
 
 if (dictionarySearchButton && dictionarySearchInput) {
