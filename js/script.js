@@ -269,19 +269,8 @@ const loadingStatus = document.getElementById('loading-status');
 let isInitialDownload = false;
 
 function updateOverlayProgress(percentage, statusText) {
-    const percent = Math.round(percentage);
-    if (loadingProgressBar) {
-        loadingProgressBar.style.width = `${percent}%`;
-        loadingProgressBar.setAttribute('aria-valuenow', percent);
-    }
-    if (loadingProgressText) {
-        loadingProgressText.textContent = `${percent}%`;
-    }
     if (loadingStatus) {
         loadingStatus.textContent = statusText;
-        if (isInitialDownload) {
-            loadingStatus.textContent += '\n(This is a one-time download. Future loads will be faster.)';
-        }
     }
 }
 
