@@ -656,37 +656,8 @@ async function main() {
 
     // Check if service worker is active and has the cache
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller && currentCacheName) {
-        console.log('script.js: Checking cache with CACHE_NAME:', currentCacheName);
-        const registration = await navigator.serviceWorker.getRegistration();
-        if (registration) {
-            const cache = await caches.open(currentCacheName); // Use dynamic CACHE_NAME
-            const dbManifestResponse = await cache.match('/nihon/db/db_manifest.json');
-            console.log('script.js: dbManifestResponse found:', !!dbManifestResponse);
-            if (dbManifestResponse) {
-                const manifest = await dbManifestResponse.json();
-                const dbFiles = manifest.files;
-                let allDbFilesCached = true;
-                for (const file of dbFiles) {
-                    const cachedResponse = await cache.match(`/nihon/db/${file}`);
-                    if (!cachedResponse) {
-                        allDbFilesCached = false;
-                        break;
-                    }
-                }
-                if (allDbFilesCached) {
-                    isInitialDownload = false; // All DB files are already in cache
-                } else {
-                    isInitialDownload = true; // Some DB files need to be downloaded
-                }
-            } else {
-                isInitialDownload = true; // Manifest not cached, assume download needed
-            }
-        } else {
-            isInitialDownload = true; // No service worker registration, assume download needed
-        }
-    } else {
-        isInitialDownload = true; // Service worker not supported or not controlled, assume download needed
-    }
+        // Assume initial download is needed unless proven otherwise by successful dictionary load
+    isInitialDownload = true;
 
     console.log('script.js: Final isInitialDownload state:', isInitialDownload);
 
@@ -713,7 +684,9 @@ async function main() {
     await loadDictionary(dictionaryProgressCallback);
     resolveDictionaryReady();
 
+    // After successful dictionary load, if it was an initial download, mark it as complete
     if (isInitialDownload) {
+        isInitialDownload = false; // Dictionary has been downloaded and is now cached
         updateOverlayProgress(100, 'Ready!');
     }
 
