@@ -1,4 +1,4 @@
-const CACHE_NAME = 'v1.3.5';
+const CACHE_NAME = 'v1.0.0';
 const URLS_TO_CACHE = [
     '/nihon/',
     '/nihon/index.html',
@@ -58,7 +58,12 @@ self.addEventListener('fetch', event => {
     event.respondWith(
         caches.match(event.request)
             .then(response => {
-                return response || fetch(event.request);
+                if (response) {
+                    console.log('[Service Worker] Serving from cache:', event.request.url);
+                    return response;
+                }
+                console.log('[Service Worker] Serving from network:', event.request.url);
+                return fetch(event.request);
             })
     );
 });
