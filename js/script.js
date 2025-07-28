@@ -639,23 +639,29 @@ async function main() {
             registration.active.postMessage({ action: 'get-version' }, [messageChannel.port2]);
 
             // Wait for the message to be received
-            await new Promise(resolve => {
-                console.log('script.js: Waiting for currentCacheName...');
-                let timeoutId;
-                const checkCacheName = setInterval(() => {
-                    if (currentCacheName) {
-                        clearInterval(checkCacheName);
-                        clearTimeout(timeoutId);
-                        console.log('script.js: currentCacheName resolved.');
-                        resolve();
-                    }
-                }, 50);
-                timeoutId = setTimeout(() => {
-                    clearInterval(checkCacheName);
+            const messageChannel = new MessageChannel();
+            let resolveCacheNamePromise;
+            const cacheNamePromise = new Promise(resolve => {
+                resolveCacheNamePromise = resolve;
+            });
+
+            messageChannel.port1.onmessage = event => {
+                if (event.data.version) {
+                    currentCacheName = event.data.version;
+                    console.log('script.js: Received CACHE_NAME from SW:', currentCacheName);
+                    resolveCacheNamePromise(); // Resolve the promise when message is received
+                }
+            };
+            registration.active.postMessage({ action: 'get-version' }, [messageChannel.port2]);
+
+            // Wait for the message or timeout
+            await Promise.race([
+                cacheNamePromise,
+                new Promise(resolve => setTimeout(() => {
                     console.log('script.js: Timeout waiting for currentCacheName. Proceeding without it.');
                     resolve();
-                }, 2000); // 2 second timeout
-            });
+                }, 2000)) // 2 second timeout
+            ]);
         }
     }
 
