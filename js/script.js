@@ -283,6 +283,9 @@ function updateOverlayProgress(percentage, statusText) {
     }
     if (loadingStatus) {
         loadingStatus.textContent = statusText;
+        if (isInitialDownload) {
+            loadingStatus.textContent += '\n(This is a one-time download. Future loads will be faster.)';
+        }
     }
 }
 
