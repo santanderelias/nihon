@@ -64,7 +64,7 @@ self.addEventListener('fetch', event => {
 });
 
 self.addEventListener('activate', event => {
-    const cacheWhitelist = [CACHE_NAME];
+    self.clients.claim(); // Take control of uncontrolled clients immediately
     event.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
@@ -76,6 +76,14 @@ self.addEventListener('activate', event => {
             );
         })
     );
+});
+
+self.addEventListener('message', event => {
+    if (event.data.action === 'get-version') {
+        event.source.postMessage({ version: CACHE_NAME });
+    } else if (event.data.action === 'skipWaiting') {
+        self.skipWaiting();
+    }
 });
 
 self.addEventListener('message', event => {
