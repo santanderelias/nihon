@@ -22,6 +22,31 @@ if (wanakanaSwitch) {
 }
 
 if ('serviceWorker' in navigator && !isDevMode()) {
+    navigator.serviceWorker.addEventListener('message', event => {
+        if (event.data.version) {
+            console.log('App Version:', event.data.version);
+            const versionSpan = document.querySelector('#settings-modal .modal-footer .text-muted');
+            if (versionSpan) {
+                versionSpan.textContent = `Version: ${event.data.version}`;
+            }
+            const loadingVersion = document.getElementById('loading-version');
+            if (loadingVersion) {
+                loadingVersion.textContent = `Version: ${event.data.version}`;
+            }
+        } else if (event.data.action === 'show-toast') {
+            showToast(event.data.title, event.data.message);
+        } else if (event.data.action === 'download-progress') {
+            const { file, current, total } = event.data;
+            const progress = Math.round((current / total) * 100);
+            updateLoadingProgress(progress, `Downloading assets...`);
+            
+            const loadingFile = document.getElementById('loading-file');
+            if (loadingFile) {
+                loadingFile.textContent = `Downloading file ${current} of ${total}: ${file}`;
+            }
+        }
+    });
+
     let newWorker;
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/nihon/sw.js', {scope: '/nihon/'})
@@ -54,31 +79,6 @@ if ('serviceWorker' in navigator && !isDevMode()) {
             .catch(error => {
                 console.log('ServiceWorker registration failed: ', error);
             });
-    });
-
-    navigator.serviceWorker.addEventListener('message', event => {
-        if (event.data.version) {
-            console.log('App Version:', event.data.version);
-            const versionSpan = document.querySelector('#settings-modal .modal-footer .text-muted');
-            if (versionSpan) {
-                versionSpan.textContent = `Version: ${event.data.version}`;
-            }
-            const loadingVersion = document.getElementById('loading-version');
-            if (loadingVersion) {
-                loadingVersion.textContent = `Version: ${event.data.version}`;
-            }
-        } else if (event.data.action === 'show-toast') {
-            showToast(event.data.title, event.data.message);
-        } else if (event.data.action === 'download-progress') {
-            const { file, current, total } = event.data;
-            const progress = Math.round((current / total) * 100);
-            updateLoadingProgress(progress, `Downloading assets...`);
-            
-            const loadingFile = document.getElementById('loading-file');
-            if (loadingFile) {
-                loadingFile.textContent = `Downloading file ${current} of ${total}: ${file}`;
-            }
-        }
     });
 
     let refreshing;
@@ -287,7 +287,7 @@ async function loadDictionary(progressCallback) {
 
     try {
         const sqlPromise = initSqlJs({
-            locateFile: file => `/nihon/js/${file}`
+            locateFile: file => `/nihon/js/sql-wasm.wasm`
         });
 
         if (progressCallback) progressCallback(0, 'Loading SQLite library...');
