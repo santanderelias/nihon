@@ -204,15 +204,7 @@
     <script src="js/bootstrap.bundle.min.js"></script>
     <script src="js/wanakana.min.js"></script>
     <script src="js/sql-wasm.js"></script>
-    <!-- Dynamic script loading for dev/production -->
-    <script>
-        (function() {
-            const isDevMode = localStorage.getItem('devMode') === 'true';
-            const script = document.createElement('script');
-            script.src = isDevMode ? 'js/script.js' : 'js/script.min.js';
-            document.body.appendChild(script);
-        })();
-    </script>
+    <script src="js/script.js"></script>
 
     <!-- Toast Container -->
     <div class="toast-container position-fixed bottom-0 end-0 p-3">

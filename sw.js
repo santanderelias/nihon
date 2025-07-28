@@ -5,7 +5,6 @@ const URLS_TO_CACHE = [
     '/nihon/css/style.css',
     '/nihon/css/bootstrap.min.css',
     '/nihon/js/script.js',
-    '/nihon/js/script.min.js',
     '/nihon/js/bootstrap.bundle.min.js',
     '/nihon/js/wanakana.min.js',
     '/nihon/js/sql-wasm.js',
