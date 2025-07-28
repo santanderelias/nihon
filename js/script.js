@@ -22,6 +22,7 @@ if (wanakanaSwitch) {
 }
 
 if ('serviceWorker' in navigator && !isDevMode()) {
+    let newWorker; // Declare newWorker in a broader scope
     navigator.serviceWorker.addEventListener('message', event => {
         if (event.data.version) {
             console.log('App Version:', event.data.version);
@@ -48,7 +49,6 @@ if ('serviceWorker' in navigator && !isDevMode()) {
         }
     });
 
-    let newWorker;
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/nihon/sw.js', {scope: '/nihon/'})
             .then(registration => {
