@@ -201,10 +201,28 @@ function setupDictionaryPromise() {
 
 
 
+function showLoadingIndicator(message) {
+    const loadingSpinnerContainer = document.getElementById('loading-spinner-container');
+    const loadingText = document.getElementById('loading-text');
+    if (loadingSpinnerContainer && loadingText) {
+        loadingText.textContent = message;
+        loadingSpinnerContainer.style.display = 'flex';
+    }
+}
+
+function hideLoadingIndicator() {
+    const loadingSpinnerContainer = document.getElementById('loading-spinner-container');
+    if (loadingSpinnerContainer) {
+        loadingSpinnerContainer.style.display = 'none';
+    }
+}
+
 var db;
 
 async function loadDictionary() {
     const forceUIRender = () => new Promise(resolve => requestAnimationFrame(resolve));
+
+    showLoadingIndicator('Loading Dictionary...');
 
     try {
         const sqlPromise = initSqlJs({
@@ -224,6 +242,7 @@ async function loadDictionary() {
             const dbName = dbFiles[i];
             const dbUrl = `/nihon/db/${dbName}`;
             
+            showLoadingIndicator(`Processing dictionary part ${i + 1} of ${dbFiles.length}...`);
             await forceUIRender();
 
             const response = await fetch(dbUrl);
@@ -248,6 +267,7 @@ async function loadDictionary() {
         }
         
         console.log('All dictionary parts loaded into SQLite.');
+        hideLoadingIndicator();
         await forceUIRender();
 
         db = mainDb;
@@ -255,6 +275,7 @@ async function loadDictionary() {
     } catch (error) {
         showToast('Dictionary', 'An error occurred while loading the dictionary.');
         console.error('Failed to load dictionary:', error);
+        hideLoadingIndicator();
     }
 }
 
@@ -513,8 +534,8 @@ function checkAnswer(char, correctAnswer, type) {
 }
 
 async function main() {
-    showHomePage();
-    updateHomeButton(false);
+    showLoadingIndicator('Loading Dictionary...');
+    document.getElementById('content-area').style.display = 'none';
 
     setupDictionaryPromise();
 
@@ -522,6 +543,11 @@ async function main() {
     await loadDictionary();
     console.log('script.js: loadDictionary completed.');
     resolveDictionaryReady();
+
+    hideLoadingIndicator();
+    document.getElementById('content-area').style.display = 'block';
+    showHomePage();
+    updateHomeButton(false);
 }
 
 

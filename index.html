@@ -24,7 +24,12 @@
     <nav class="navbar navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="#" id="home-button">Nihon</a>
-            
+            <div id="loading-spinner-container" class="d-flex align-items-center mx-auto" style="display: none;">
+                <div class="spinner-grow text-primary me-2" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <span id="loading-text" class="navbar-text">Loading Dictionary</span>
+            </div>
             <div class="d-flex ms-auto">
                 <button class="btn btn-outline-secondary me-2" id="install-button" style="display: none;">
                     Install
@@ -46,7 +51,7 @@
     </nav>
 
     <main class="container mt-4">
-        <div id="content-area">
+        <div id="content-area" style="display: none;">
             <!-- Dynamic content will be loaded here -->
         </div>
     </main>
