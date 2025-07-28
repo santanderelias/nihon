@@ -81,10 +81,10 @@ if ('serviceWorker' in navigator && !isDevMode()) {
                 console.log('ServiceWorker registration failed: ', error);
             });
     });
+}
 
     // Removed forced reload on controllerchange to prevent infinite loop.
     // A new version notification is handled by showToast in updatefound event.
-}
 
 // --- Dark Mode ---
 const darkModeSwitch = document.getElementById('dark-mode-switch');
@@ -698,6 +698,7 @@ async function main() {
         }
     showHomePage();
     updateHomeButton(false);
+}
 }
 
 document.addEventListener('DOMContentLoaded', main);
