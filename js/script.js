@@ -298,7 +298,7 @@ async function loadDictionary(progressCallback) {
         const manifest = await manifestResponse.json();
         const dbFiles = manifest.files;
 
-        let db = null;
+        let mainDb = null;
 
         for (let i = 0; i < dbFiles.length; i++) {
             const dbName = dbFiles[i];
@@ -313,12 +313,21 @@ async function loadDictionary(progressCallback) {
             const response = await fetch(dbUrl);
             const dbData = await response.arrayBuffer();
             
+            const tempDb = new SQL.Database(new Uint8Array(dbData));
+            const rows = tempDb.exec("SELECT ent_seq, kanji, reading, gloss FROM entries");
+            tempDb.close();
+
             if (i === 0) {
-                db = new SQL.Database(new Uint8Array(dbData));
-            } else {
-                db.exec(`ATTACH DATABASE 'file:${dbName}' AS db${i+1}`);
-                db.exec(`INSERT INTO main.entries SELECT * FROM db${i+1}.entries`);
-                db.exec(`DETACH DATABASE db${i+1}`);
+                mainDb = new SQL.Database();
+                mainDb.exec(`CREATE VIRTUAL TABLE entries USING fts5(ent_seq, kanji, reading, gloss);`);
+            }
+
+            if (rows.length > 0 && rows[0].values.length > 0) {
+                const stmt = mainDb.prepare("INSERT INTO entries (ent_seq, kanji, reading, gloss) VALUES (?, ?, ?, ?)");
+                for (const row of rows[0].values) {
+                    stmt.run(row);
+                }
+                stmt.free();
             }
         }
         
@@ -326,7 +335,7 @@ async function loadDictionary(progressCallback) {
         if (progressCallback) progressCallback(100, 'Dictionary ready.');
         await forceUIRender();
 
-        self.db = db;
+        self.db = mainDb;
 
     } catch (error) {
         showToast('Dictionary', 'An error occurred while loading the dictionary.');
