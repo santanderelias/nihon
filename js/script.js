@@ -31,6 +31,15 @@ if ('serviceWorker' in navigator && !isDevMode()) {
                 // Request version from service worker
                 if (navigator.serviceWorker.controller) {
                     navigator.serviceWorker.controller.postMessage({ action: 'get-version' });
+                } else {
+                    // If there's no controller, it's a fresh install.
+                    // The new service worker might still be installing.
+                    // We can listen for the controllerchange event.
+                    navigator.serviceWorker.addEventListener('controllerchange', () => {
+                        if (navigator.serviceWorker.controller) {
+                            navigator.serviceWorker.controller.postMessage({ action: 'get-version' });
+                        }
+                    });
                 }
 
                 registration.addEventListener('updatefound', () => {
@@ -54,8 +63,21 @@ if ('serviceWorker' in navigator && !isDevMode()) {
             if (versionSpan) {
                 versionSpan.textContent = `Version: ${event.data.version}`;
             }
+            const loadingVersion = document.getElementById('loading-version');
+            if (loadingVersion) {
+                loadingVersion.textContent = `Version: ${event.data.version}`;
+            }
         } else if (event.data.action === 'show-toast') {
             showToast(event.data.title, event.data.message);
+        } else if (event.data.action === 'download-progress') {
+            const { file, current, total } = event.data;
+            const progress = Math.round((current / total) * 100);
+            updateLoadingProgress(progress, `Downloading assets...`);
+            
+            const loadingFile = document.getElementById('loading-file');
+            if (loadingFile) {
+                loadingFile.textContent = `Downloading file ${current} of ${total}: ${file}`;
+            }
         }
     });
 
@@ -258,161 +280,56 @@ function updateLoadingProgress(percentage, statusText) {
 }
 
 
-const DB_NAME = 'nihonDictionary';
-const DB_VERSION = 1;
-const STORE_NAME = 'entries';
-
 let db;
-
-function openDatabase() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-        request.onupgradeneeded = (event) => {
-            db = event.target.result;
-            if (!db.objectStoreNames.contains(STORE_NAME)) {
-                const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'seq' });
-                objectStore.createIndex('word', 'word', { unique: false });
-                objectStore.createIndex('reading', 'reading', { unique: false });
-                objectStore.createIndex('meaning', 'meaning', { unique: false });
-            }
-        };
-
-        request.onsuccess = (event) => {
-            db = event.target.result;
-            resolve(db);
-        };
-
-        request.onerror = (event) => {
-            console.error('IndexedDB error:', event.target.error);
-            reject(event.target.error);
-        };
-    });
-}
-
-async function getDictFileCount() {
-    let count = 0;
-    let fileExists = true;
-    while (fileExists) {
-        const nextFileIndex = count + 1;
-        try {
-            const response = await fetch(`js/dict/dict-${nextFileIndex}.js`, { method: 'HEAD' });
-            if (response.ok) {
-                count++;
-            } else {
-                fileExists = false;
-            }
-        } catch (error) {
-            // Expected 404 for the last file, or other network errors
-            fileExists = false;
-        }
-    }
-    return count;
-}
 
 async function loadDictionary(progressCallback) {
     const forceUIRender = () => new Promise(resolve => requestAnimationFrame(resolve));
 
     try {
-        if (progressCallback) progressCallback(0, 'Opening database...');
-        await forceUIRender();
-        db = await openDatabase();
-        
-        const transaction = db.transaction(STORE_NAME, 'readonly');
-        const objectStore = transaction.objectStore(STORE_NAME);
-        const countRequest = objectStore.count();
-
-        return new Promise(async (resolve, reject) => {
-            countRequest.onsuccess = async () => {
-                if (countRequest.result > 0) {
-                    console.log('Dictionary already loaded in IndexedDB.');
-                    if (progressCallback) progressCallback(100, 'Dictionary ready.');
-                    await forceUIRender();
-                    resolve();
-                    return;
-                }
-
-                if (progressCallback) progressCallback(0, 'Counting dictionary files...');
-                await forceUIRender();
-                const totalLibraries = await getDictFileCount();
-                console.log(`Found ${totalLibraries} dictionary files.`);
-                if (totalLibraries === 0) {
-                    console.log("No dictionary files found.");
-                    if (progressCallback) progressCallback(100, 'No dictionary files found.');
-                    await forceUIRender();
-                    resolve();
-                    return;
-                }
-
-                const parser = new DOMParser();
-
-                for (let i = 1; i <= totalLibraries; i++) {
-                    if (progressCallback) {
-                        const progress = Math.round(((i - 1) / totalLibraries) * 100);
-                        progressCallback(progress, `Downloading dictionary ${i}/${totalLibraries}...`);
-                    }
-                    await forceUIRender();
-
-                    const response = await fetch(`js/dict/dict-${i}.js`);
-                    if (!response.ok) {
-                        console.warn(`Failed to fetch dict-${i}.js. Status: ${response.status}. Skipping.`);
-                        continue;
-                    }
-                    const scriptContent = await response.text();
-                    
-                    if (progressCallback) {
-                        const progress = Math.round(((i - 0.5) / totalLibraries) * 100);
-                        progressCallback(progress, `Processing dictionary ${i}/${totalLibraries}...`);
-                    }
-                    await forceUIRender();
-
-                    const DICT = eval(scriptContent.replace('const DICT =', ''));
-
-                    if (typeof DICT !== 'undefined' && Array.isArray(DICT)) {
-                        const addTransaction = db.transaction(STORE_NAME, 'readwrite');
-                        const addObjectStore = addTransaction.objectStore(STORE_NAME);
-                        DICT.forEach(entryStr => {
-                            try {
-                                const xmlDoc = parser.parseFromString(entryStr, "text/xml");
-                                const entryElement = xmlDoc.getElementsByTagName('entry')[0];
-                                if (!entryElement) return;
-
-                                const seq = entryElement.getElementsByTagName('ent_seq')[0]?.textContent;
-                                if (!seq) return;
-
-                                const kebNode = entryElement.getElementsByTagName('keb')[0];
-                                const rebNode = entryElement.getElementsByTagName('reb')[0];
-                                
-                                const word = kebNode?.textContent || rebNode?.textContent;
-                                const reading = rebNode?.textContent;
-                                
-                                const senseNode = entryElement.getElementsByTagName('sense')[0];
-                                const glossNode = senseNode?.getElementsByTagName('gloss')[0];
-                                const meaning = glossNode?.textContent;
-
-                                if (word && reading && meaning) {
-                                    addObjectStore.add({ seq, word, reading, meaning });
-                                }
-                            } catch (e) {
-                                console.error("Failed to parse dictionary entry:", e);
-                            }
-                        });
-                        await new Promise(res => addTransaction.oncomplete = res);
-                    }
-                }
-                console.log('Dictionary loaded successfully into IndexedDB.');
-                if (progressCallback) progressCallback(100, 'Dictionary loaded!');
-                await forceUIRender();
-                resolve();
-            };
-
-            countRequest.onerror = (event) => {
-                console.error('IndexedDB count error:', event.target.error);
-                reject(event.target.error);
-            };
+        const sqlPromise = initSqlJs({
+            locateFile: file => `/nihon/js/${file}`
         });
+
+        if (progressCallback) progressCallback(0, 'Loading SQLite library...');
+        await forceUIRender();
+        const SQL = await sqlPromise;
+        
+        const manifestResponse = await fetch('/nihon/db/db_manifest.json');
+        const manifest = await manifestResponse.json();
+        const dbFiles = manifest.files;
+
+        let db = null;
+
+        for (let i = 0; i < dbFiles.length; i++) {
+            const dbName = dbFiles[i];
+            const dbUrl = `/nihon/db/${dbName}`;
+            
+            if (progressCallback) {
+                const progress = Math.round(((i) / dbFiles.length) * 100);
+                progressCallback(progress, `Loading dictionary ${dbName}...`);
+            }
+            await forceUIRender();
+
+            const response = await fetch(dbUrl);
+            const dbData = await response.arrayBuffer();
+            
+            if (i === 0) {
+                db = new SQL.Database(new Uint8Array(dbData));
+            } else {
+                db.exec(`ATTACH DATABASE 'file:${dbName}' AS db${i+1}`);
+                db.exec(`INSERT INTO main.entries SELECT * FROM db${i+1}.entries`);
+                db.exec(`DETACH DATABASE db${i+1}`);
+            }
+        }
+        
+        console.log('All dictionary parts loaded into SQLite.');
+        if (progressCallback) progressCallback(100, 'Dictionary ready.');
+        await forceUIRender();
+
+        self.db = db;
+
     } catch (error) {
-        showToast('Dictionary', 'An error occurred while loading dictionary.');
+        showToast('Dictionary', 'An error occurred while loading the dictionary.');
         console.error('Failed to load dictionary:', error);
     }
 }
@@ -583,24 +500,19 @@ function startQuiz(type) {
 }
 
 async function getExampleWord(character) {
-    await dictionaryReadyPromise; // Ensure dictionary is loaded
-    // Find an entry where the word starts with the character being quizzed.
-    const transaction = db.transaction(STORE_NAME, 'readonly');
-    const objectStore = transaction.objectStore(STORE_NAME);
-    const wordIndex = objectStore.index('word');
-    const request = wordIndex.openCursor(IDBKeyRange.bound(character, character + '\uffff', false, true)); // Search for words starting with character
+    await dictionaryReadyPromise;
+    if (!db) return null;
+
+    const stmt = db.prepare("SELECT * FROM entries WHERE word LIKE ? LIMIT 1");
+    stmt.bind([`${character}%`]);
     
-    return new Promise((resolve) => {
-        request.onsuccess = (event) => {
-            const cursor = event.target.result;
-            if (cursor) {
-                resolve(cursor.value);
-            } else {
-                resolve(null);
-            }
-        };
-        request.onerror = () => resolve(null);
-    });
+    let result = null;
+    if (stmt.step()) {
+        result = stmt.getAsObject();
+    }
+    
+    stmt.free();
+    return result;
 }
 
 async function loadQuestion(type) {
@@ -717,7 +629,10 @@ function showToast(title, message, showRestartButton = false) {
             restartButton.className = 'btn btn-primary btn-sm mt-2';
             restartButton.textContent = 'Restart';
             restartButton.onclick = () => {
-                newWorker.postMessage({ action: 'skipWaiting' });
+                if (newWorker) {
+                    newWorker.postMessage({ action: 'skipWaiting' });
+                }
+                window.location.reload();
             };
             toastBody.appendChild(document.createElement('br'));
             toastBody.appendChild(restartButton);
@@ -841,107 +756,38 @@ function generateCharacterCards(characterSet) {
 }
 
 async function searchDictionary(word) {
-    await dictionaryReadyPromise; // Ensure IndexedDB is ready
+    await dictionaryReadyPromise;
+    if (!db) {
+        dictionaryResultArea.innerHTML = 'Dictionary not loaded.';
+        return;
+    }
     dictionaryResultArea.innerHTML = 'Searching...';
 
-    const searchTerm = word.toLowerCase();
-    const transaction = db.transaction(STORE_NAME, 'readonly');
-    const objectStore = transaction.objectStore(STORE_NAME);
+    const searchTerm = `%${word.toLowerCase()}%`;
+    const query = `
+        SELECT * FROM entries 
+        WHERE word LIKE ? OR reading LIKE ? OR meaning LIKE ?
+        ORDER BY 
+            CASE WHEN word = ? THEN 1
+                 WHEN word LIKE ? THEN 2
+                 ELSE 3
+            END,
+            word
+        LIMIT 100;
+    `;
+
+    const stmt = db.prepare(query);
+    stmt.bind([searchTerm, searchTerm, searchTerm, word, `${word}%`]);
+
     const results = [];
+    while (stmt.step()) {
+        results.push(stmt.getAsObject());
+    }
+    stmt.free();
 
-    // Search by word, reading, and meaning
-    const searchPromises = [];
-
-    // Search by word
-    searchPromises.push(new Promise(resolve => {
-        const wordIndex = objectStore.index('word');
-        const request = wordIndex.openCursor();
-        request.onsuccess = (event) => {
-            const cursor = event.target.result;
-            if (cursor) {
-                if (cursor.value.word.toLowerCase().includes(searchTerm)) {
-                    results.push(cursor.value);
-                }
-                cursor.continue();
-            } else {
-                resolve();
-            }
-        };
-        request.onerror = () => resolve();
-    }));
-
-    // Search by reading
-    searchPromises.push(new Promise(resolve => {
-        const readingIndex = objectStore.index('reading');
-        const request = readingIndex.openCursor();
-        request.onsuccess = (event) => {
-            const cursor = event.target.result;
-            if (cursor) {
-                if (cursor.value.reading.toLowerCase().includes(searchTerm)) {
-                    results.push(cursor.value);
-                }
-                cursor.continue();
-            } else {
-                resolve();
-            }
-        };
-        request.onerror = () => resolve();
-    }));
-
-    // Search by meaning
-    searchPromises.push(new Promise(resolve => {
-        const meaningIndex = objectStore.index('meaning');
-        const request = meaningIndex.openCursor();
-        request.onsuccess = (event) => {
-            const cursor = event.target.result;
-            if (cursor) {
-                if (cursor.value.meaning.toLowerCase().includes(searchTerm)) {
-                    results.push(cursor.value);
-                }
-                cursor.continue();
-            } else {
-                resolve();
-            }
-        };
-        request.onerror = () => resolve();
-    }));
-
-    await Promise.all(searchPromises);
-
-    // Remove duplicates and sort for display
-    const uniqueResults = Array.from(new Map(results.map(item => [item.seq, item])).values());
-
-    // Simple sorting for now: exact matches first, then startsWith, then includes
-    uniqueResults.sort((a, b) => {
-        const aWordLower = a.word.toLowerCase();
-        const bWordLower = b.word.toLowerCase();
-        const aReadingLower = a.reading.toLowerCase();
-        const bReadingLower = b.reading.toLowerCase();
-        const aMeaningLower = a.meaning.toLowerCase();
-        const bMeaningLower = b.meaning.toLowerCase();
-
-        const searchTermLower = searchTerm.toLowerCase();
-
-        // Exact matches
-        if (aWordLower === searchTermLower || aReadingLower === searchTermLower) return -1;
-        if (bWordLower === searchTermLower || bReadingLower === searchTermLower) return 1;
-
-        // Starts with
-        if (aWordLower.startsWith(searchTermLower) || aReadingLower.startsWith(searchTermLower)) return -1;
-        if (bWordLower.startsWith(searchTermLower) || bReadingLower.startsWith(searchTermLower)) return 1;
-
-        // Includes
-        if (aWordLower.includes(searchTermLower) || aReadingLower.includes(searchTermLower) || aMeaningLower.includes(searchTermLower)) return -1;
-        if (bWordLower.includes(searchTermLower) || bReadingLower.includes(searchTermLower) || bMeaningLower.includes(searchTermLower)) return 1;
-
-        return 0;
-    });
-
-
-    if (uniqueResults.length > 0) {
+    if (results.length > 0) {
         let html = '<div class="accordion" id="dictionary-accordion">';
-        // Limit to 100 results for performance
-        uniqueResults.slice(0, 100).forEach((entry, i) => {
+        results.forEach((entry, i) => {
             const entryId = `entry-${i}`;
             const romaji = wanakana.toRomaji(entry.reading);
             html += `
@@ -964,7 +810,7 @@ async function searchDictionary(word) {
                 </div>
             `;
         });
-        if (uniqueResults.length > 100) {
+        if (results.length >= 100) {
             html += `<p class="text-center mt-2">More than 100 results found. Please refine your search.</p>`;
         }
         html += '</div>';
