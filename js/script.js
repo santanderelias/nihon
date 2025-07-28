@@ -25,15 +25,7 @@ if ('serviceWorker' in navigator && !isDevMode()) {
     let newWorker; // Declare newWorker in a broader scope
     navigator.serviceWorker.addEventListener('message', event => {
         if (event.data.version) {
-            console.log('App Version:', event.data.version);
-            const versionSpan = document.querySelector('#settings-modal .modal-footer .text-muted');
-            if (versionSpan) {
-                versionSpan.textContent = `Version: ${event.data.version}`;
-            }
-            const loadingVersion = document.getElementById('loading-version');
-            if (loadingVersion) {
-                loadingVersion.textContent = `Version: ${event.data.version}`;
-            }
+            console.log('debug version', event.data.version);
         } else if (event.data.action === 'show-toast') {
             showToast(event.data.title, event.data.message);
         } else if (event.data.action === 'download-progress') {
