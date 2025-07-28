@@ -522,7 +522,7 @@ async function main() {
     showHomePage();
     updateHomeButton(false);
 }
-}
+
 
 document.addEventListener('DOMContentLoaded', main);
 
