@@ -1,4 +1,4 @@
-const CACHE_NAME = 'v1.0.3';
+const CACHE_NAME = 'v1.0.6';
 const URLS_TO_CACHE = [
     '/nihon/',
     '/nihon/index.html',
@@ -33,20 +33,23 @@ self.addEventListener('install', event => {
                 const file = dbFiles[i];
                 const fileUrl = `/nihon/db/${file}`;
                 
-                // Inform clients about progress
-                self.clients.matchAll().then(clients => {
-                    clients.forEach(client => {
-                        client.postMessage({
-                            action: 'download-progress',
-                            file: file,
-                            current: i + 1,
-                            total: totalFiles
+                const response = await cache.match(fileUrl);
+                if (!response) { // Only download and report progress if not already in cache
+                    // Inform clients about progress
+                    self.clients.matchAll().then(clients => {
+                        clients.forEach(client => {
+                            client.postMessage({
+                                action: 'download-progress',
+                                file: file,
+                                current: i + 1,
+                                total: totalFiles
+                            });
                         });
                     });
-                });
 
-                // Cache each database file
-                await cache.add(fileUrl);
+                    // Cache each database file
+                    await cache.add(fileUrl);
+                }
             }
         }).catch(error => {
             console.error('Installation failed:', error);
