@@ -158,13 +158,9 @@ if (installButton) {
 const floatingResetButton = document.getElementById('floating-reset-button');
 
 if (floatingResetButton) {
-    if (isDevMode()) {
-        floatingResetButton.style.display = 'flex';
-        floatingResetButton.style.justifyContent = 'center';
-        floatingResetButton.style.alignItems = 'center';
-    } else {
-        floatingResetButton.style.display = 'none';
-    }
+    floatingResetButton.style.display = 'flex';
+    floatingResetButton.style.justifyContent = 'center';
+    floatingResetButton.style.alignItems = 'center';
 
     floatingResetButton.addEventListener('click', async () => {
         // Trigger the same logic as the settings modal reset button
