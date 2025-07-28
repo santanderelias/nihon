@@ -36,9 +36,10 @@ if ('serviceWorker' in navigator && !isDevMode()) {
         } else if (event.data.action === 'show-toast') {
             showToast(event.data.title, event.data.message);
         } else if (event.data.action === 'download-progress') {
+            isInitialDownload = true;
             const { file, current, total } = event.data;
             const progress = Math.round((current / total) * 100);
-            updateLoadingProgress(progress, `Downloading assets...`);
+            updateOverlayProgress(progress, `Downloading file ${current} of ${total}: ${file}`);
             
             const loadingFile = document.getElementById('loading-file');
             if (loadingFile) {
@@ -265,7 +266,9 @@ const loadingProgressBar = document.getElementById('loading-progress-bar');
 const loadingProgressText = document.getElementById('loading-progress-text');
 const loadingStatus = document.getElementById('loading-status');
 
-function updateLoadingProgress(percentage, statusText) {
+let isInitialDownload = false;
+
+function updateOverlayProgress(percentage, statusText) {
     const percent = Math.round(percentage);
     if (loadingProgressBar) {
         loadingProgressBar.style.width = `${percent}%`;
@@ -276,6 +279,18 @@ function updateLoadingProgress(percentage, statusText) {
     }
     if (loadingStatus) {
         loadingStatus.textContent = statusText;
+    }
+}
+
+const smallLoadingMessage = document.getElementById('small-loading-message');
+const smallLoadingText = document.getElementById('small-loading-text');
+
+function updateSmallMessageProgress(statusText) {
+    if (smallLoadingText) {
+        smallLoadingText.textContent = statusText;
+    }
+    if (smallLoadingMessage) {
+        smallLoadingMessage.style.display = 'block';
     }
 }
 
@@ -306,7 +321,11 @@ async function loadDictionary(progressCallback) {
             
             if (progressCallback) {
                 const progress = Math.round(((i) / dbFiles.length) * 100);
-                progressCallback(progress, `Downloading ${i + 1} of ${dbFiles.length}...`);
+                if (isInitialDownload) {
+                    progressCallback(progress, `Downloading ${i + 1} of ${dbFiles.length}...`);
+                } else {
+                    progressCallback(progress, `Processing dictionary part ${i + 1} of ${dbFiles.length}...`);
+                }
             }
             await forceUIRender();
 
@@ -599,21 +618,28 @@ function checkAnswer(char, correctAnswer, type) {
 
 async function main() {
     setupDictionaryPromise();
-    updateLoadingProgress(5, 'Core assets loaded.');
+    updateOverlayProgress(5, 'Core assets loaded.');
 
     const dictionaryProgressCallback = (progress, status) => {
         const overallProgress = 5 + Math.round(progress * 0.9);
-        updateLoadingProgress(overallProgress, status);
+        if (isInitialDownload) {
+            updateOverlayProgress(overallProgress, status);
+        } else {
+            updateSmallMessageProgress(status);
+        }
     };
 
     await loadDictionary(dictionaryProgressCallback);
     resolveDictionaryReady();
 
-    updateLoadingProgress(100, 'Ready!');
+    updateOverlayProgress(100, 'Ready!');
 
     setTimeout(() => {
         if (loadingOverlay) {
             loadingOverlay.style.display = 'none';
+        }
+        if (smallLoadingMessage) {
+            smallLoadingMessage.style.display = 'none'; // Hide small message after full load
         }
         showHomePage();
         updateHomeButton(false);
