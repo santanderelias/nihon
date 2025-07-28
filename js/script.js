@@ -513,6 +513,7 @@ function checkAnswer(char, correctAnswer, type) {
 }
 
 async function main() {
+    console.log('main() function started.');
     setupDictionaryPromise();
 
     console.log('script.js: Calling loadDictionary...');
@@ -520,6 +521,7 @@ async function main() {
     console.log('script.js: loadDictionary completed.');
     resolveDictionaryReady();
     showHomePage();
+    console.log('showHomePage() called.');
     updateHomeButton(false);
 }
 
