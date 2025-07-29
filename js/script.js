@@ -1,27 +1,5 @@
 // --- Service Worker and PWA ---
-const devModeSwitch = document.getElementById('dev-mode-switch');
 
-const isDevMode = () => localStorage.getItem('devMode') === 'true';
-const isWanakanaEnabled = () => localStorage.getItem('wanakanaEnabled') === 'true';
-
-if (devModeSwitch) {
-    devModeSwitch.checked = isDevMode();
-    devModeSwitch.addEventListener('change', () => {
-        localStorage.setItem('devMode', devModeSwitch.checked);
-        alert('Developer mode setting changed. Please reload the page for it to take effect.');
-        location.reload();
-    });
-}
-
-const wanakanaSwitch = document.getElementById('wanakana-switch');
-if (wanakanaSwitch) {
-    console.log('[SCRIPT.JS] Initial Wanakana enabled state from localStorage:', isWanakanaEnabled());
-    wanakanaSwitch.checked = isWanakanaEnabled();
-    wanakanaSwitch.addEventListener('change', () => {
-        localStorage.setItem('wanakanaEnabled', wanakanaSwitch.checked);
-        console.log('[SCRIPT.JS] Wanakana switch toggled. New state:', wanakanaSwitch.checked);
-    });
-}
 
 
 
