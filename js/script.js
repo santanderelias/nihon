@@ -536,7 +536,6 @@ function checkAnswer(char, correctAnswer, type) {
 }
 
 async function main() {
-    hideLoadingIndicator(); // Ensure it's hidden initially
     showHomePage();
     updateHomeButton(false);
 
@@ -544,6 +543,7 @@ async function main() {
 
     await loadDictionary();
     resolveDictionaryReady();
+    hideLoadingIndicator();
 }
 
 
