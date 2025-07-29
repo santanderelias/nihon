@@ -241,9 +241,10 @@ dictionaryWorker.onmessage = (event) => {
             const exampleArea = document.getElementById('example-word-area');
             if (exampleArea) {
                 if (example) {
+                    const firstMeaning = example.meaning.split('|')[0].trim();
                     exampleArea.innerHTML = `
                         <p class="card-text mt-3" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
-                            <strong>Example:</strong> ${example.word} (${example.reading}) - <em>${example.meaning}</em>
+                            <strong>Example:</strong> ${example.word} (${example.reading}) - <em>${firstMeaning}</em>
                         </p>
                     `;
                 } else {
