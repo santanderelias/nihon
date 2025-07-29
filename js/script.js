@@ -199,24 +199,7 @@ function setupDictionaryPromise() {
     });
 }
 
-
-function showLoadingIndicator(message) {
-    console.log('showLoadingIndicator called with message:', message);
-    const loadingSpinnerContainer = document.getElementById('loading-spinner-container');
-    const loadingText = document.getElementById('loading-text');
-    if (loadingSpinnerContainer && loadingText) {
-        loadingText.textContent = message;
-        loadingSpinnerContainer.style.display = 'flex';
-    }
-}
-
-function hideLoadingIndicator() {
-    console.log('hideLoadingIndicator called.');
-    const loadingSpinnerContainer = document.getElementById('loading-spinner-container');
-    if (loadingSpinnerContainer) {
-        loadingSpinnerContainer.style.display = 'none';
-    }
-}
+var db;
 
 async function loadDictionary() {
     return new Promise((resolve, reject) => {
@@ -224,13 +207,11 @@ async function loadDictionary() {
 
         dictionaryWorker.onmessage = (event) => {
             if (event.data.action === 'progress') {
-                showLoadingIndicator(event.data.message);
+                // No global loading indicator, so do nothing here
             } else if (event.data.action === 'completed') {
-                hideLoadingIndicator();
                 resolve();
             } else if (event.data.action === 'error') {
                 showToast('Dictionary', `Error loading dictionary: ${event.data.message}`);
-                hideLoadingIndicator();
                 reject(new Error(event.data.message));
             }
         };
@@ -238,7 +219,6 @@ async function loadDictionary() {
         dictionaryWorker.onerror = (error) => {
             showToast('Dictionary', 'An error occurred with the dictionary worker.');
             console.error('Dictionary Worker Error:', error);
-            hideLoadingIndicator();
             reject(error);
         };
     });
@@ -411,21 +391,7 @@ function startQuiz(type) {
     loadQuestion(type);
 }
 
-async function getExampleWord(character) {
-    await dictionaryReadyPromise;
-    if (!db) return null;
 
-    const stmt = db.prepare("SELECT * FROM entries WHERE word LIKE ? LIMIT 1");
-    stmt.bind([`${character}%`]);
-    
-    let result = null;
-    if (stmt.step()) {
-        result = stmt.getAsObject();
-    }
-    
-    stmt.free();
-    return result;
-}
 
 async function loadQuestion(type) {
     const charToTest = getNextCharacter();
@@ -514,7 +480,6 @@ function checkAnswer(char, correctAnswer, type) {
 }
 
 async function main() {
-    showLoadingIndicator('Loading Dictionary...');
     showHomePage();
     updateHomeButton(false);
 
@@ -522,7 +487,6 @@ async function main() {
 
     await loadDictionary();
     resolveDictionaryReady();
-    hideLoadingIndicator();
 }
 
 
@@ -674,7 +638,13 @@ function generateCharacterCards(characterSet) {
 }
 
 async function searchDictionary(word) {
-    dictionaryResultArea.innerHTML = 'Searching...';
+    dictionaryResultArea.innerHTML = `
+        <div class="d-flex justify-content-center align-items-center mt-3">
+            <div class="spinner-grow text-secondary me-2" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <span>Searching Dictionary...</span>
+        </div>`;
     await dictionaryReadyPromise;
     if (!db) {
         dictionaryResultArea.innerHTML = 'Dictionary not loaded.';
