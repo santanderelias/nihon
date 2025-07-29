@@ -662,13 +662,17 @@ const dictionaryLoadingStatus = document.getElementById('dictionary-loading-stat
 
 if (dictionaryModal) {
     dictionaryModal.addEventListener('show.bs.modal', () => {
-        dictionaryLoadingStatus.innerHTML = `
-            <div class="d-flex justify-content-center align-items-center mt-3">
-                <div class="spinner-grow text-secondary me-2" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <span class="dictionary-loading-message">${currentDictionaryStatusMessage || 'Dictionary loading...'}</span>
-            </div>`;
+        if (!isDictionaryReady) {
+            dictionaryLoadingStatus.innerHTML = `
+                <div class="d-flex justify-content-center align-items-center mt-3">
+                    <div class="spinner-grow text-secondary me-2" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <span class="dictionary-loading-message">${currentDictionaryStatusMessage || 'Dictionary loading...'}</span>
+                </div>`;
+        } else {
+            dictionaryLoadingStatus.innerHTML = '';
+        }
         dictionaryResultArea.innerHTML = ''; // Clear previous search results
     });
 }
