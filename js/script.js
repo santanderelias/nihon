@@ -312,6 +312,7 @@ function getNextCharacter() {
 }
 
 function showHomePage() {
+    updateHomeButton(false); // No section is active
     contentArea.innerHTML = `
         <div class="row">
             <div class="col-md-6 mb-3">
@@ -392,6 +393,7 @@ function startFlashcardMode(type) {
     }
     }
     initializeProgress(currentCharset);
+    updateHomeButton(true); // A section is now active
 
     contentArea.innerHTML = `
         <div class="card text-center shadow-sm flashcard-container">
@@ -499,6 +501,8 @@ function markFlashcardProgress(char, isCorrect, type) {
     localStorage.setItem('nihon-progress', JSON.stringify(progress));
     loadFlashcard(type);
 }
+
+
 
 
 
@@ -815,18 +819,7 @@ function updateHomeButton(isSection) {
 }
 
 // Modify startQuiz to update the home button
-startQuiz = function(type) {
-    originalStartQuiz(type);
-    updateHomeButton(true); // A section is now active
-};
-const originalStartQuiz = startQuiz;
 
-// Modify showHomePage to update the home button
-const originalShowHomePage = showHomePage;
-showHomePage = function() {
-    originalShowHomePage();
-    updateHomeButton(false); // No section is active
-};
 
 // Event listener for the home button
 homeButton.addEventListener('click', (event) => {
