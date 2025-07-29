@@ -15,9 +15,11 @@ if (devModeSwitch) {
 
 const wanakanaSwitch = document.getElementById('wanakana-switch');
 if (wanakanaSwitch) {
+    console.log('[SCRIPT.JS] Initial Wanakana enabled state from localStorage:', isWanakanaEnabled());
     wanakanaSwitch.checked = isWanakanaEnabled();
     wanakanaSwitch.addEventListener('change', () => {
         localStorage.setItem('wanakanaEnabled', wanakanaSwitch.checked);
+        console.log('[SCRIPT.JS] Wanakana switch toggled. New state:', wanakanaSwitch.checked);
     });
 }
 
