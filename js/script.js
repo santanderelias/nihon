@@ -204,7 +204,7 @@ dictionaryWorker.onmessage = (event) => {
         case 'completed':
             console.log('[SCRIPT.JS] DSW has completed loading the dictionary.');
             isDictionaryReady = true;
-            currentDictionaryStatusMessage = 'Dictionary loaded.';
+            //currentDictionaryStatusMessage = 'Dictionary loaded.';
             if (resolveDictionaryReady) {
                 resolveDictionaryReady();
             }
