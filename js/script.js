@@ -191,14 +191,13 @@ if (checkUpdatesButton) {
 let dictionaryReadyPromise;
 let resolveDictionaryReady;
 
+const dictionaryWorker = new Worker('/nihon/js/dictionary_worker.js');
+
 function setupDictionaryPromise() {
     dictionaryReadyPromise = new Promise(resolve => {
         resolveDictionaryReady = resolve;
     });
 }
-
-
-
 
 
 function showLoadingIndicator(message) {
@@ -219,67 +218,32 @@ function hideLoadingIndicator() {
     }
 }
 
-var db;
-
 async function loadDictionary() {
-    const forceUIRender = () => new Promise(resolve => requestAnimationFrame(resolve));
+    return new Promise((resolve, reject) => {
+        dictionaryWorker.postMessage({ action: 'loadDictionary' });
 
-    showLoadingIndicator('Loading Dictionary...');
-
-    try {
-        const sqlPromise = initSqlJs({
-            locateFile: file => `/nihon/js/sql-wasm.wasm`
-        });
-
-        await forceUIRender();
-        const SQL = await sqlPromise;
-        
-        const manifestResponse = await fetch('/nihon/db/db_manifest.json');
-        const manifest = await manifestResponse.json();
-        const dbFiles = manifest.files;
-
-        let mainDb = null;
-
-        for (let i = 0; i < dbFiles.length; i++) {
-            const dbName = dbFiles[i];
-            const dbUrl = `/nihon/db/${dbName}`;
-            
-            showLoadingIndicator(`Processing dictionary part ${i + 1} of ${dbFiles.length}...`);
-            await forceUIRender();
-
-            const response = await fetch(dbUrl);
-            const dbData = await response.arrayBuffer();
-            
-            const tempDb = new SQL.Database(new Uint8Array(dbData));
-            const rows = tempDb.exec("SELECT ent_seq, kanji, reading, gloss FROM entries");
-            tempDb.close();
-
-            if (i === 0) {
-                mainDb = new SQL.Database();
-                mainDb.exec(`CREATE VIRTUAL TABLE entries USING fts5(ent_seq, kanji, reading, gloss);`);
+        dictionaryWorker.onmessage = (event) => {
+            if (event.data.action === 'progress') {
+                showLoadingIndicator(event.data.message);
+            } else if (event.data.action === 'completed') {
+                hideLoadingIndicator();
+                resolve();
+            } else if (event.data.action === 'error') {
+                showToast('Dictionary', `Error loading dictionary: ${event.data.message}`);
+                hideLoadingIndicator();
+                reject(new Error(event.data.message));
             }
+        };
 
-            if (rows.length > 0 && rows[0].values.length > 0) {
-                const stmt = mainDb.prepare("INSERT INTO entries (ent_seq, kanji, reading, gloss) VALUES (?, ?, ?, ?)");
-                for (const row of rows[0].values) {
-                    stmt.run(row);
-                }
-                stmt.free();
-            }
-        }
-        
-        console.log('All dictionary parts loaded into SQLite.');
-        hideLoadingIndicator();
-        await forceUIRender();
-
-        db = mainDb;
-
-    } catch (error) {
-        showToast('Dictionary', 'An error occurred while loading the dictionary.');
-        console.error('Failed to load dictionary:', error);
-        hideLoadingIndicator();
-    }
+        dictionaryWorker.onerror = (error) => {
+            showToast('Dictionary', 'An error occurred with the dictionary worker.');
+            console.error('Dictionary Worker Error:', error);
+            hideLoadingIndicator();
+            reject(error);
+        };
+    });
 }
+
 
 const contentArea = document.getElementById('content-area');
 const homeButton = document.getElementById('home-button');
