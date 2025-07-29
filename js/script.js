@@ -464,21 +464,12 @@ function startQuiz(type) {
 
     const answerInput = document.getElementById('answer-input');
     if (isWanakanaEnabled()) {
-        const options = {
-            customKanaMapping: {
-                shi: 'し',
-                chi: 'ち',
-                tsu: 'つ',
-                fu: 'ふ',
-                ji: 'じ',
-                zu: 'ず'
-            }
-        };
-
+        console.log('[SCRIPT.JS] Wanakana is enabled. Attempting to bind to input.');
+        console.log('[SCRIPT.JS] wanakana object:', typeof wanakana, wanakana);
         if (type === 'katakana') {
-            wanakana.bind(answerInput, { ...options, to: 'katakana' });
+            wanakana.bind(answerInput, { to: 'katakana' });
         } else {
-            wanakana.bind(answerInput, { ...options, to: 'hiragana' });
+            wanakana.bind(answerInput, { to: 'hiragana' });
         }
     }
 
