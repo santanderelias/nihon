@@ -4,24 +4,28 @@
 
 
 // --- Dark Mode ---
-const darkModeSwitch = document.getElementById('dark-mode-switch');
+const darkModeToggle = document.getElementById('dark-mode-toggle');
 const htmlElement = document.documentElement;
 
 const setDarkMode = (isDark) => {
     htmlElement.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
     localStorage.setItem('darkMode', isDark);
+    if (darkModeToggle) {
+        darkModeToggle.src = isDark ? '/nihon/icons/dark_mode.png' : '/nihon/icons/statistics.png'; // Use statistics.png as placeholder for light mode
+        darkModeToggle.alt = isDark ? 'Dark Mode Toggle' : 'Light Mode Toggle';
+    }
 };
 
-if (darkModeSwitch) {
+if (darkModeToggle) {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const savedTheme = localStorage.getItem('darkMode');
 
     const initialTheme = savedTheme !== null ? savedTheme === 'true' : prefersDark;
-    darkModeSwitch.checked = initialTheme;
-    setDarkMode(initialTheme);
+    setDarkMode(initialTheme); // Set initial state
 
-    darkModeSwitch.addEventListener('change', () => {
-        setDarkMode(darkModeSwitch.checked);
+    darkModeToggle.addEventListener('click', () => {
+        const isDark = htmlElement.getAttribute('data-bs-theme') === 'dark';
+        setDarkMode(!isDark);
     });
 }
 
