@@ -22,7 +22,7 @@ self.onmessage = async (event) => {
                 const dbName = dbFiles[i];
                 const dbUrl = `/nihon/db/${dbName}`;
                 
-                self.postMessage({ action: 'progress', message: `Processing dictionary part ${i + 1} of ${dbFiles.length}...` });
+                self.postMessage({ action: 'progress', message: `Processing dictionary ${i + 1} of ${dbFiles.length}` });
 
                 const response = await fetch(dbUrl);
                 const dbData = await response.arrayBuffer();
