@@ -1,7 +1,7 @@
 (function() {
     const buttonHtml = `
         <button id="floating-reset-button" class="btn btn-danger rounded-circle shadow-lg" style="position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; font-size: 1.5rem; z-index: 9999;">
-            🔄
+            Reset
         </button>
     `;
     document.body.insertAdjacentHTML('beforeend', buttonHtml);
