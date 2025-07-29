@@ -643,7 +643,7 @@ async function searchDictionary(word) {
             <div class="spinner-grow text-secondary me-2" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
-            <span>Searching Dictionary...</span>
+            <span>Dictionary is still loading...</span>
         </div>`;
     await dictionaryReadyPromise;
     if (!db) {
