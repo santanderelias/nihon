@@ -38,9 +38,10 @@
                 <button class="btn btn-outline-secondary me-2" id="references-button" data-bs-toggle="modal" data-bs-target="#references-modal">
                     <img src="/nihon/icons/reference.png" alt="References" style="height: 1.5rem;">
                 </button>
-                <button class="btn btn-outline-secondary" id="settings-button" data-bs-toggle="modal" data-bs-target="#settings-modal">
-                    <img src="/nihon/icons/settings.png" alt="Settings" style="height: 1.5rem;">
-                </button>
+                <div class="form-check form-switch align-self-center ms-2">
+                    <input class="form-check-input" type="checkbox" id="dark-mode-switch">
+                    <label class="form-check-label" for="dark-mode-switch"></label>
+                </div>
             </div>
         </div>
     </nav>
@@ -93,35 +94,7 @@
         </div>
     </div>
 
-    <!-- Settings Modal -->
-    <div class="modal fade" id="settings-modal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="dark-mode-switch">
-                        <label class="form-check-label" for="dark-mode-switch">Dark Mode</label>
-                    </div>
-                    
-                    <hr>
-                    <div class="d-grid gap-2 mx-auto">
-                        <button class="btn btn-secondary" id="check-updates-button">Check for Updates</button>
-                        <button class="btn btn-secondary" id="clear-data-button">Clear All Progress Data</button>
-                        <button class="btn btn-secondary" id="reset-app-button">Reset App Completely</button>
-                        <button class="btn btn-secondary" id="uninstall-app-button">Uninstall App</button>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <span class="text-muted me-auto"></span>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 
     <!-- Stats Modal -->
     <!-- Dictionary Modal -->
