@@ -202,6 +202,7 @@ function setupDictionaryPromise() {
 
 
 function showLoadingIndicator(message) {
+    console.log('showLoadingIndicator called with message:', message);
     const loadingSpinnerContainer = document.getElementById('loading-spinner-container');
     const loadingText = document.getElementById('loading-text');
     if (loadingSpinnerContainer && loadingText) {
@@ -211,6 +212,7 @@ function showLoadingIndicator(message) {
 }
 
 function hideLoadingIndicator() {
+    console.log('hideLoadingIndicator called.');
     const loadingSpinnerContainer = document.getElementById('loading-spinner-container');
     if (loadingSpinnerContainer) {
         loadingSpinnerContainer.style.display = 'none';
@@ -534,14 +536,13 @@ function checkAnswer(char, correctAnswer, type) {
 }
 
 async function main() {
+    hideLoadingIndicator(); // Ensure it's hidden initially
     showHomePage();
     updateHomeButton(false);
 
     setupDictionaryPromise();
 
-    console.log('script.js: Calling loadDictionary...');
     await loadDictionary();
-    console.log('script.js: loadDictionary completed.');
     resolveDictionaryReady();
 }
 
