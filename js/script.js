@@ -429,28 +429,25 @@ async function loadQuestion(type) {
     // Fetch and display an example word
     const exampleWordArea = document.getElementById('example-word-area');
     if (exampleWordArea) {
-        if (!dictionaryReadyPromise) {
-            exampleWordArea.innerHTML = '<p class="card-text mt-3">Dictionary loading...</p>';
-        } else {
-            await dictionaryReadyPromise;
-            dictionaryWorker.postMessage({ action: 'getExampleWord', character: charToTest });
-            dictionaryWorker.onmessage = (event) => {
-                if (event.data.action === 'exampleWordResult') {
-                    const example = event.data.result;
-                    if (example) {
-                        exampleWordArea.innerHTML = `
-                            <p class="card-text mt-3" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
-                                <strong>Example:</strong> ${example.word} (${example.reading}) - <em>${example.meaning}</em>
-                            </p>
-                        `;
-                    } else {
-                        exampleWordArea.innerHTML = ''; // Clear if no example is found
-                    }
-                } else if (event.data.action === 'error') {
-                    exampleWordArea.innerHTML = `Error: ${event.data.message}`;
+        exampleWordArea.innerHTML = '<p class="card-text mt-3">Dictionary loading...</p>';
+        await dictionaryReadyPromise;
+        dictionaryWorker.postMessage({ action: 'getExampleWord', character: charToTest });
+        dictionaryWorker.onmessage = (event) => {
+            if (event.data.action === 'exampleWordResult') {
+                const example = event.data.result;
+                if (example) {
+                    exampleWordArea.innerHTML = `
+                        <p class="card-text mt-3" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
+                            <strong>Example:</strong> ${example.word} (${example.reading}) - <em>${example.meaning}</em>
+                        </p>
+                    `;
+                } else {
+                    exampleWordArea.innerHTML = ''; // Clear if no example is found
                 }
-            };
-        }
+            } else if (event.data.action === 'error') {
+                exampleWordArea.innerHTML = `Error: ${event.data.message}`;
+            }
+        };
     }
 }
 
