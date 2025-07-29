@@ -26,3 +26,9 @@ input, textarea, .form-control {
     border-color: var(--bs-secondary);
     box-shadow: 0 0 0 0.25rem rgba(var(--bs-secondary-rgb), .25);
 }
+
+#example-word-area .spinner-grow,
+#dictionary-loading-status .spinner-grow {
+    width: 0.75rem;
+    height: 0.75rem;
+}
