@@ -578,19 +578,14 @@ const dictionaryLoadingStatus = document.getElementById('dictionary-loading-stat
 
 if (dictionaryModal) {
     dictionaryModal.addEventListener('show.bs.modal', () => {
-        if (!isDictionaryReady) {
-            dictionaryLoadingStatus.innerHTML = `
-                <div class="d-flex justify-content-center align-items-center mt-3">
-                    <div class="spinner-grow text-secondary me-2" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <span>${currentDictionaryStatusMessage || 'Dictionary loading...'}</span>
-                </div>`;
-            dictionaryResultArea.innerHTML = ''; // Clear previous search results
-        } else {
-            dictionaryLoadingStatus.innerHTML = ''; // Clear loading status
-            dictionaryResultArea.innerHTML = ''; // Clear previous search results
-        }
+        dictionaryLoadingStatus.innerHTML = `
+            <div class="d-flex justify-content-center align-items-center mt-3">
+                <div class="spinner-grow text-secondary me-2" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <span>${currentDictionaryStatusMessage || 'Dictionary loading...'}</span>
+            </div>`;
+        dictionaryResultArea.innerHTML = ''; // Clear previous search results
     });
 }
 
