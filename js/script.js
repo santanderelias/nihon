@@ -11,7 +11,7 @@ const setDarkMode = (isDark) => {
     htmlElement.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
     localStorage.setItem('darkMode', isDark);
     if (darkModeToggle) {
-        darkModeToggle.src = isDark ? '/nihon/icons/dark_mode.png' : '/nihon/icons/statistics.png'; // Use statistics.png as placeholder for light mode
+        darkModeToggle.src = isDark ? '/nihon/icons/dark_mode.png' : '/nihon/icons/sun.png'; // Use sun.png for light mode
         darkModeToggle.alt = isDark ? 'Dark Mode Toggle' : 'Light Mode Toggle';
     }
 };

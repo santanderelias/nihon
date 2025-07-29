@@ -32,3 +32,10 @@ input, textarea, .form-control {
     width: 0.75rem;
     height: 0.75rem;
 }
+
+.navbar-icon {
+    height: 1.5rem;
+    cursor: pointer;
+    margin-left: 0.5rem; /* Adjust as needed */
+    vertical-align: middle;
+}
