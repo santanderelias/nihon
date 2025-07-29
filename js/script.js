@@ -190,6 +190,7 @@ if (checkUpdatesButton) {
 // --- App Logic ---
 let dictionaryReadyPromise;
 let resolveDictionaryReady;
+let isDictionaryReady = false;
 
 const dictionaryWorker = new Worker('/nihon/js/dictionary_worker.js');
 
@@ -207,8 +208,16 @@ async function loadDictionary() {
 
         dictionaryWorker.onmessage = (event) => {
             if (event.data.action === 'progress') {
-                // No global loading indicator, so do nothing here
+                const dictionaryLoadingStatus = document.getElementById('dictionary-loading-status');
+                if (dictionaryLoadingStatus) {
+                    dictionaryLoadingStatus.innerHTML = `<p class="card-text mt-3">${event.data.message}</p>`;
+                }
             } else if (event.data.action === 'completed') {
+                const dictionaryLoadingStatus = document.getElementById('dictionary-loading-status');
+                if (dictionaryLoadingStatus) {
+                    dictionaryLoadingStatus.innerHTML = ''; // Clear the message
+                }
+                isDictionaryReady = true;
                 resolve();
             } else if (event.data.action === 'error') {
                 showToast('Dictionary', `Error loading dictionary: ${event.data.message}`);
@@ -635,18 +644,25 @@ function generateCharacterCards(characterSet) {
 }
 
 async function searchDictionary(word) {
+    const dictionaryLoadingStatus = document.getElementById('dictionary-loading-status');
+    if (!isDictionaryReady) {
+        dictionaryResultArea.innerHTML = `
+            <div class="d-flex justify-content-center align-items-center mt-3">
+                <div class="spinner-grow text-secondary me-2" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <span>Waiting for dictionary...</span>
+            </div>`;
+        return;
+    }
+
     dictionaryResultArea.innerHTML = `
         <div class="d-flex justify-content-center align-items-center mt-3">
             <div class="spinner-grow text-secondary me-2" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
-            <span>Dictionary is still loading...</span>
+            <span>Searching Dictionary...</span>
         </div>`;
-    await dictionaryReadyPromise;
-    if (!db) {
-        dictionaryResultArea.innerHTML = 'Dictionary not loaded.';
-        return;
-    }
 
     dictionaryWorker.postMessage({ action: 'searchDictionary', word: word });
 
