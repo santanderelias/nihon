@@ -462,8 +462,6 @@ function startQuiz(type) {
     
     
 
-    loadQuestion(type);
-
     const answerInput = document.getElementById('answer-input');
     if (isWanakanaEnabled()) {
         const options = {
@@ -483,6 +481,8 @@ function startQuiz(type) {
             wanakana.bind(answerInput, { ...options, to: 'hiragana' });
         }
     }
+
+    loadQuestion(type);
 }
 
 
