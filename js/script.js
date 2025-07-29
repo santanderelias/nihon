@@ -324,13 +324,130 @@ function showHomePage() {
                     <button class="btn btn-secondary" onclick="startQuiz('katakana')">Katakana</button>
                     <button class="btn btn-secondary" onclick="startQuiz('kanji')">Kanji</button>
                     <button class="btn btn-secondary" onclick="startQuiz('numbers')">Numbers</button>
+                    <hr>
+                    <button class="btn btn-info" onclick="startFlashcardMode('hiragana')">Flashcards (Hiragana)</button>
+                    <button class="btn btn-info" onclick="startFlashcardMode('katakana')">Flashcards (Katakana)</button>
+                    <button class="btn btn-info" onclick="startFlashcardMode('kanji')">Flashcards (Kanji)</button>
+                    <button class="btn btn-info" onclick="startFlashcardMode('numbers')">Flashcards (Numbers)</button>
                 </div>
             </div>
         </div>
     `;
 }
 
-function startQuiz(type) {
+
+function startFlashcardMode(type) {
+    currentCharset = characterSets[type];
+    initializeProgress(currentCharset);
+
+    contentArea.innerHTML = `
+        <div class="card text-center shadow-sm flashcard-container">
+            <div class="card-body">
+                <div class="flashcard" id="flashcard">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front d-flex align-items-center justify-content-center">
+                            <h1 id="flashcard-char" class="display-1"></h1>
+                        </div>
+                        <div class="flashcard-back d-flex flex-column align-items-center justify-content-center">
+                            <h2 id="flashcard-reading" class="mb-2"></h2>
+                            <p id="flashcard-meaning" class="lead"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-grid gap-2 mt-3">
+                    <button class="btn btn-primary" id="flip-button">Flip</button>
+                    <div class="d-flex justify-content-around">
+                        <button class="btn btn-danger flex-fill me-2" id="mark-incorrect-button">Mark Incorrect</button>
+                        <button class="btn btn-success flex-fill ms-2" id="mark-correct-button">Mark Correct</button>
+                    </div>
+                    <button class="btn btn-secondary" id="next-flashcard-button">Next Flashcard</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    updateHomeButton(true);
+    currentFlashcardType = type;
+    loadFlashcard(type);
+}
+
+let currentFlashcardChar = '';
+let currentFlashcardType = '';
+
+function loadFlashcard(type) {
+    const charToDisplay = getNextCharacter();
+
+    if (!charToDisplay) {
+        contentArea.innerHTML = `
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Congratulations!</h5>
+                    <p class="card-text">You have reviewed all characters in this set.</p>
+                    <button class="btn btn-secondary" onclick="showHomePage()">Back to Home</button>
+                </div>
+            </div>`;
+        return;
+    }
+
+    currentFlashcardChar = charToDisplay;
+    const flashcardChar = document.getElementById('flashcard-char');
+    const flashcardReading = document.getElementById('flashcard-reading');
+    const flashcardMeaning = document.getElementById('flashcard-meaning');
+    const flashcard = document.getElementById('flashcard');
+
+    flashcardChar.textContent = charToDisplay;
+    flashcardReading.textContent = '';
+    flashcardMeaning.textContent = '';
+
+    // Reset flip state
+    flashcard.classList.remove('flipped');
+
+    // Set up event listeners
+            // Set up event listeners
+    document.getElementById('flip-button').onclick = () => flipFlashcard(type);
+    document.getElementById('next-flashcard-button').onclick = () => loadFlashcard(type);
+    document.getElementById('mark-correct-button').onclick = () => markFlashcardProgress(currentFlashcardChar, true, type);
+    document.getElementById('mark-incorrect-button').onclick = () => markFlashcardProgress(currentFlashcardChar, false, type);
+}
+
+function populateFlashcardBack(char, type) {
+    const flashcardReading = document.getElementById('flashcard-reading');
+    const flashcardMeaning = document.getElementById('flashcard-meaning');
+
+    let reading = '';
+    let meaning = '';
+
+    if (type === 'numbers') {
+        reading = currentCharset[char].romaji;
+        meaning = currentCharset[char].latin;
+    } else {
+        reading = currentCharset[char];
+        meaning = ''; // For hiragana/katakana/kanji, meaning is the reading
+    }
+
+    flashcardReading.textContent = reading;
+    flashcardMeaning.textContent = meaning;
+}
+
+function flipFlashcard() {
+    document.getElementById('flashcard').classList.toggle('flipped');
+    // If flipped, populate the back side
+    if (document.getElementById('flashcard').classList.contains('flipped')) {
+        populateFlashcardBack(currentFlashcardChar, currentFlashcardType);
+    }
+}
+
+function markFlashcardProgress(char, isCorrect, type) {
+    if (isCorrect) {
+        progress[char].correct++;
+    } else {
+        progress[char].incorrect++;
+    }
+    localStorage.setItem('nihon-progress', JSON.stringify(progress));
+    loadFlashcard(type);
+}
+
+
     currentCharset = characterSets[type];
     initializeProgress(currentCharset);
 

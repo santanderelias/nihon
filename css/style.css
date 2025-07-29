@@ -36,3 +36,64 @@ input, textarea, .form-control {
 #theme-toggle-icon {
     background-image: none !important;
 }
+
+/* Flashcard Styles */
+.flashcard-container {
+    perspective: 1000px;
+}
+
+.flashcard {
+    width: 100%;
+    height: 300px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.6s;
+    cursor: pointer;
+}
+
+.flashcard.flipped {
+    transform: rotateY(180deg);
+}
+
+.flashcard-inner {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    transform-style: preserve-3d;
+}
+
+.flashcard-front, .flashcard-back {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    backface-visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.375rem;
+    background-color: var(--bs-body-bg);
+}
+
+.flashcard-back {
+    transform: rotateY(180deg);
+    flex-direction: column;
+}
+
+#flashcard-char {
+    font-family: 'Noto Sans JP Embedded', sans-serif;
+    font-size: 6rem;
+}
+
+#flashcard-reading, #flashcard-meaning {
+    font-family: 'Noto Sans JP Embedded', sans-serif;
+}
+
+@media (max-width: 768px) {
+    h1#char-display {
+        font-size: 5rem; /* Smaller font for mobile */
+    }
+    #flashcard-char {
+        font-size: 4rem;
+    }
+}
