@@ -17,6 +17,12 @@ input, textarea, .form-control {
     font-family: 'Noto Sans JP Embedded', sans-serif !important;
 }
 
+.form-check-input:checked {
+    background-color: var(--bs-secondary);
+    border-color: var(--bs-secondary);
+}
 
-
-
+.form-check-input:focus {
+    border-color: var(--bs-secondary);
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-secondary-rgb), .25);
+}
