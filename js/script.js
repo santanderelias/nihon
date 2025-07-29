@@ -719,7 +719,7 @@ function generateCharacterCards(characterSet) {
                 <div class="card text-center h-100">
                     <div class="card-body d-flex flex-column justify-content-center align-items-center">
                         <h3 class="card-title" style="font-family: 'Noto Sans JP Embedded', sans-serif;">${displayChar}</h3>
-                        <p class="card-text">${displayRomaji} (${latinNumber})</p>
+                        <p class="card-text">${displayRomaji}${latinNumber ? ` (${latinNumber})` : ''}</p>
                     </div>
                 </div>
             </div>
