@@ -206,33 +206,9 @@ var db;
 async function loadDictionary() {
     return new Promise((resolve, reject) => {
         dictionaryWorker.postMessage({ action: 'loadDictionary' });
+        currentDictionaryStatusMessage = 'Loading dictionary...';
 
-        dictionaryWorker.onmessage = (event) => {
-            if (event.data.action === 'progress') {
-                currentDictionaryStatusMessage = event.data.message;
-                const dictionaryLoadingStatus = document.getElementById('dictionary-loading-status');
-                if (dictionaryLoadingStatus) {
-                    dictionaryLoadingStatus.innerHTML = `<p class="card-text mt-3">${currentDictionaryStatusMessage}</p>`;
-                }
-            } else if (event.data.action === 'completed') {
-                currentDictionaryStatusMessage = ''; // Clear message on completion
-                const dictionaryLoadingStatus = document.getElementById('dictionary-loading-status');
-                if (dictionaryLoadingStatus) {
-                    dictionaryLoadingStatus.innerHTML = ''; // Clear the message
-                }
-                isDictionaryReady = true;
-                resolve();
-            } else if (event.data.action === 'error') {
-                showToast('Dictionary', `Error loading dictionary: ${event.data.message}`);
-                reject(new Error(event.data.message));
-            }
-        };
-
-        dictionaryWorker.onerror = (error) => {
-            showToast('Dictionary', 'An error occurred with the dictionary worker.');
-            console.error('Dictionary Worker Error:', error);
-            reject(error);
-        };
+        
     });
 }
 
@@ -442,7 +418,13 @@ async function loadQuestion(type) {
     const exampleWordArea = document.getElementById('example-word-area');
     if (exampleWordArea) {
         if (!isDictionaryReady) {
-            exampleWordArea.innerHTML = `<p class="card-text mt-3">${currentDictionaryStatusMessage || 'Dictionary loading...'}</p>`;
+            exampleWordArea.innerHTML = `
+                <div class="d-flex justify-content-center align-items-center mt-3">
+                    <div class="spinner-grow text-secondary me-2" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <span>${currentDictionaryStatusMessage || 'Dictionary loading...'}</span>
+                </div>`;
         } else {
             await dictionaryReadyPromise;
             dictionaryWorker.postMessage({ action: 'getExampleWord', character: charToTest });
@@ -597,7 +579,13 @@ const dictionaryLoadingStatus = document.getElementById('dictionary-loading-stat
 if (dictionaryModal) {
     dictionaryModal.addEventListener('show.bs.modal', () => {
         if (!isDictionaryReady) {
-            dictionaryLoadingStatus.innerHTML = `<p class="card-text mt-3">${currentDictionaryStatusMessage || 'Dictionary loading...'}</p>`;
+            dictionaryLoadingStatus.innerHTML = `
+                <div class="d-flex justify-content-center align-items-center mt-3">
+                    <div class="spinner-grow text-secondary me-2" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <span>${currentDictionaryStatusMessage || 'Dictionary loading...'}</span>
+                </div>`;
             dictionaryResultArea.innerHTML = ''; // Clear previous search results
         } else {
             dictionaryLoadingStatus.innerHTML = ''; // Clear loading status
