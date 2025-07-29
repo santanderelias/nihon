@@ -313,22 +313,35 @@ function getNextCharacter() {
 
 function showHomePage() {
     contentArea.innerHTML = `
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">Welcome to Nihon</h5>
-                <p class="card-text">Select a section to start your personalized quiz.</p>
-                <div class="d-grid gap-2">
-                    <button class="btn btn-secondary" onclick="startQuiz('hiragana')">Hiragana</button>
-                    <button class="btn btn-secondary" onclick="startQuiz('dakuten')">Dakuten</button>
-                    <button class="btn btn-secondary" onclick="startQuiz('handakuten')">Han-dakuten</button>
-                    <button class="btn btn-secondary" onclick="startQuiz('katakana')">Katakana</button>
-                    <button class="btn btn-secondary" onclick="startQuiz('kanji')">Kanji</button>
-                    <button class="btn btn-secondary" onclick="startQuiz('numbers')">Numbers</button>
-                    <hr>
-                    <button class="btn btn-info" onclick="startFlashcardMode('hiragana')">Flashcards (Hiragana)</button>
-                    <button class="btn btn-info" onclick="startFlashcardMode('katakana')">Flashcards (Katakana)</button>
-                    <button class="btn btn-info" onclick="startFlashcardMode('kanji')">Flashcards (Kanji)</button>
-                    <button class="btn btn-info" onclick="startFlashcardMode('numbers')">Flashcards (Numbers)</button>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Quizzes</h5>
+                        <p class="card-text">Test your knowledge with quizzes.</p>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-secondary" onclick="startQuiz('hiragana')">Hiragana</button>
+                            <button class="btn btn-secondary" onclick="startQuiz('dakuten')">Dakuten</button>
+                            <button class="btn btn-secondary" onclick="startQuiz('handakuten')">Han-dakuten</button>
+                            <button class="btn btn-secondary" onclick="startQuiz('katakana')">Katakana</button>
+                            <button class="btn btn-secondary" onclick="startQuiz('kanji')">Kanji</button>
+                            <button class="btn btn-secondary" onclick="startQuiz('numbers')">Numbers</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Flashcards</h5>
+                        <p class="card-text">Practice with flashcards.</p>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-info" onclick="startFlashcardMode('hiragana')">Flashcards (Hiragana)</button>
+                            <button class="btn btn-info" onclick="startFlashcardMode('katakana')">Flashcards (Katakana)</button>
+                            <button class="btn btn-info" onclick="startFlashcardMode('kanji')">Flashcards (Kanji)</button>
+                            <button class="btn btn-info" onclick="startFlashcardMode('numbers')">Flashcards (Numbers)</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
