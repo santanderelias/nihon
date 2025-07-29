@@ -12,7 +12,7 @@ const setDarkMode = (isDark) => {
     htmlElement.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
     localStorage.setItem('darkMode', isDark);
     if (darkModeToggle) {
-        const iconSrc = isDark ? '/nihon/icons/dark_mode.png' : '/nihon/icons/sun.png';
+        const iconSrc = isDark ? '/nihon/icons/dark_mode.png?v=' + Date.now() : '/nihon/icons/sun.png?v=' + Date.now();
         darkModeToggle.src = iconSrc;
         darkModeToggle.alt = isDark ? 'Dark Mode Toggle' : 'Light Mode Toggle';
         console.log('[SCRIPT.JS] Dark mode icon src set to:', iconSrc);
