@@ -102,6 +102,8 @@ self.onmessage = async (event) => {
                 SELECT * FROM entries
                 WHERE kanji LIKE ? OR reading LIKE ? OR gloss LIKE ?
                 ORDER BY
+                    LENGTH(kanji) ASC,
+                    LENGTH(reading) ASC,
                     CASE WHEN kanji = ? THEN 1
                          WHEN reading LIKE ? THEN 2
                          ELSE 3
