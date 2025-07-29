@@ -22,7 +22,10 @@ if (workbox) {
         { url: '/nihon/manifest.json', revision: null },
         { url: '/nihon/db/db_manifest.json', revision: null },
         { url: '/nihon/favicon.ico', revision: null },
-        { url: '/nihon/fonts/NotoSansJP.woff2', revision: null }
+        { url: '/nihon/fonts/NotoSansJP.woff2', revision: null },
+        { url: '/nihon/icons/back.png', revision: null },
+        { url: '/nihon/icons/history.png', revision: null },
+        { url: '/nihon/icons/reference.png', revision: null }
     ]);
 
     // Runtime caching for SQLite database files

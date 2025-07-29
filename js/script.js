@@ -778,14 +778,14 @@ let isSectionActive = false; // Flag to track if a section is active
 function updateHomeButton(isSection) {
     const appTitle = document.getElementById('home-button');
     if (isSection) {
-        appTitle.textContent = '◀️'; // Change to back emoji
-        appTitle.classList.add('back-button'); // Add a class for potential styling
-        appTitle.style.fontSize = '1.5rem'; // Increase font size
+        appTitle.innerHTML = '<img src="/nihon/icons/back.png" alt="Back" style="height: 1.5rem; vertical-align: middle;"> Back';
+        appTitle.classList.add('back-button');
+        appTitle.style.fontSize = ''; // Reset font size as image handles size
         isSectionActive = true;
     } else {
-        appTitle.textContent = 'Nihon'; // Change back to title
+        appTitle.textContent = 'Nihon';
         appTitle.classList.remove('back-button');
-        appTitle.style.fontSize = ''; // Reset font size
+        appTitle.style.fontSize = '';
         isSectionActive = false;
     }
 }
