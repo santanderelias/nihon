@@ -458,25 +458,7 @@ function startQuiz(type) {
         </div>
     `;
     
-    const answerInput = document.getElementById('answer-input');
-    if (isWanakanaEnabled()) {
-        const options = {
-            customKanaMapping: {
-                shi: 'し',
-                chi: 'ち',
-                tsu: 'つ',
-                fu: 'ふ',
-                ji: 'じ',
-                zu: 'ず'
-            }
-        };
-
-        if (type === 'katakana') {
-            wanakana.bind(answerInput, { ...options, to: 'katakana' });
-        } else {
-            wanakana.bind(answerInput, { ...options, to: 'hiragana' });
-        }
-    }
+    
 
     loadQuestion(type);
 }
@@ -515,6 +497,25 @@ async function loadQuestion(type) {
     skipButton.onclick = () => loadQuestion(type);
 
     answerInput.focus();
+
+    if (isWanakanaEnabled()) {
+        const options = {
+            customKanaMapping: {
+                shi: 'し',
+                chi: 'ち',
+                tsu: 'つ',
+                fu: 'ふ',
+                ji: 'じ',
+                zu: 'ず'
+            }
+        };
+
+        if (type === 'katakana') {
+            wanakana.bind(answerInput, { ...options, to: 'katakana' });
+        } else {
+            wanakana.bind(answerInput, { ...options, to: 'hiragana' });
+        }
+    }
 
     // Fetch and display an example word
     const exampleWordArea = document.getElementById('example-word-area');
