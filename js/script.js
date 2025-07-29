@@ -321,8 +321,14 @@ function showHomePage() {
                         <p class="card-text">Test your knowledge with quizzes.</p>
                         <div class="d-grid gap-2">
                             <button class="btn btn-secondary" onclick="startQuiz('hiragana')">Hiragana</button>
-                            <button class="btn btn-secondary" onclick="startQuiz('dakuten')">Dakuten</button>
-                            <button class="btn btn-secondary" onclick="startQuiz('handakuten')">Han-dakuten</button>
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" id="includeDakutenQuiz">
+                                <label class="form-check-label" for="includeDakutenQuiz">Include Dakuten</label>
+                            </div>
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="includeHandakutenQuiz">
+                                <label class="form-check-label" for="includeHandakutenQuiz">Include Han-dakuten</label>
+                            </div>
                             <button class="btn btn-secondary" onclick="startQuiz('katakana')">Katakana</button>
                             <button class="btn btn-secondary" onclick="startQuiz('kanji')">Kanji</button>
                             <button class="btn btn-secondary" onclick="startQuiz('numbers')">Numbers</button>
@@ -337,6 +343,14 @@ function showHomePage() {
                         <p class="card-text">Practice with flashcards.</p>
                         <div class="d-grid gap-2">
                             <button class="btn btn-secondary" onclick="startFlashcardMode('hiragana')">Flashcards (Hiragana)</button>
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" id="includeDakutenFlashcard">
+                                <label class="form-check-label" for="includeDakutenFlashcard">Include Dakuten</label>
+                            </div>
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="includeHandakutenFlashcard">
+                                <label class="form-check-label" for="includeHandakutenFlashcard">Include Han-dakuten</label>
+                            </div>
                             <button class="btn btn-secondary" onclick="startFlashcardMode('katakana')">Flashcards (Katakana)</button>
                             <button class="btn btn-secondary" onclick="startFlashcardMode('kanji')">Flashcards (Kanji)</button>
                             <button class="btn btn-secondary" onclick="startFlashcardMode('numbers')">Flashcards (Numbers)</button>
@@ -350,7 +364,33 @@ function showHomePage() {
 
 
 function startFlashcardMode(type) {
-    currentCharset = characterSets[type];
+        if (type === 'hiragana') {
+        currentCharset = { ...characterSets.hiragana };
+        const includeDakuten = document.getElementById('includeDakutenQuiz').checked;
+        const includeHandakuten = document.getElementById('includeHandakutenQuiz').checked;
+
+        if (includeDakuten) {
+            Object.assign(currentCharset, characterSets.dakuten);
+        }
+        if (includeHandakuten) {
+            Object.assign(currentCharset, characterSets.handakuten);
+        }
+    } else {
+            if (type === 'hiragana') {
+        currentCharset = { ...characterSets.hiragana };
+        const includeDakuten = document.getElementById('includeDakutenFlashcard').checked;
+        const includeHandakuten = document.getElementById('includeHandakutenFlashcard').checked;
+
+        if (includeDakuten) {
+            Object.assign(currentCharset, characterSets.dakuten);
+        }
+        if (includeHandakuten) {
+            Object.assign(currentCharset, characterSets.handakuten);
+        }
+    } else {
+        currentCharset = characterSets[type];
+    }
+    }
     initializeProgress(currentCharset);
 
     contentArea.innerHTML = `
