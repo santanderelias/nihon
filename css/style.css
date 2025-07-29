@@ -33,9 +33,6 @@ input, textarea, .form-control {
     height: 0.75rem;
 }
 
-.theme-icon {
-    height: 1.5rem;
-    cursor: pointer;
-    margin-left: 0.5rem; /* Adjust as needed */
-    vertical-align: middle;
+#theme-toggle-icon {
+    background-image: none !important;
 }

@@ -1,7 +1,5 @@
 // --- Service Worker and PWA ---
-
-
-
+const isWanakanaEnabled = () => true; // Always true as switch is removed
 
 // --- Dark Mode ---
 const themeToggleIcon = document.getElementById('theme-toggle-icon');
