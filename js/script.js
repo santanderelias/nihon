@@ -445,39 +445,6 @@ function markFlashcardProgress(char, isCorrect, type) {
     }
     localStorage.setItem('nihon-progress', JSON.stringify(progress));
     loadFlashcard(type);
-
-    currentCharset = characterSets[type];
-    initializeProgress(currentCharset);
-
-    contentArea.innerHTML = `
-        <div class="card text-center shadow-sm">
-            <div class="card-body">
-                <div id="feedback-area" class="mb-2" style="height: 24px;"></div>
-                <h1 id="char-display" class="display-1"></h1>
-                <div id="example-word-area" class="mt-3"></div>
-                <div class="mb-3">
-                    <input type="text" class="form-control text-center" id="answer-input" onkeypress="if(event.key === 'Enter') document.getElementById('check-button').click()">
-                </div>
-                <button class="btn btn-success" id="check-button">Check</button>
-                <button class="btn btn-secondary" id="skip-button">Skip</button>
-            </div>
-        </div>
-    `;
-    
-    
-
-    const answerInput = document.getElementById('answer-input');
-    if (isWanakanaEnabled()) {
-        console.log('[SCRIPT.JS] Wanakana is enabled. Attempting to bind to input.');
-        console.log('[SCRIPT.JS] wanakana object:', typeof wanakana, wanakana);
-        if (type === 'katakana') {
-            wanakana.bind(answerInput, { to: 'katakana' });
-        } else {
-            wanakana.bind(answerInput, { to: 'hiragana' });
-        }
-    }
-
-    loadQuestion(type);
 }
 
 
