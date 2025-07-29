@@ -795,11 +795,11 @@ function updateHomeButton(isSection) {
 }
 
 // Modify startQuiz to update the home button
-const originalStartQuiz = startQuiz;
 startQuiz = function(type) {
     originalStartQuiz(type);
     updateHomeButton(true); // A section is now active
 };
+const originalStartQuiz = startQuiz;
 
 // Modify showHomePage to update the home button
 const originalShowHomePage = showHomePage;
