@@ -818,19 +818,3 @@ function updateHomeButton(isSection) {
     }
 }
 
-// Modify startQuiz to update the home button
-
-
-// Event listener for the home button
-homeButton.addEventListener('click', (event) => {
-    event.preventDefault(); // Prevent default link behavior
-    if (isSectionActive) {
-        showHomePage(); // Go back to home page
-    } else {
-        // If already on home page, do nothing or scroll to top
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-});
-
-// Initial call to set the home button state
-updateHomeButton(false);
