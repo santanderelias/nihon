@@ -195,6 +195,108 @@ let currentDictionaryStatusMessage = '';
 
 const dictionaryWorker = new Worker('/nihon/js/dictionary_worker.js');
 
+// Centralized message handler for the dictionary worker
+dictionaryWorker.onmessage = (event) => {
+    const data = event.data;
+
+    switch (data.action) {
+        case 'completed':
+            isDictionaryReady = true;
+            currentDictionaryStatusMessage = 'Dictionary loaded.';
+            if (resolveDictionaryReady) {
+                resolveDictionaryReady();
+            }
+            // Show search container and hide loading status in the modal
+            const dictionarySearchContainer = document.getElementById('dictionary-search-container');
+            if (dictionarySearchContainer) {
+                dictionarySearchContainer.style.display = 'block';
+            }
+            const dictionaryLoadingStatus = document.getElementById('dictionary-loading-status');
+            if (dictionaryLoadingStatus) {
+                dictionaryLoadingStatus.innerHTML = '';
+            }
+            const exampleWordArea = document.getElementById('example-word-area');
+            if (exampleWordArea && exampleWordArea.innerHTML.includes('spinner-grow')) {
+                exampleWordArea.innerHTML = '';
+            }
+            break;
+
+        case 'progress':
+            currentDictionaryStatusMessage = data.message;
+            console.log(currentDictionaryStatusMessage); // Log progress to console
+            // Update UI in dictionary modal and hints section
+            const loadingElements = document.querySelectorAll('.dictionary-loading-message');
+            loadingElements.forEach(el => el.textContent = currentDictionaryStatusMessage);
+            break;
+
+        case 'error':
+            console.error('Dictionary worker error:', data.message);
+            currentDictionaryStatusMessage = `Error: ${data.message}`;
+            break;
+
+        case 'exampleWordResult':
+            const example = data.result;
+            const exampleArea = document.getElementById('example-word-area');
+            if (exampleArea) {
+                if (example) {
+                    exampleArea.innerHTML = `
+                        <p class="card-text mt-3" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
+                            <strong>Example:</strong> ${example.word} (${example.reading}) - <em>${example.meaning}</em>
+                        </p>
+                    `;
+                } else {
+                    exampleArea.innerHTML = ''; // Clear if no example is found
+                }
+            }
+            break;
+
+        case 'searchResult':
+            const results = data.result;
+            const dictionaryResultArea = document.getElementById('dictionary-result-area');
+            if (dictionaryResultArea) {
+                if (results.length > 0) {
+                    let html = '<div class="accordion" id="dictionary-accordion">';
+                    results.forEach((entry, i) => {
+                        const entryId = `entry-${i}`;
+                        const romaji = wanakana.toRomaji(entry.reading);
+                        html += `
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="heading-${entryId}">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${entryId}" aria-expanded="false" aria-controls="collapse-${entryId}">
+                                        <div class="w-100">
+                                            <strong style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.word} (${entry.reading})</strong>
+                                            <br>
+                                            <small class="text-muted">${romaji}</small>
+                                            <div class="text-truncate">${entry.gloss}</div>
+                                        </div>
+                                    </button>
+                                </h2>
+                                <div id="collapse-${entryId}" class="accordion-collapse collapse" aria-labelledby="heading-${entryId}" data-bs-parent="#dictionary-accordion">
+                                    <div class="accordion-body">
+                                        <p style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.gloss}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    if (results.length >= 100) {
+                        html += `<p class="text-center mt-2">More than 100 results found. Please refine your search.</p>`;
+                    }
+                    html += '</div>';
+                    dictionaryResultArea.innerHTML = html;
+                } else {
+                    dictionaryResultArea.innerHTML = 'No results found.';
+                }
+            }
+            if (window.resolveSearch) {
+                window.resolveSearch();
+                window.resolveSearch = null;
+            }
+            break;
+    }
+};
+
+
 function setupDictionaryPromise() {
     dictionaryReadyPromise = new Promise(resolve => {
         resolveDictionaryReady = resolve;
@@ -204,12 +306,9 @@ function setupDictionaryPromise() {
 var db;
 
 async function loadDictionary() {
-    return new Promise((resolve, reject) => {
-        dictionaryWorker.postMessage({ action: 'loadDictionary' });
-        currentDictionaryStatusMessage = 'Loading dictionary...';
-
-        
-    });
+    dictionaryWorker.postMessage({ action: 'loadDictionary' });
+    currentDictionaryStatusMessage = 'Loading dictionary...';
+    return dictionaryReadyPromise;
 }
 
 
@@ -423,27 +522,11 @@ async function loadQuestion(type) {
                     <div class="spinner-grow text-secondary me-2" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
-                    <span>${currentDictionaryStatusMessage || 'Dictionary loading...'}</span>
+                    <span class="dictionary-loading-message">${currentDictionaryStatusMessage || 'Dictionary loading...'}</span>
                 </div>`;
         } else {
             await dictionaryReadyPromise;
             dictionaryWorker.postMessage({ action: 'getExampleWord', character: charToTest });
-            dictionaryWorker.onmessage = (event) => {
-                if (event.data.action === 'exampleWordResult') {
-                    const example = event.data.result;
-                    if (example) {
-                        exampleWordArea.innerHTML = `
-                            <p class="card-text mt-3" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
-                                <strong>Example:</strong> ${example.word} (${example.reading}) - <em>${example.meaning}</em>
-                            </p>
-                        `;
-                    } else {
-                        exampleWordArea.innerHTML = ''; // Clear if no example is found
-                    }
-                } else if (event.data.action === 'error') {
-                    exampleWordArea.innerHTML = `Error: ${event.data.message}`;
-                }
-            };
         }
     }
 }
@@ -479,8 +562,7 @@ async function main() {
 
     setupDictionaryPromise();
 
-    await loadDictionary();
-    resolveDictionaryReady();
+    loadDictionary();
 }
 
 
@@ -583,7 +665,7 @@ if (dictionaryModal) {
                 <div class="spinner-grow text-secondary me-2" role="status">
                     <span class="visually-hidden">Loading...</span>
                 </div>
-                <span>${currentDictionaryStatusMessage || 'Dictionary loading...'}</span>
+                <span class="dictionary-loading-message">${currentDictionaryStatusMessage || 'Dictionary loading...'}</span>
             </div>`;
         dictionaryResultArea.innerHTML = ''; // Clear previous search results
     });
@@ -653,7 +735,7 @@ async function searchDictionary(word) {
                 <div class="spinner-grow text-secondary me-2" role="status">
                     <span class="visually-hidden">Loading...</span>
                 </div>
-                <span>Waiting for dictionary...</span>
+                <span class="dictionary-loading-message">Waiting for dictionary...</span>
             </div>`;
         return;
     }
@@ -669,48 +751,7 @@ async function searchDictionary(word) {
     dictionaryWorker.postMessage({ action: 'searchDictionary', word: word });
 
     return new Promise((resolve) => {
-        dictionaryWorker.onmessage = (event) => {
-            if (event.data.action === 'searchResult') {
-                const results = event.data.result;
-                if (results.length > 0) {
-                    let html = '<div class="accordion" id="dictionary-accordion">';
-                    results.forEach((entry, i) => {
-                        const entryId = `entry-${i}`;
-                        const romaji = wanakana.toRomaji(entry.reading);
-                        html += `
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="heading-${entryId}">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${entryId}" aria-expanded="false" aria-controls="collapse-${entryId}">
-                                        <div class="w-100">
-                                            <strong style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.word} (${entry.reading})</strong>
-                                            <br>
-                                            <small class="text-muted">${romaji}</small>
-                                            <div class="text-truncate">${entry.gloss}</div>
-                                        </div>
-                                    </button>
-                                </h2>
-                                <div id="collapse-${entryId}" class="accordion-collapse collapse" aria-labelledby="heading-${entryId}" data-bs-parent="#dictionary-accordion">
-                                    <div class="accordion-body">
-                                        <p style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.gloss}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    if (results.length >= 100) {
-                        html += `<p class="text-center mt-2">More than 100 results found. Please refine your search.</p>`;
-                    }
-                    html += '</div>';
-                    dictionaryResultArea.innerHTML = html;
-                } else {
-                    dictionaryResultArea.innerHTML = 'No results found.';
-                }
-                resolve();
-            } else if (event.data.action === 'error') {
-                dictionaryResultArea.innerHTML = `Error: ${event.data.message}`;
-                resolve();
-            }
-        };
+        window.resolveSearch = resolve;
     });
 }
 

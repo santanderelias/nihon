@@ -140,9 +140,14 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control" placeholder="Search for a word..." id="dictionary-search-input">
-                        <button class="btn btn-outline-secondary" type="button" id="dictionary-search-button">Search</button>
+                    <div id="dictionary-search-container" style="display: none;">
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" placeholder="Search for a word..." id="dictionary-search-input">
+                            <button class="btn btn-outline-secondary" type="button" id="dictionary-search-button">Search</button>
+                        </div>
+                    </div>
+                    <div id="dictionary-loading-status" class="text-center mt-3">
+                        <!-- Dictionary loading status will be loaded here -->
                     </div>
                     <div id="dictionary-result-area">
                         <!-- Dictionary search results will be loaded here -->
