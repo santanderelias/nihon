@@ -63,8 +63,27 @@ self.onmessage = async (event) => {
             self.postMessage({ action: 'completed' });
 
         } catch (error) {
-            console.error('[DSW] Error loading dictionary:', error);
-            self.postMessage({ action: 'error', message: error.message });
+            case 'error':
+            console.error('[DSW] Error loading dictionary:', data.message);
+            self.postMessage({ action: 'error', message: data.message });
+            break;
+
+        case 'getExampleWord':
+            if (!db) {
+                self.postMessage({ action: 'exampleWordResult', result: null });
+                return;
+            }
+            const character = event.data.character;
+            const exampleQuery = `SELECT kanji AS word, reading, gloss AS meaning FROM entries WHERE kanji LIKE ? OR reading LIKE ? ORDER BY RANDOM() LIMIT 1;`;
+            const exampleStmt = db.prepare(exampleQuery);
+            exampleStmt.bind([`%${character}%`, `%${character}%`]);
+            let exampleResult = null;
+            if (exampleStmt.step()) {
+                exampleResult = exampleStmt.getAsObject();
+            }
+            exampleStmt.free();
+            self.postMessage({ action: 'exampleWordResult', result: exampleResult });
+            break;
         }
     } else if (event.data.action === 'searchDictionary') {
         if (!db) {
