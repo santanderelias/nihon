@@ -198,9 +198,11 @@ const dictionaryWorker = new Worker('/nihon/js/dictionary_worker.js');
 // Centralized message handler for the dictionary worker
 dictionaryWorker.onmessage = (event) => {
     const data = event.data;
+    console.log('[SCRIPT.JS] Received message from DSW:', data.action);
 
     switch (data.action) {
         case 'completed':
+            console.log('[SCRIPT.JS] DSW has completed loading the dictionary.');
             isDictionaryReady = true;
             currentDictionaryStatusMessage = 'Dictionary loaded.';
             if (resolveDictionaryReady) {
@@ -223,14 +225,14 @@ dictionaryWorker.onmessage = (event) => {
 
         case 'progress':
             currentDictionaryStatusMessage = data.message;
-            console.log(currentDictionaryStatusMessage); // Log progress to console
+            console.log(`[SCRIPT.JS] DSW progress: ${data.message}`);
             // Update UI in dictionary modal and hints section
             const loadingElements = document.querySelectorAll('.dictionary-loading-message');
             loadingElements.forEach(el => el.textContent = currentDictionaryStatusMessage);
             break;
 
         case 'error':
-            console.error('Dictionary worker error:', data.message);
+            console.error('[SCRIPT.JS] DSW error:', data.message);
             currentDictionaryStatusMessage = `Error: ${data.message}`;
             break;
 
