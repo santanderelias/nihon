@@ -25,7 +25,9 @@ if (workbox) {
         { url: '/nihon/fonts/NotoSansJP.woff2', revision: null },
         { url: '/nihon/icons/back.png', revision: null },
         { url: '/nihon/icons/history.png', revision: null },
-        { url: '/nihon/icons/reference.png', revision: null }
+        { url: '/nihon/icons/reference.png', revision: null },
+        { url: '/nihon/icons/theme_dark.png', revision: null },
+        { url: '/nihon/icons/theme_light.png', revision: null }
     ]);
 
     // Runtime caching for SQLite database files

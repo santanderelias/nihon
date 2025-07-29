@@ -4,31 +4,27 @@
 
 
 // --- Dark Mode ---
-const darkModeToggle = document.getElementById('dark-mode-toggle');
+const themeToggleIcon = document.getElementById('theme-toggle-icon');
 const htmlElement = document.documentElement;
 
 const setDarkMode = (isDark) => {
-    console.log('[SCRIPT.JS] setDarkMode called with isDark:', isDark);
     htmlElement.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
     localStorage.setItem('darkMode', isDark);
-    if (darkModeToggle) {
-        const iconSrc = isDark ? '/nihon/icons/dark_mode.png?v=' + Date.now() : '/nihon/icons/sun.png?v=' + Date.now();
-        darkModeToggle.src = iconSrc;
-        darkModeToggle.alt = isDark ? 'Dark Mode Toggle' : 'Light Mode Toggle';
-        console.log('[SCRIPT.JS] Dark mode icon src set to:', iconSrc);
+    if (themeToggleIcon) {
+        themeToggleIcon.src = isDark ? '/nihon/icons/theme_dark.png' : '/nihon/icons/theme_light.png';
+        themeToggleIcon.alt = isDark ? 'Dark Theme Icon' : 'Light Theme Icon';
     }
 };
 
-if (darkModeToggle) {
+if (themeToggleIcon) {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const savedTheme = localStorage.getItem('darkMode');
 
     const initialTheme = savedTheme !== null ? savedTheme === 'true' : prefersDark;
     setDarkMode(initialTheme); // Set initial state
 
-    darkModeToggle.addEventListener('click', () => {
+    themeToggleIcon.addEventListener('click', () => {
         const isDark = htmlElement.getAttribute('data-bs-theme') === 'dark';
-        console.log('[SCRIPT.JS] Dark mode toggle clicked. Current theme is dark:', isDark);
         setDarkMode(!isDark);
     });
 }
