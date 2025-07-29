@@ -429,12 +429,12 @@ function showHomePage() {
                 <h5 class="card-title">Welcome to Nihon</h5>
                 <p class="card-text">Select a section to start your personalized quiz.</p>
                 <div class="d-grid gap-2">
-                    <button class="btn btn-primary" onclick="startQuiz('hiragana')">Hiragana</button>
-                    <button class="btn btn-primary" onclick="startQuiz('dakuten')">Dakuten</button>
-                    <button class="btn btn-primary" onclick="startQuiz('handakuten')">Han-dakuten</button>
-                    <button class="btn btn-info" onclick="startQuiz('katakana')">Katakana</button>
-                    <button class="btn btn-warning" onclick="startQuiz('kanji')">Kanji</button>
-                    <button class="btn btn-success" onclick="startQuiz('numbers')">Numbers</button>
+                    <button class="btn btn-secondary" onclick="startQuiz('hiragana')">Hiragana</button>
+                    <button class="btn btn-secondary" onclick="startQuiz('dakuten')">Dakuten</button>
+                    <button class="btn btn-secondary" onclick="startQuiz('handakuten')">Han-dakuten</button>
+                    <button class="btn btn-secondary" onclick="startQuiz('katakana')">Katakana</button>
+                    <button class="btn btn-secondary" onclick="startQuiz('kanji')">Kanji</button>
+                    <button class="btn btn-secondary" onclick="startQuiz('numbers')">Numbers</button>
                 </div>
             </div>
         </div>
