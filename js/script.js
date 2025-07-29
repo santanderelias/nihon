@@ -191,6 +191,7 @@ if (checkUpdatesButton) {
 let dictionaryReadyPromise;
 let resolveDictionaryReady;
 let isDictionaryReady = false;
+let currentDictionaryStatusMessage = '';
 
 const dictionaryWorker = new Worker('/nihon/js/dictionary_worker.js');
 
@@ -208,11 +209,13 @@ async function loadDictionary() {
 
         dictionaryWorker.onmessage = (event) => {
             if (event.data.action === 'progress') {
+                currentDictionaryStatusMessage = event.data.message;
                 const dictionaryLoadingStatus = document.getElementById('dictionary-loading-status');
                 if (dictionaryLoadingStatus) {
-                    dictionaryLoadingStatus.innerHTML = `<p class="card-text mt-3">${event.data.message}</p>`;
+                    dictionaryLoadingStatus.innerHTML = `<p class="card-text mt-3">${currentDictionaryStatusMessage}</p>`;
                 }
             } else if (event.data.action === 'completed') {
+                currentDictionaryStatusMessage = ''; // Clear message on completion
                 const dictionaryLoadingStatus = document.getElementById('dictionary-loading-status');
                 if (dictionaryLoadingStatus) {
                     dictionaryLoadingStatus.innerHTML = ''; // Clear the message
@@ -438,25 +441,28 @@ async function loadQuestion(type) {
     // Fetch and display an example word
     const exampleWordArea = document.getElementById('example-word-area');
     if (exampleWordArea) {
-        exampleWordArea.innerHTML = '<p class="card-text mt-3">Dictionary loading...</p>';
-        await dictionaryReadyPromise;
-        dictionaryWorker.postMessage({ action: 'getExampleWord', character: charToTest });
-        dictionaryWorker.onmessage = (event) => {
-            if (event.data.action === 'exampleWordResult') {
-                const example = event.data.result;
-                if (example) {
-                    exampleWordArea.innerHTML = `
-                        <p class="card-text mt-3" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
-                            <strong>Example:</strong> ${example.word} (${example.reading}) - <em>${example.meaning}</em>
-                        </p>
-                    `;
-                } else {
-                    exampleWordArea.innerHTML = ''; // Clear if no example is found
+        if (!isDictionaryReady) {
+            exampleWordArea.innerHTML = `<p class="card-text mt-3">${currentDictionaryStatusMessage || 'Dictionary loading...'}</p>`;
+        } else {
+            await dictionaryReadyPromise;
+            dictionaryWorker.postMessage({ action: 'getExampleWord', character: charToTest });
+            dictionaryWorker.onmessage = (event) => {
+                if (event.data.action === 'exampleWordResult') {
+                    const example = event.data.result;
+                    if (example) {
+                        exampleWordArea.innerHTML = `
+                            <p class="card-text mt-3" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
+                                <strong>Example:</strong> ${example.word} (${example.reading}) - <em>${example.meaning}</em>
+                            </p>
+                        `;
+                    } else {
+                        exampleWordArea.innerHTML = ''; // Clear if no example is found
+                    }
+                } else if (event.data.action === 'error') {
+                    exampleWordArea.innerHTML = `Error: ${event.data.message}`;
                 }
-            } else if (event.data.action === 'error') {
-                exampleWordArea.innerHTML = `Error: ${event.data.message}`;
-            }
-        };
+            };
+        }
     }
 }
 
@@ -586,6 +592,19 @@ const dictionaryModal = document.getElementById('dictionary-modal');
 const dictionarySearchInput = document.getElementById('dictionary-search-input');
 const dictionarySearchButton = document.getElementById('dictionary-search-button');
 const dictionaryResultArea = document.getElementById('dictionary-result-area');
+const dictionaryLoadingStatus = document.getElementById('dictionary-loading-status');
+
+if (dictionaryModal) {
+    dictionaryModal.addEventListener('show.bs.modal', () => {
+        if (!isDictionaryReady) {
+            dictionaryLoadingStatus.innerHTML = `<p class="card-text mt-3">${currentDictionaryStatusMessage || 'Dictionary loading...'}</p>`;
+            dictionaryResultArea.innerHTML = ''; // Clear previous search results
+        } else {
+            dictionaryLoadingStatus.innerHTML = ''; // Clear loading status
+            dictionaryResultArea.innerHTML = ''; // Clear previous search results
+        }
+    });
+}
 
 // --- References Modal Logic ---
 const referencesModal = document.getElementById('references-modal');
