@@ -445,8 +445,6 @@ function markFlashcardProgress(char, isCorrect, type) {
     }
     localStorage.setItem('nihon-progress', JSON.stringify(progress));
     loadFlashcard(type);
-}
-
 
     currentCharset = characterSets[type];
     initializeProgress(currentCharset);
