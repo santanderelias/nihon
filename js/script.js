@@ -8,11 +8,14 @@ const darkModeToggle = document.getElementById('dark-mode-toggle');
 const htmlElement = document.documentElement;
 
 const setDarkMode = (isDark) => {
+    console.log('[SCRIPT.JS] setDarkMode called with isDark:', isDark);
     htmlElement.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
     localStorage.setItem('darkMode', isDark);
     if (darkModeToggle) {
-        darkModeToggle.src = isDark ? '/nihon/icons/dark_mode.png' : '/nihon/icons/sun.png'; // Use sun.png for light mode
+        const iconSrc = isDark ? '/nihon/icons/dark_mode.png' : '/nihon/icons/sun.png';
+        darkModeToggle.src = iconSrc;
         darkModeToggle.alt = isDark ? 'Dark Mode Toggle' : 'Light Mode Toggle';
+        console.log('[SCRIPT.JS] Dark mode icon src set to:', iconSrc);
     }
 };
 
@@ -25,6 +28,7 @@ if (darkModeToggle) {
 
     darkModeToggle.addEventListener('click', () => {
         const isDark = htmlElement.getAttribute('data-bs-theme') === 'dark';
+        console.log('[SCRIPT.JS] Dark mode toggle clicked. Current theme is dark:', isDark);
         setDarkMode(!isDark);
     });
 }
