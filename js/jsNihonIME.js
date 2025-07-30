@@ -103,7 +103,7 @@ function kanji_btn(symbol, meaning, on_yomi, kun_yomi)
 		'" title="' + meaning +
 		'\nO: ' + on_yomi +
 		'\nK: ' + kun_yomi +
-		'" onclick="javascript:add(\'' + symbol + '\')">\n';
+		'" onclick="javascript:add(\'" + symbol + "\')">\n';
 }
 
 
@@ -213,7 +213,7 @@ function kana(symbol, reading)
 	Buttons_tmp +=
 		'<input class="btn" type="button" value="' + symbol +
 		'" title="' + reading +
-		'" onclick="javascript:add(\'' + symbol + '\')">\n';
+		'" onclick="javascript:add(\'" + symbol + "\')">\n';
 }
 
 
@@ -311,52 +311,57 @@ function katakana()
 
 
 /* Function that replaces the roman letters for their corresponding kana */
-function replacekana()
-{
-	// Temporary variable, for efficiency
-	const answerInput = document.getElementById("answer-input");
-	if (!answerInput) return;
-	let str = answerInput.value;
+function replacekana() {
+    const answerInput = document.getElementById("answer-input");
+    if (!answerInput) return;
+    let str = answerInput.value;
 
-	// Kanji suggestions
-	const suggestions = getKanjiSuggestions(str);
-	let suggestionsContainer = document.getElementById('kanji-suggestions-card');
-	if (suggestionsContainer) {
-		suggestionsContainer.remove();
-	}
-	if (suggestions.length > 0) {
-		suggestionsContainer = document.createElement('div');
-		suggestionsContainer.id = 'kanji-suggestions-card';
-		suggestionsContainer.className = 'card shadow border-primary';
-		suggestionsContainer.style.position = 'fixed';
-		suggestionsContainer.style.bottom = '10px';
-		suggestionsContainer.style.right = '10px';
-		suggestionsContainer.style.width = '300px';
-		suggestionsContainer.style.zIndex = '1050';
-		suggestionsContainer.style.maxHeight = '33vh';
-		suggestionsContainer.style.overflowY = 'auto';
+    // Kanji suggestions
+    const suggestions = getKanjiSuggestions(str);
+    let suggestionsContainer = document.getElementById('kanji-suggestions-card');
 
-		const cardBody = document.createElement('div');
-		cardBody.className = 'card-body';
+    if (suggestions.length > 0) {
+        if (!suggestionsContainer) {
+            suggestionsContainer = document.createElement('div');
+            suggestionsContainer.id = 'kanji-suggestions-card';
+            suggestionsContainer.className = 'card shadow border-primary';
+            suggestionsContainer.style.position = 'fixed';
+            suggestionsContainer.style.bottom = '10px';
+            suggestionsContainer.style.right = '10px';
+            suggestionsContainer.style.width = '300px';
+            suggestionsContainer.style.zIndex = '1050';
+            suggestionsContainer.style.maxHeight = '33vh';
+            suggestionsContainer.style.overflowY = 'auto';
+            document.body.appendChild(suggestionsContainer);
+        }
 
-		const buttonGroup = document.createElement('div');
+        const cardBody = document.createElement('div');
+        cardBody.className = 'card-body';
+
+        const buttonGroup = document.createElement('div');
         buttonGroup.className = 'd-flex flex-wrap gap-2';
-		suggestions.forEach(suggestion => {
-			const button = document.createElement('button');
-			button.className = 'btn btn-secondary';
-			button.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
-			button.textContent = suggestion;
-			button.onclick = () => {
-				answerInput.value += suggestion;
-				suggestionsContainer.remove();
-			};
-			buttonGroup.appendChild(button);
-		});
+        suggestions.forEach(suggestion => {
+            const button = document.createElement('button');
+            button.className = 'btn btn-secondary';
+            button.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
+            button.textContent = suggestion;
+            button.onclick = () => {
+                answerInput.value += suggestion;
+                if (suggestionsContainer) {
+                    suggestionsContainer.remove();
+                }
+            };
+            buttonGroup.appendChild(button);
+        });
 
-		cardBody.appendChild(buttonGroup);
-		suggestionsContainer.appendChild(cardBody);
-		document.body.appendChild(suggestionsContainer);
-	}
+        cardBody.appendChild(buttonGroup);
+        suggestionsContainer.innerHTML = ''; // Clear previous content
+        suggestionsContainer.appendChild(cardBody);
+    } else {
+        if (suggestionsContainer) {
+            suggestionsContainer.remove();
+        }
+    }
 
 	/*---HIRAGANA; KATAKANA;---*/
 
@@ -387,7 +392,7 @@ function replacekana()
 	// str = str.replace("tt","\u3063t"); // Already taken care of
 	//str = str.replace("nn","\u3063n");	str = str.replace("NN","\u30C3N");
 	str = str.replace("hh","\u3063h");	str = str.replace("HH","\u30C3H");
-	str = str.replace("mm","\u3063m");	str = str.replace("MM","\u30C3M");
+	str = str.replace("mm","\u3063m");	str = str.replace("TM","\u30C3M");
 	str = str.replace("yy","\u3063y");	str = str.replace("YY","\u30C3Y");
 	str = str.replace("rr","\u3063r");	str = str.replace("RR","\u30C3R");
 	str = str.replace("ww","\u3063w");	str = str.replace("WW","\u30C3W");
@@ -563,8 +568,8 @@ function replacekana()
 
 	// zya
 	str = str.replace("zya","\u3058\u3083");	str = str.replace("ZYA","\u30B8\u30E3");
-	str = str.replace("zyu","\u3058\u3085");	str = str.replace("ZYU","\u30B8\u30E5");
-	str = str.replace("zyo","\u3058\u3087");	str = str.replace("ZYO","\u30B8\u30E7");
+	str = str.replace("zyu","\u3058\u3085");	str = str.replace("ZYU","\u30B8\u30A5");
+	str = str.replace("zyo","\u3058\u3087");	str = str.replace("ZYO","\u30B8\u30A9");
 
 	// bya
 	str = str.replace("bya","\u3073\u3083");	str = str.replace("BYA","\u30D3\u30E3");
@@ -618,7 +623,7 @@ function replacekana()
 
 	// Simple quote
 	//str = str.replace("' ","\u300C");
-	//str = str.replace(" '","\u300D");
+	//str = str.replace(" \'","\u300D");
 	str = str.replace("[","\u300C");
 	str = str.replace("]","\u300D");
 
