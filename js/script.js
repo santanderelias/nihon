@@ -1,16 +1,3 @@
-function getKanjiSuggestions(input) {
-    const suggestions = [];
-    for (let level = 1; level <= 7; level++) {
-        const kanjiList = kanji(level);
-        for (let i = 0; i < kanjiList.length; i++) {
-            const kanjiInfo = kanjiList[i];
-            if (kanjiInfo.kun.indexOf(input) !== -1 || kanjiInfo.on.indexOf(input) !== -1) {
-                suggestions.push(kanjiInfo.char);
-            }
-        }
-    }
-    return suggestions;
-}
 // --- Service Worker and PWA ---
 
 // --- Dark Mode ---
