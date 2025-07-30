@@ -701,6 +701,10 @@ function getKanjiSuggestions(input) {
     }
 
     const quizState = typeof getQuizState === 'function' ? getQuizState() : '';
+    if (quizState === 'hiragana' || quizState === 'hiraganaSpecial') {
+        return [];
+    }
+
     const lowerCaseInput = input.toLowerCase();
     const exactMatches = [];
     const partialMatches = [];
@@ -772,15 +776,11 @@ function getKanjiSuggestions(input) {
         }
     }
 
-    if (quizState === 'hiragana' || quizState === 'hiraganaSpecial' || quizState === 'katakana' || quizState === 'kanji' || quizState === 'numbers' || quizState === 'listening') {
+    if (quizState === 'katakana' || quizState === 'kanji' || quizState === 'numbers' || quizState === 'listening') {
         addSuggestions(characterSets.hiragana, hiraganaMap);
         addDakutenHandakutenSuggestions(hiraganaMap);
-    }
-    if (quizState === 'hiraganaSpecial' || quizState === 'katakana' || quizState === 'kanji' || quizState === 'numbers' || quizState === 'listening') {
         addSuggestions(characterSets.dakuten, hiraganaMap);
         addSuggestions(characterSets.handakuten, hiraganaMap);
-    }
-    if (quizState === 'katakana' || quizState === 'kanji' || quizState === 'numbers' || quizState === 'listening') {
         addSuggestions(characterSets.katakana, katakanaMap);
         addDakutenHandakutenSuggestions(katakanaMap);
     }
