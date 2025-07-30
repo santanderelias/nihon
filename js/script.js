@@ -761,21 +761,24 @@ function showToast(title, message, showRestartButton = false) {
 // --- Stats Modal Logic ---
 const statsModal = document.getElementById('stats-modal');
 const wrongCharsTableBody = document.getElementById('wrong-chars-table-body');
+const correctCharsTableBody = document.getElementById('correct-chars-table-body');
 
 if (statsModal) {
     statsModal.addEventListener('show.bs.modal', () => {
         wrongCharsTableBody.innerHTML = ''; // Clear previous content
+        correctCharsTableBody.innerHTML = ''; // Clear previous content
+
         const wrongItems = [];
+        const correctItems = [];
+
         for (const item in progress) {
             if (progress[item].incorrect > 0) {
-                // Find the reading for the item
                 let reading = '';
                 for (const setKey in characterSets) {
                     if (characterSets[setKey][item]) {
                         if (setKey === 'numbers') {
                             reading = characterSets[setKey][item].romaji;
-                        } 
-                        else {
+                        } else {
                             reading = characterSets[setKey][item];
                         }
                         break;
@@ -783,15 +786,30 @@ if (statsModal) {
                 }
                 wrongItems.push({ item: item, reading: reading, count: progress[item].incorrect });
             }
+            if (progress[item].correct > 0) {
+                let reading = '';
+                for (const setKey in characterSets) {
+                    if (characterSets[setKey][item]) {
+                        if (setKey === 'numbers') {
+                            reading = characterSets[setKey][item].romaji;
+                        } else {
+                            reading = characterSets[setKey][item];
+                        }
+                        break;
+                    }
+                }
+                correctItems.push({ item: item, reading: reading, count: progress[item].correct });
+            }
         }
 
         // Sort by incorrect count in descending order
         wrongItems.sort((a, b) => b.count - a.count);
+        // Sort by correct count in descending order
+        correctItems.sort((a, b) => b.count - a.count);
 
         if (wrongItems.length === 0) {
             wrongCharsTableBody.innerHTML = '<tr><td colspan="3">No items answered incorrectly yet!</td></tr>';
-        } 
-        else {
+        } else {
             wrongItems.forEach(item => {
                 const row = wrongCharsTableBody.insertRow();
                 const itemCell = row.insertCell();
@@ -800,8 +818,22 @@ if (statsModal) {
                 itemCell.textContent = item.item;
                 readingCell.textContent = item.reading;
                 countCell.textContent = item.count;
+                itemCell.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
+                readingCell.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
+            });
+        }
 
-                // Apply the font to the item and reading cells
+        if (correctItems.length === 0) {
+            correctCharsTableBody.innerHTML = '<tr><td colspan="3">No items answered correctly yet!</td></tr>';
+        } else {
+            correctItems.forEach(item => {
+                const row = correctCharsTableBody.insertRow();
+                const itemCell = row.insertCell();
+                const readingCell = row.insertCell();
+                const countCell = row.insertCell();
+                itemCell.textContent = item.item;
+                readingCell.textContent = item.reading;
+                countCell.textContent = item.count;
                 itemCell.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
                 readingCell.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
             });
@@ -860,6 +892,24 @@ if (grammarModal) {
                     <li>に (ni) - place/time marker</li>
                     <li>へ (e) - direction marker</li>
                     <li>で (de) - place of action marker</li>
+                </ul>
+                <hr>
+                <h4>Verb Conjugation (Present Tense)</h4>
+                <p>Verbs are conjugated based on their group and politeness level.</p>
+                <p><strong>Group 1 (u-verbs):</strong></p>
+                <ul>
+                    <li>Nomu (飲む - to drink) -> Nomimasu (飲みます - polite)</li>
+                    <li>Kaku (書く - to write) -> Kakimasu (書きます - polite)</li>
+                </ul>
+                <p><strong>Group 2 (ru-verbs):</strong></p>
+                <ul>
+                    <li>Taberu (食べる - to eat) -> Tabemasu (食べます - polite)</li>
+                    <li>Miru (見る - to see) -> Mimasu (見ます - polite)</li>
+                </ul>
+                <p><strong>Group 3 (irregular verbs):</strong></p>
+                <ul>
+                    <li>Suru (する - to do) -> Shimasu (します - polite)</li>
+                    <li>Kuru (来る - to come) -> Kimasu (来ます - polite)</li>
                 </ul>
             </div>
         `;
