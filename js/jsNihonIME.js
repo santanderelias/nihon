@@ -667,14 +667,42 @@ function getKanjiSuggestions(input) {
     if (input.length === 0) {
         return suggestions;
     }
+
+    const exactMatches = [];
+    const partialMatches = [];
+
     for (let level = 1; level <= 7; level++) {
         const kanjiList = kanji(level);
         for (let i = 0; i < kanjiList.length; i++) {
             const kanjiInfo = kanjiList[i];
-            if (kanjiInfo.kun.indexOf(input) !== -1 || kanjiInfo.on.indexOf(input) !== -1) {
-                suggestions.push(kanjiInfo.char);
+            const kunReadings = kanjiInfo.kun.split(',');
+            const onReadings = kanjiInfo.on.split(',');
+
+            let isExactMatch = false;
+            for (const reading of kunReadings) {
+                if (reading.trim() === input) {
+                    exactMatches.push(kanjiInfo.char);
+                    isExactMatch = true;
+                    break;
+                }
+            }
+
+            if (!isExactMatch) {
+                for (const reading of onReadings) {
+                    if (reading.trim() === input) {
+                        exactMatches.push(kanjiInfo.char);
+                        isExactMatch = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!isExactMatch) {
+                if (kanjiInfo.kun.indexOf(input) !== -1 || kanjiInfo.on.indexOf(input) !== -1) {
+                    partialMatches.push(kanjiInfo.char);
+                }
             }
         }
     }
-    return suggestions;
+    return [...new Set([...exactMatches, ...partialMatches])];
 }
