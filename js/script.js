@@ -715,7 +715,7 @@ function checkAnswer(char, correctAnswer, type) {
     // Convert user input to Romaji if Wanakana is enabled
     userAnswer = userAnswer;
 
-    if (userAnswer === correctAnswer) {
+    if (userAnswer === correctAnswer || userAnswer === char) {
         if (!p) {
             p = { correct: 0, incorrect: 0, streak: 0, nextReview: now };
             progress[char] = p;
