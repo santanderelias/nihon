@@ -622,28 +622,41 @@ function replacekana()
 
 	// Kanji suggestions
 	const suggestions = getKanjiSuggestions(str);
-	const suggestionsContainer = document.getElementById('kanji-suggestions');
+	let suggestionsContainer = document.getElementById('kanji-suggestions-card');
 	if (suggestionsContainer) {
-		suggestionsContainer.innerHTML = '';
-		if (suggestions.length > 0) {
-			const list = document.createElement('ul');
-			list.className = 'list-group';
-			list.id = 'kanji-suggestions-list';
-			list.style.maxHeight = '200px';
-			list.style.overflowY = 'auto';
-			suggestions.forEach(suggestion => {
-				const listItem = document.createElement('li');
-				listItem.className = 'list-group-item';
-				listItem.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
-				listItem.textContent = suggestion;
-				listItem.onclick = () => {
-					answerInput.value = suggestion;
-					suggestionsContainer.innerHTML = '';
-				};
-				list.appendChild(listItem);
-			});
-			suggestionsContainer.appendChild(list);
-		}
+		suggestionsContainer.remove();
+	}
+
+	if (suggestions.length > 0) {
+		suggestionsContainer = document.createElement('div');
+		suggestionsContainer.id = 'kanji-suggestions-card';
+		suggestionsContainer.className = 'card shadow border-primary';
+		suggestionsContainer.style.position = 'fixed';
+		suggestionsContainer.style.bottom = '10px';
+		suggestionsContainer.style.right = '10px';
+		suggestionsContainer.style.width = '300px';
+		suggestionsContainer.style.zIndex = '1050';
+
+		const cardBody = document.createElement('div');
+		cardBody.className = 'card-body';
+
+		const list = document.createElement('ul');
+		list.className = 'list-group list-group-flush';
+		suggestions.forEach(suggestion => {
+			const listItem = document.createElement('li');
+			listItem.className = 'list-group-item';
+			listItem.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
+			listItem.textContent = suggestion;
+			listItem.onclick = () => {
+				answerInput.value = suggestion;
+				suggestionsContainer.remove();
+			};
+			list.appendChild(listItem);
+		});
+
+		cardBody.appendChild(list);
+		suggestionsContainer.appendChild(cardBody);
+		document.body.appendChild(suggestionsContainer);
 	}
 }
 
