@@ -45,7 +45,6 @@ let deferredPrompt;
 const installButton = document.getElementById('install-button');
 
 window.addEventListener('beforeinstallprompt', (e) => {
-    console.log('beforeinstallprompt fired', e);
     // Prevent the mini-infobar from appearing on mobile
     e.preventDefault();
     // Stash the event so it can be triggered later.
@@ -53,16 +52,11 @@ window.addEventListener('beforeinstallprompt', (e) => {
     // Update UI notify the user they can install the PWA
     if (installButton) {
         installButton.style.display = 'block';
-        console.log('Install button displayed. deferredPrompt set.');
-    } else {
-        console.log('Install button element not found.');
     }
 });
 
 if (installButton) {
-    console.log('Install button element found.');
     installButton.addEventListener('click', async () => {
-        console.log('Install button clicked. Prompting...');
         // Hide the app install button
         installButton.style.display = 'none';
         // Show the install prompt
@@ -70,7 +64,6 @@ if (installButton) {
         // Wait for the user to respond to the prompt
         const { outcome } = await deferredPrompt.userChoice;
         // Optionally, send analytics event with outcome of user choice
-        console.log(`User response to the install prompt: ${outcome}`);
         if (outcome === 'accepted') {
             showToast('Installation', 'App installed successfully!');
         } else {
@@ -93,11 +86,9 @@ const dictionaryWorker = new Worker('/nihon/js/dictionary_worker.js');
 // Centralized message handler for the dictionary worker
 dictionaryWorker.onmessage = (event) => {
     const data = event.data;
-    console.log('[SCRIPT.JS] Received message from DSW:', data.action);
 
     switch (data.action) {
         case 'completed':
-            console.log('[SCRIPT.JS] DSW has completed loading the dictionary.');
             isDictionaryReady = true;
             //currentDictionaryStatusMessage = 'Dictionary loaded.';
             if (resolveDictionaryReady) {
@@ -120,14 +111,12 @@ dictionaryWorker.onmessage = (event) => {
 
         case 'progress':
             currentDictionaryStatusMessage = data.message;
-            console.log(`[SCRIPT.JS] DSW progress: ${data.message}`);
             // Update UI in dictionary modal and hints section
             const loadingElements = document.querySelectorAll('.dictionary-loading-message');
             loadingElements.forEach(el => el.textContent = currentDictionaryStatusMessage);
             break;
 
         case 'error':
-            console.error('[SCRIPT.JS] DSW error:', data.message);
             currentDictionaryStatusMessage = `Error: ${data.message}`;
             break;
 
