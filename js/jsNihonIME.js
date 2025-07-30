@@ -658,40 +658,6 @@ function replacekana()
 	if (answerInput) {
 		answerInput.value = str;
 	}
-
-	if (suggestions.length > 0) {
-		suggestionsContainer = document.createElement('div');
-		suggestionsContainer.id = 'kanji-suggestions-card';
-		suggestionsContainer.className = 'card shadow border-primary';
-		suggestionsContainer.style.position = 'fixed';
-		suggestionsContainer.style.bottom = '10px';
-		suggestionsContainer.style.right = '10px';
-		suggestionsContainer.style.width = '300px';
-		suggestionsContainer.style.zIndex = '1050';
-		suggestionsContainer.style.maxHeight = '33vh';
-		suggestionsContainer.style.overflowY = 'auto';
-
-		const cardBody = document.createElement('div');
-		cardBody.className = 'card-body';
-
-		const buttonGroup = document.createElement('div');
-        buttonGroup.className = 'd-flex flex-wrap gap-2';
-		suggestions.forEach(suggestion => {
-			const button = document.createElement('button');
-			button.className = 'btn btn-secondary';
-			button.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
-			button.textContent = suggestion;
-			button.onclick = () => {
-				answerInput.value += suggestion;
-				suggestionsContainer.remove();
-			};
-			buttonGroup.appendChild(button);
-		});
-
-		cardBody.appendChild(buttonGroup);
-		suggestionsContainer.appendChild(cardBody);
-		document.body.appendChild(suggestionsContainer);
-	}
 }
 
 function getKanjiSuggestions(input) {
