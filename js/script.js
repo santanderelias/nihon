@@ -141,7 +141,7 @@ dictionaryWorker.onmessage = (event) => {
                                             <strong style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.kanji}</strong> <span style="font-family: 'Noto Sans JP Embedded', sans-serif;">(${entry.reading})</span>
                                             <br>
                                             <small class="text-muted">${romaji}</small>
-                                            <div class="text-truncate">${entry.gloss}</div>
+                                            <div class="text-truncate" style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.gloss}</div>
                                         </div>
                                     </button>
                                 </h2>
