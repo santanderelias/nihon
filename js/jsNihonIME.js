@@ -745,22 +745,67 @@ function getKanjiSuggestions(input) {
     };
 
     if (quizState === 'hiragana') {
-        const lastChar = input.slice(-1);
+        const lastTwoChars = input.slice(-2).toLowerCase();
+        const lastChar = input.slice(-1).toLowerCase();
+
         const dakutenSuggestions = {
-            'か': 'が', 'き': 'ぎ', 'く': 'ぐ', 'け': 'げ', 'こ': 'ご',
-            'さ': 'ざ', 'し': 'じ', 'す': 'ず', 'せ': 'ぜ', 'そ': 'ぞ',
-            'た': 'だ', 'ち': 'ぢ', 'つ': 'づ', 'て': 'で', 'と': 'ど',
-            'は': 'ば', 'ひ': 'び', 'ふ': 'ぶ', 'へ': 'べ', 'ほ': 'ぼ'
+            'ka': 'ga', 'ki': 'gi', 'ku': 'gu', 'ke': 'ge', 'ko': 'go',
+            'sa': 'za', 'shi': 'ji', 'su': 'zu', 'se': 'ze', 'so': 'zo',
+            'ta': 'ta', 'chi': 'ji', 'tsu': 'zu', 'te': 'de', 'to': 'do',
+            'ha': 'ba', 'hi': 'bi', 'fu': 'bu', 'he': 'be', 'ho': 'bo'
         };
         const handakutenSuggestions = {
-            'は': 'ぱ', 'ひ': 'ぴ', 'ふ': 'ぷ', 'へ': 'ぺ', 'ほ': 'ぽ'
+            'ha': 'pa', 'hi': 'pi', 'fu': 'pu', 'he': 'pe', 'ho': 'po'
         };
 
-        if (dakutenSuggestions[lastChar]) {
-            partialMatches.push(dakutenSuggestions[lastChar]);
+        function romajiToHiragana(romaji) {
+            const hiraganaMap = {
+                'a': 'あ', 'i': 'い', 'u': 'う', 'e': 'え', 'o': 'お',
+                'ka': 'か', 'ki': 'き', 'ku': 'く', 'ke': 'け', 'ko': 'こ',
+                'sa': 'さ', 'shi': 'し', 'su': 'す', 'se': 'せ', 'so': 'そ',
+                'ta': 'た', 'chi': 'ち', 'tsu': 'つ', 'te': 'て', 'to': 'と',
+                'na': 'な', 'ni': 'に', 'nu': 'ぬ', 'ne': 'ね', 'no': 'の',
+                'ha': 'は', 'hi': 'ひ', 'fu': 'ふ', 'he': 'へ', 'ho': 'ほ',
+                'ma': 'ま', 'mi': 'む', 'mu': 'め': 'め', 'mo': 'も',
+                'ya': 'や', 'yu': 'ゆ', 'yo': 'よ',
+                'ra': 'ら', 'ri': 'り', 'ru': 'れ', 're': 'ろ': 'ろ',
+                'wa': 'わ', 'wo': 'を',
+                'n': 'ん',
+                'ga': 'が', 'gi': 'ぎ', 'gu': 'ぐ', 'ge': 'げ', 'go': 'ご',
+                'za': 'ざ', 'ji': 'じ', 'zu': 'ず', 'ze': 'ぜ', 'zo': 'ぞ',
+                'da': 'だ', 'dji': 'ぢ', 'dzu': 'づ', 'de': 'で', 'do': 'ど',
+                'ba': 'ば', 'bi': 'び', 'bu': 'ぶ', 'be': 'べ', 'bo': 'ぼ',
+                'pa': 'ぱ', 'pi': 'ぴ', 'pu': 'ぷ', 'pe': 'ぺ', 'po': 'ぽ'
+            };
+            return hiraganaMap[romaji] || '';
         }
-        if (handakutenSuggestions[lastChar]) {
-            partialMatches.push(handakutenSuggestions[lastChar]);
+
+        if (dakutenSuggestions[lastTwoChars]) {
+            const suggestionRomaji = dakutenSuggestions[lastTwoChars];
+            const suggestionHiragana = romajiToHiragana(suggestionRomaji);
+            if (suggestionHiragana) {
+                partialMatches.push(suggestionHiragana);
+            }
+        } else if (dakutenSuggestions[lastChar]) {
+            const suggestionRomaji = dakutenSuggestions[lastChar];
+            const suggestionHiragana = romajiToHiragana(suggestionRomaji);
+            if (suggestionHiragana) {
+                partialMatches.push(suggestionHiragana);
+            }
+        }
+
+        if (handakutenSuggestions[lastTwoChars]) {
+            const suggestionRomaji = handakutenSuggestions[lastTwoChars];
+            const suggestionHiragana = romajiToHiragana(suggestionRomaji);
+            if (suggestionHiragana) {
+                partialMatches.push(suggestionHiragana);
+            }
+        } else if (handakutenSuggestions[lastChar]) {
+            const suggestionRomaji = handakutenSuggestions[lastChar];
+            const suggestionHiragana = romajiToHiragana(suggestionRomaji);
+            if (suggestionHiragana) {
+                partialMatches.push(suggestionHiragana);
+            }
         }
 
         for (const char in characterSets.hiragana) {
@@ -785,7 +830,9 @@ function getKanjiSuggestions(input) {
                 partialMatches.push(char);
             }
         }
-    } else if (quizState === 'kanji') {
+    }
+
+    if (quizState === 'kanji') {
         for (let level = 1; level <= 7; level++) {
             const kanjiList = kanji(level);
             for (let i = 0; i < kanjiList.length; i++) {
