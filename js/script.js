@@ -321,18 +321,11 @@ function showHomePage() {
                         <h5 class="card-title">Quizzes</h5>
                         <p class="card-text">Test your knowledge with quizzes.</p>
                         <div class="d-grid gap-2">
-                            <button class="btn btn-secondary" onclick="startQuiz('hiragana')">Hiragana</button>
-                            <div class="form-check form-switch mt-2">
-                                <input class="form-check-input" type="checkbox" id="includeDakutenQuiz">
-                                <label class="form-check-label" for="includeDakutenQuiz">Include Dakuten</label>
-                            </div>
-                            <div class="form-check form-switch mb-2">
-                                <input class="form-check-input" type="checkbox" id="includeHandakutenQuiz">
-                                <label class="form-check-label" for="includeHandakutenQuiz">Include Han-dakuten</label>
-                            </div>
-                            <button class="btn btn-secondary" onclick="startQuiz('katakana')">Katakana</button>
-                            <button class="btn btn-secondary" onclick="startQuiz('kanji')">Kanji</button>
-                            <button class="btn btn-secondary" onclick="startQuiz('numbers')">Numbers</button>
+                            <button class="btn btn-secondary" id="quizHiragana">Hiragana</button>
+                            <button class="btn btn-secondary" id="quizHiraganaSpecial">Hiragana Special</button>
+                            <button class="btn btn-secondary" id="quizKatakana">Katakana</button>
+                            <button class="btn btn-secondary" id="quizKanji">Kanji</button>
+                            <button class="btn btn-secondary" id="quizNumbers">Numbers</button>
                         </div>
                     </div>
                 </div>
@@ -343,54 +336,68 @@ function showHomePage() {
                         <h5 class="card-title">Flashcards</h5>
                         <p class="card-text">Practice with flashcards.</p>
                         <div class="d-grid gap-2">
-                            <button class="btn btn-secondary" onclick="startFlashcardMode('hiragana')">Flashcards (Hiragana)</button>
-                            <div class="form-check form-switch mt-2">
-                                <input class="form-check-input" type="checkbox" id="includeDakutenFlashcard">
-                                <label class="form-check-label" for="includeDakutenFlashcard">Include Dakuten</label>
-                            </div>
-                            <div class="form-check form-switch mb-2">
-                                <input class="form-check-input" type="checkbox" id="includeHandakutenFlashcard">
-                                <label class="form-check-label" for="includeHandakutenFlashcard">Include Han-dakuten</label>
-                            </div>
-                            <button class="btn btn-secondary" onclick="startFlashcardMode('katakana')">Flashcards (Katakana)</button>
-                            <button class="btn btn-secondary" onclick="startFlashcardMode('kanji')">Flashcards (Kanji)</button>
-                            <button class="btn btn-secondary" onclick="startFlashcardMode('numbers')">Flashcards (Numbers)</button>
+                            <button class="btn btn-secondary" id="flashcardHiragana">Flashcards (Hiragana)</button>
+                            <button class="btn btn-secondary" id="flashcardHiraganaSpecial">Flashcards (Hiragana Special)</button>
+                            <button class="btn btn-secondary" id="flashcardKatakana">Flashcards (Katakana)</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     `;
+    setupHomePageListeners();
 }
 
 
-function startFlashcardMode(type) {
-        if (type === 'hiragana') {
-        currentCharset = { ...characterSets.hiragana };
-        const includeDakuten = document.getElementById('includeDakutenQuiz').checked;
-        const includeHandakuten = document.getElementById('includeHandakutenQuiz').checked;
-
-        if (includeDakuten) {
-            Object.assign(currentCharset, characterSets.dakuten);
-        }
-        if (includeHandakuten) {
-            Object.assign(currentCharset, characterSets.handakuten);
-        }
-    } else {
-            if (type === 'hiragana') {
-        currentCharset = { ...characterSets.hiragana };
-        const includeDakuten = document.getElementById('includeDakutenFlashcard').checked;
-        const includeHandakuten = document.getElementById('includeHandakutenFlashcard').checked;
-
-        if (includeDakuten) {
-            Object.assign(currentCharset, characterSets.dakuten);
-        }
-        if (includeHandakuten) {
-            Object.assign(currentCharset, characterSets.handakuten);
-        }
+function startQuiz(type) {
+    if (type === 'hiraganaSpecial') {
+        currentCharset = { ...characterSets.hiragana, ...characterSets.dakuten, ...characterSets.handakuten };
     } else {
         currentCharset = characterSets[type];
     }
+    initializeProgress(currentCharset);
+    updateHomeButton(true); // A section is now active
+
+    contentArea.innerHTML = `
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <div id="feedback-area" class="mb-2" style="height: 24px;"></div>
+                <h1 id="char-display" class="display-1"></h1>
+                <div id="example-word-area" class="mt-3"></div>
+                <div class="mb-3">
+                    <input type="text" class="form-control text-center" id="answer-input" onkeypress="if(event.key === 'Enter') document.getElementById('check-button').click()">
+                </div>
+                <button class="btn btn-success" id="check-button">Check</button>
+                <button class="btn btn-secondary" id="skip-button">Skip</button>
+            </div>
+        </div>
+    `;
+    
+    
+
+    const answerInput = document.getElementById('answer-input');
+    if (isWanakanaEnabled()) {
+        console.log('[SCRIPT.JS] Wanakana is enabled. Attempting to bind to input.');
+        console.log('[SCRIPT.JS] wanakana object:', typeof wanakana, wanakana);
+        if (type === 'katakana') {
+            wanakana.bind(answerInput, { to: 'katakana' });
+        } else {
+            wanakana.bind(answerInput, { to: 'hiragana' });
+        }
+    }
+
+    loadQuestion(type);
+}
+
+
+
+
+
+function startFlashcardMode(type) {
+    if (type === 'hiraganaSpecial') {
+        currentCharset = { ...characterSets.hiragana, ...characterSets.dakuten, ...characterSets.handakuten };
+    } else {
+        currentCharset = characterSets[type];
     }
     initializeProgress(currentCharset);
     updateHomeButton(true); // A section is now active
@@ -505,6 +512,20 @@ function markFlashcardProgress(char, isCorrect, type) {
 
 
 
+
+function setupHomePageListeners() {
+    document.getElementById('quizHiragana').addEventListener('click', () => startQuiz('hiragana'));
+    document.getElementById('quizHiraganaSpecial').addEventListener('click', () => startQuiz('hiraganaSpecial'));
+    document.getElementById('quizKatakana').addEventListener('click', () => startQuiz('katakana'));
+    document.getElementById('quizKanji').addEventListener('click', () => startQuiz('kanji'));
+    document.getElementById('quizNumbers').addEventListener('click', () => startQuiz('numbers'));
+
+    document.getElementById('flashcardHiragana').addEventListener('click', () => startFlashcardMode('hiragana'));
+    document.getElementById('flashcardHiraganaSpecial').addEventListener('click', () => startFlashcardMode('hiraganaSpecial'));
+    document.getElementById('flashcardKatakana').addEventListener('click', () => startFlashcardMode('katakana'));
+    document.getElementById('flashcardKanji').addEventListener('click', () => startFlashcardMode('kanji'));
+    document.getElementById('flashcardNumbers').addEventListener('click', () => startFlashcardMode('numbers'));
+}
 
 async function loadQuestion(type) {
     const charToTest = getNextCharacter();
