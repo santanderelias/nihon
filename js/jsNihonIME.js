@@ -339,21 +339,21 @@ function replacekana()
 		const cardBody = document.createElement('div');
 		cardBody.className = 'card-body';
 
-		const list = document.createElement('ul');
-		list.className = 'list-group list-group-flush';
+		const buttonGroup = document.createElement('div');
+        buttonGroup.className = 'd-flex flex-wrap gap-2';
 		suggestions.forEach(suggestion => {
-			const listItem = document.createElement('li');
-			listItem.className = 'list-group-item';
-			listItem.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
-			listItem.textContent = suggestion;
-			listItem.onclick = () => {
+			const button = document.createElement('button');
+			button.className = 'btn btn-secondary';
+			button.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
+			button.textContent = suggestion;
+			button.onclick = () => {
 				answerInput.value += suggestion;
 				suggestionsContainer.remove();
 			};
-			list.appendChild(listItem);
+			buttonGroup.appendChild(button);
 		});
 
-		cardBody.appendChild(list);
+		cardBody.appendChild(buttonGroup);
 		suggestionsContainer.appendChild(cardBody);
 		document.body.appendChild(suggestionsContainer);
 	}
@@ -674,21 +674,21 @@ function replacekana()
 		const cardBody = document.createElement('div');
 		cardBody.className = 'card-body';
 
-		const list = document.createElement('ul');
-		list.className = 'list-group list-group-flush';
+		const buttonGroup = document.createElement('div');
+        buttonGroup.className = 'd-flex flex-wrap gap-2';
 		suggestions.forEach(suggestion => {
-			const listItem = document.createElement('li');
-			listItem.className = 'list-group-item';
-			listItem.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
-			listItem.textContent = suggestion;
-			listItem.onclick = () => {
+			const button = document.createElement('button');
+			button.className = 'btn btn-secondary';
+			button.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
+			button.textContent = suggestion;
+			button.onclick = () => {
 				answerInput.value += suggestion;
 				suggestionsContainer.remove();
 			};
-			list.appendChild(listItem);
+			buttonGroup.appendChild(button);
 		});
 
-		cardBody.appendChild(list);
+		cardBody.appendChild(buttonGroup);
 		suggestionsContainer.appendChild(cardBody);
 		document.body.appendChild(suggestionsContainer);
 	}
