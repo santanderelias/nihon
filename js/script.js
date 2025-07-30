@@ -344,6 +344,7 @@ function showHomePage() {
 
 
 function startQuiz(type) {
+    isSectionActive = true;
     if (type === 'hiraganaSpecial') {
         currentCharset = { ...characterSets.hiragana, ...characterSets.dakuten, ...characterSets.handakuten };
     } else {
@@ -388,6 +389,7 @@ function startQuiz(type) {
 
 
 function startFlashcardMode(type) {
+    isSectionActive = true;
     if (type === 'hiraganaSpecial') {
         currentCharset = { ...characterSets.hiragana, ...characterSets.dakuten, ...characterSets.handakuten };
     } else {
