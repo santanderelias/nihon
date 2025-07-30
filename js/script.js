@@ -69,14 +69,6 @@ if (installButton) {
     });
 }
 
-// --- Floating Reset Button --- (Moved to reset_button.js)
-
-
-
-
-
-
-
 
 // --- App Logic ---
 let dictionaryReadyPromise;
@@ -339,6 +331,8 @@ function showHomePage() {
                             <button class="btn btn-secondary" id="flashcardHiragana">Flashcards (Hiragana)</button>
                             <button class="btn btn-secondary" id="flashcardHiraganaSpecial">Flashcards (Hiragana Special)</button>
                             <button class="btn btn-secondary" id="flashcardKatakana">Flashcards (Katakana)</button>
+                            <button class="btn btn-secondary" id="flashcardKanji">Flashcards (Kanji)</button>
+                            <button class="btn btn-secondary" id="flashcardNumbers">Flashcards (Numbers)</button>
                         </div>
                     </div>
                 </div>
