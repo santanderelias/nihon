@@ -82,7 +82,9 @@
  * Uncomment the desired line(and comment the other) to change it.
  * Comment all of them for no buttons.
  */
-window.onload = hiragana;
+document.addEventListener('DOMContentLoaded', function() {
+    hiragana();
+});
 //window.onload = katakana;
 //window.onload = kanji(1); // Change the number to select the level
 
