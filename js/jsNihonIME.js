@@ -103,7 +103,7 @@ function kanji_btn(symbol, meaning, on_yomi, kun_yomi)
 		'" title="' + meaning +
 		'\nO: ' + on_yomi +
 		'\nK: ' + kun_yomi +
-		'" onclick="javascript:add(\'" + symbol + "\')">\n';
+		'" onclick="javascript:add(\'' + symbol + '\')">\n';
 }
 
 
@@ -392,7 +392,7 @@ function replacekana() {
 	// str = str.replace("tt","\u3063t"); // Already taken care of
 	//str = str.replace("nn","\u3063n");	str = str.replace("NN","\u30C3N");
 	str = str.replace("hh","\u3063h");	str = str.replace("HH","\u30C3H");
-	str = str.replace("mm","\u3063m");	str = str.replace("TM","\u30C3M");
+	str = str.replace("mm","\u3063m");	str = str.replace("MM","\u30C3M");
 	str = str.replace("yy","\u3063y");	str = str.replace("YY","\u30C3Y");
 	str = str.replace("rr","\u3063r");	str = str.replace("RR","\u30C3R");
 	str = str.replace("ww","\u3063w");	str = str.replace("WW","\u30C3W");
