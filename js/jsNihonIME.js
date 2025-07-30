@@ -749,7 +749,7 @@ function getKanjiSuggestions(input) {
         const dakutenSuggestions = {
             'ka': 'ga', 'ki': 'gi', 'ku': 'gu', 'ke': 'ge', 'ko': 'go',
             'sa': 'za', 'shi': 'ji', 'su': 'zu', 'se': 'ze', 'so': 'zo',
-            'ta': 'da', 'chi': 'ji', 'tsu': 'づ', 'te': 'de', 'to': 'do',
+            'ta': 'da', 'chi': 'ji', 'tsu': 'dzu', 'te': 'de', 'to': 'do',
             'ha': 'ba', 'hi': 'bi', 'fu': 'bu', 'he': 'be', 'ho': 'bo'
         };
         const handakutenSuggestions = {
