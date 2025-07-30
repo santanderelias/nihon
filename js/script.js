@@ -341,6 +341,31 @@ function showHomePage() {
                         </div>
                     </div>
                 </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingFour">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                            Common Phrases
+                        </button>
+                    </h2>
+                    <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#grammarAccordion">
+                        <div class="accordion-body" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
+                            <p><strong>Greetings:</strong></p>
+                            <ul>
+                                <li>おはようございます (Ohayou gozaimasu) - Good morning</li>
+                                <li>こんにちは (Konnichiwa) - Hello/Good afternoon</li>
+                                <li>こんばんは (Konbanwa) - Good evening</li>
+                                <li>さようなら (Sayounara) - Goodbye</li>
+                                <li>おやすみなさい (Oyasuminasai) - Good night</li>
+                            </ul>
+                            <p><strong>Time-related Expressions:</strong></p>
+                            <ul>
+                                <li>今何時ですか (Ima nanji desu ka?) - What time is it now?</li>
+                                <li>今日は何日ですか (Kyou wa nannichi desu ka?) - What is the date today?</li>
+                                <li>明日は何曜日ですか (Ashita wa nanyoubi desu ka?) - What day of the week is it tomorrow?</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="col-md-6 mb-3">
                 <div class="card shadow-sm h-100">
@@ -873,44 +898,72 @@ if (grammarModal) {
     grammarModal.addEventListener('show.bs.modal', () => {
         const grammarBody = grammarModal.querySelector('.modal-body');
         grammarBody.innerHTML = `
-            <div style="font-family: 'Noto Sans JP Embedded', sans-serif;">
-                <h4>Basic Sentence Structure</h4>
-                <p>The basic sentence structure in Japanese is Subject-Object-Verb (SOV).</p>
-                <p>Example: 私はリンゴを食べます (Watashi wa ringo o tabemasu) - I eat an apple.</p>
-                <ul>
-                    <li>私 (Watashi) - I (Subject)</li>
-                    <li>リンゴ (ringo) - apple (Object)</li>
-                    <li>を食べます (o tabemasu) - eat (Verb)</li>
-                </ul>
-                <hr>
-                <h4>Particles</h4>
-                <p>Particles are used to mark the grammatical function of a word.</p>
-                <ul>
-                    <li>は (wa) - topic marker</li>
-                    <li>が (ga) - subject marker</li>
-                    <li>を (o) - object marker</li>
-                    <li>に (ni) - place/time marker</li>
-                    <li>へ (e) - direction marker</li>
-                    <li>で (de) - place of action marker</li>
-                </ul>
-                <hr>
-                <h4>Verb Conjugation (Present Tense)</h4>
-                <p>Verbs are conjugated based on their group and politeness level.</p>
-                <p><strong>Group 1 (u-verbs):</strong></p>
-                <ul>
-                    <li>Nomu (飲む - to drink) -> Nomimasu (飲みます - polite)</li>
-                    <li>Kaku (書く - to write) -> Kakimasu (書きます - polite)</li>
-                </ul>
-                <p><strong>Group 2 (ru-verbs):</strong></p>
-                <ul>
-                    <li>Taberu (食べる - to eat) -> Tabemasu (食べます - polite)</li>
-                    <li>Miru (見る - to see) -> Mimasu (見ます - polite)</li>
-                </ul>
-                <p><strong>Group 3 (irregular verbs):</strong></p>
-                <ul>
-                    <li>Suru (する - to do) -> Shimasu (します - polite)</li>
-                    <li>Kuru (来る - to come) -> Kimasu (来ます - polite)</li>
-                </ul>
+            <div class="accordion" id="grammarAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingOne">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                            Basic Sentence Structure
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#grammarAccordion">
+                        <div class="accordion-body" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
+                            <p>The basic sentence structure in Japanese is Subject-Object-Verb (SOV).</p>
+                            <p>Example: 私はリンゴを食べます (Watashi wa ringo o tabemasu) - I eat an apple.</p>
+                            <ul>
+                                <li>私 (Watashi) - I (Subject)</li>
+                                <li>リンゴ (ringo) - apple (Object)</li>
+                                <li>を食べます (o tabemasu) - eat (Verb)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingTwo">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            Particles
+                        </button>
+                    </h2>
+                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#grammarAccordion">
+                        <div class="accordion-body" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
+                            <p>Particles are used to mark the grammatical function of a word.</p>
+                            <ul>
+                                <li>は (wa) - topic marker</li>
+                                <li>が (ga) - subject marker</li>
+                                <li>を (o) - object marker</li>
+                                <li>に (ni) - place/time marker</li>
+                                <li>へ (e) - direction marker</li>
+                                <li>で (de) - place of action marker</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingThree">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                            Verb Conjugation (Present Tense)
+                        </button>
+                    </h2>
+                    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#grammarAccordion">
+                        <div class="accordion-body" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
+                            <p>Verbs are conjugated based on their group and politeness level.</p>
+                            <p><strong>Group 1 (u-verbs):</strong></p>
+                            <ul>
+                                <li>Nomu (飲む - to drink) -> Nomimasu (飲みます - polite)</li>
+                                <li>Kaku (書く - to write) -> Kakimasu (書きます - polite)</li>
+                            </ul>
+                            <p><strong>Group 2 (ru-verbs):</strong></p>
+                            <ul>
+                                <li>Taberu (食べる - to eat) -> Tabemasu (食べます - polite)</li>
+                                <li>Miru (見る - to see) -> Mimasu (見ます - polite)</li>
+                            </ul>
+                            <p><strong>Group 3 (irregular verbs):</strong></p>
+                            <ul>
+                                <li>Suru (する - to do) -> Shimasu (します - polite)</li>
+                                <li>Kuru (来る - to come) -> Kimasu (来ます - polite)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
     });
