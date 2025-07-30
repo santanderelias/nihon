@@ -486,11 +486,9 @@ function loadFlashcard(type) {
 
     // Set up event listeners
     document.getElementById('flip-button').onclick = () => flipFlashcard();
+    document.getElementById('flashcard').onclick = () => flipFlashcard();
     document.getElementById('true-button').onclick = () => checkFlashcardAnswer(true, type);
     document.getElementById('false-button').onclick = () => checkFlashcardAnswer(false, type);
-
-    const flashcardReading = document.getElementById('flashcard-reading');
-    const flashcardMeaning = document.getElementById('flashcard-meaning');
 
     let reading = '';
     let meaning = '';
