@@ -313,7 +313,6 @@ function katakana()
 /* Function that replaces the roman letters for their corresponding kana */
 function replacekana()
 {
-    setTimeout(() => {
 	// Temporary variable, for efficiency
 	const answerInput = document.getElementById("answer-input");
 	if (!answerInput) return;
@@ -693,7 +692,6 @@ function replacekana()
 		suggestionsContainer.appendChild(cardBody);
 		document.body.appendChild(suggestionsContainer);
 	}
-}, 100);
 }
 
 function getKanjiSuggestions(input) {
@@ -751,7 +749,7 @@ function getKanjiSuggestions(input) {
         const dakutenSuggestions = {
             'ka': 'ga', 'ki': 'gi', 'ku': 'gu', 'ke': 'ge', 'ko': 'go',
             'sa': 'za', 'shi': 'ji', 'su': 'zu', 'se': 'ze', 'so': 'zo',
-            'ta': 'ta', 'chi': 'ji', 'tsu': 'zu', 'te': 'de', 'to': 'do',
+            'ta': 'da', 'chi': 'ji', 'tsu': 'zu', 'te': 'de', 'to': 'do',
             'ha': 'ba', 'hi': 'bi', 'fu': 'bu', 'he': 'be', 'ho': 'bo'
         };
         const handakutenSuggestions = {
