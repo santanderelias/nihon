@@ -986,6 +986,112 @@ if (grammarModal) {
                                         </div>
                                     </div>
                                 </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="phrasesHeadingThree">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseThree" aria-expanded="false" aria-controls="phrasesCollapseThree">
+                                            General
+                                        </button>
+                                    </h2>
+                                    <div id="phrasesCollapseThree" class="accordion-collapse collapse" aria-labelledby="phrasesHeadingThree" data-bs-parent="#phrasesAccordion">
+                                        <div class="accordion-body">
+                                            <ul>
+                                                <li>はい (Hai) - Yes</li>
+                                                <li>いいえ (Iie) - No</li>
+                                                <li>お願いします (Onegaishimasu) - Please</li>
+                                                <li>ありがとうございます (Arigatou gozaimasu) - Thank you</li>
+                                                <li>すみません (Sumimasen) - Excuse me/I'm sorry</li>
+                                                <li>ごめんなさい (Gomennasai) - I'm sorry</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="phrasesHeadingFour">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseFour" aria-expanded="false" aria-controls="phrasesCollapseFour">
+                                            Food/Restaurant
+                                        </button>
+                                    </h2>
+                                    <div id="phrasesCollapseFour" class="accordion-collapse collapse" aria-labelledby="phrasesHeadingFour" data-bs-parent="#phrasesAccordion">
+                                        <div class="accordion-body">
+                                            <ul>
+                                                <li>メニューをください (Menyuu o kudasai) - Please give me the menu.</li>
+                                                <li>これをください (Kore o kudasai) - I'll have this one, please.</li>
+                                                <li>お勘定をお願いします (Okanjou o onegaishimasu) - Check, please.</li>
+                                                <li>いただきます (Itadakimasu) - Said before eating.</li>
+                                                <li>ごちそうさまでした (Gochisousama deshita) - Said after eating.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="phrasesHeadingFive">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseFive" aria-expanded="false" aria-controls="phrasesCollapseFive">
+                                            Shopping
+                                        </button>
+                                    </h2>
+                                    <div id="phrasesCollapseFive" class="accordion-collapse collapse" aria-labelledby="phrasesHeadingFive" data-bs-parent="#phrasesAccordion">
+                                        <div class="accordion-body">
+                                            <ul>
+                                                <li>これはいくらですか (Kore wa ikura desu ka?) - How much is this?</li>
+                                                <li>これをください (Kore o kudasai) - I'll take this, please.</li>
+                                                <li>クレジットカードは使えますか (Kurejitto kaado wa tsukaemasu ka?) - Can I use a credit card?</li>
+                                                <li>袋をください (Fukuro o kudasai) - Can I have a bag, please?</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="phrasesHeadingSix">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseSix" aria-expanded="false" aria-controls="phrasesCollapseSix">
+                                            Directions
+                                        </button>
+                                    </h2>
+                                    <div id="phrasesCollapseSix" class="accordion-collapse collapse" aria-labelledby="phrasesHeadingSix" data-bs-parent="#phrasesAccordion">
+                                        <div class="accordion-body">
+                                            <ul>
+                                                <li>駅はどこですか (Eki wa doko desu ka?) - Where is the station?</li>
+                                                <li>まっすぐ行ってください (Massugu itte kudasai) - Please go straight.</li>
+                                                <li>右に曲がってください (Migi ni magatte kudasai) - Please turn right.</li>
+                                                <li>左に曲がってください (Hidari ni magatte kudasai) - Please turn left.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="phrasesHeadingSeven">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseSeven" aria-expanded="false" aria-controls="phrasesCollapseSeven">
+                                            Weather
+                                        </button>
+                                    </h2>
+                                    <div id="phrasesCollapseSeven" class="accordion-collapse collapse" aria-labelledby="phrasesHeadingSeven" data-bs-parent="#phrasesAccordion">
+                                        <div class="accordion-body">
+                                            <ul>
+                                                <li>今日の天気はどうですか (Kyou no tenki wa dou desu ka?) - How is the weather today?</li>
+                                                <li>晴れです (Hare desu) - It's sunny.</li>
+                                                <li>曇りです (Kumori desu) - It's cloudy.</li>
+                                                <li>雨です (Ame desu) - It's raining.</li>
+                                                <li>雪です (Yuki desu) - It's snowing.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="phrasesHeadingEight">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseEight" aria-expanded="false" aria-controls="phrasesCollapseEight">
+                                            Health/Emergencies
+                                        </button>
+                                    </h2>
+                                    <div id="phrasesCollapseEight" class="accordion-collapse collapse" aria-labelledby="phrasesHeadingEight" data-bs-parent="#phrasesAccordion">
+                                        <div class="accordion-body">
+                                            <ul>
+                                                <li>助けて (Tasukete) - Help!</li>
+                                                <li>救急車を呼んでください (Kyuukyuusha o yonde kudasai) - Please call an ambulance.</li>
+                                                <li>病院はどこですか (Byouin wa doko desu ka?) - Where is the hospital?</li>
+                                                <li>気分が悪いです (Kibun ga warui desu) - I feel sick.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
