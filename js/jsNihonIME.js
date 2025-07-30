@@ -110,7 +110,7 @@ function kanji_btn(symbol, meaning, on_yomi, kun_yomi)
 /* Function that adds the button symbol to the textarea */
 function add(symbol)
 {
-	document.getElementById("k_textarea").value += symbol;
+	document.getElementById("answer-input").value += symbol;
 }
 
 
@@ -316,7 +316,7 @@ function replacekana()
 	// Temporary variable, for efficiency
 	const answerInput = document.getElementById("answer-input");
 	if (!answerInput) return;
-	str = answerInput.value;
+	let str = answerInput.value;
 
 
 	/*---HIRAGANA; KATAKANA;---*/

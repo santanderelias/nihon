@@ -406,18 +406,20 @@ function startQuiz(type) {
     const answerInput = document.getElementById('answer-input');
     answerInput.onkeyup = () => {
         replacekana();
-        const suggestions = getKanjiSuggestions(answerInput.value);
-        const suggestionsContainer = document.getElementById('kanji-suggestions');
-        suggestionsContainer.innerHTML = '';
-        suggestions.forEach(suggestion => {
-            const suggestionElement = document.createElement('span');
-            suggestionElement.textContent = suggestion;
-            suggestionElement.onclick = () => {
-                answerInput.value = suggestion;
-                suggestionsContainer.innerHTML = '';
-            };
-            suggestionsContainer.appendChild(suggestionElement);
-        });
+        if (type === 'kanji' && isDictionaryReady) {
+            const suggestions = getKanjiSuggestions(answerInput.value);
+            const suggestionsContainer = document.getElementById('kanji-suggestions');
+            suggestionsContainer.innerHTML = '';
+            suggestions.forEach(suggestion => {
+                const suggestionElement = document.createElement('span');
+                suggestionElement.textContent = suggestion;
+                suggestionElement.onclick = () => {
+                    answerInput.value = suggestion;
+                    suggestionsContainer.innerHTML = '';
+                };
+                suggestionsContainer.appendChild(suggestionElement);
+            });
+        }
     };
 
     loadQuestion(type);
@@ -670,6 +672,7 @@ async function loadQuestion(type) {
     
     document.getElementById('char-display').textContent = charToTest;
     document.getElementById('feedback-area').innerHTML = '';
+    document.getElementById('kanji-suggestions').innerHTML = '';
     
     const answerInput = document.getElementById('answer-input');
     answerInput.value = '';
