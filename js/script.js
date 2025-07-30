@@ -341,31 +341,6 @@ function showHomePage() {
                         </div>
                     </div>
                 </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingFour">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
-                            Common Phrases
-                        </button>
-                    </h2>
-                    <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#grammarAccordion">
-                        <div class="accordion-body" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
-                            <p><strong>Greetings:</strong></p>
-                            <ul>
-                                <li>おはようございます (Ohayou gozaimasu) - Good morning</li>
-                                <li>こんにちは (Konnichiwa) - Hello/Good afternoon</li>
-                                <li>こんばんは (Konbanwa) - Good evening</li>
-                                <li>さようなら (Sayounara) - Goodbye</li>
-                                <li>おやすみなさい (Oyasuminasai) - Good night</li>
-                            </ul>
-                            <p><strong>Time-related Expressions:</strong></p>
-                            <ul>
-                                <li>今何時ですか (Ima nanji desu ka?) - What time is it now?</li>
-                                <li>今日は何日ですか (Kyou wa nannichi desu ka?) - What is the date today?</li>
-                                <li>明日は何曜日ですか (Ashita wa nanyoubi desu ka?) - What day of the week is it tomorrow?</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
             </div>
             <div class="col-md-6 mb-3">
                 <div class="card shadow-sm h-100">
@@ -972,20 +947,46 @@ if (grammarModal) {
                     </h2>
                     <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#grammarAccordion">
                         <div class="accordion-body" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
-                            <p><strong>Greetings:</strong></p>
-                            <ul>
-                                <li>おはようございます (Ohayou gozaimasu) - Good morning</li>
-                                <li>こんにちは (Konnichiwa) - Hello/Good afternoon</li>
-                                <li>こんばんは (Konbanwa) - Good evening</li>
-                                <li>さようなら (Sayounara) - Goodbye</li>
-                                <li>おやすみなさい (Oyasuminasai) - Good night</li>
-                            </ul>
-                            <p><strong>Time-related Expressions:</strong></p>
-                            <ul>
-                                <li>今何時ですか (Ima nanji desu ka?) - What time is it now?</li>
-                                <li>今日は何日ですか (Kyou wa nannichi desu ka?) - What is the date today?</li>
-                                <li>明日は何曜日ですか (Ashita wa nanyoubi desu ka?) - What day of the week is it tomorrow?</li>
-                            </ul>
+                            <div class="accordion" id="phrasesAccordion">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="phrasesHeadingOne">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseOne" aria-expanded="false" aria-controls="phrasesCollapseOne">
+                                            Greetings
+                                        </button>
+                                    </h2>
+                                    <div id="phrasesCollapseOne" class="accordion-collapse collapse" aria-labelledby="phrasesHeadingOne" data-bs-parent="#phrasesAccordion">
+                                        <div class="accordion-body">
+                                            <ul>
+                                                <li>おはようございます (Ohayou gozaimasu) - Good morning</li>
+                                                <li>こんにちは (Konnichiwa) - Hello/Good afternoon</li>
+                                                <li>こんばんは (Konbanwa) - Good evening</li>
+                                                <li>さようなら (Sayounara) - Goodbye</li>
+                                                <li>おやすみなさい (Oyasuminasai) - Good night</li>
+                                                <li>はじめまして (Hajimemashite) - Nice to meet you</li>
+                                                <li>どうぞよろしく (Douzo yoroshiku) - Pleased to make your acquaintance</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="phrasesHeadingTwo">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseTwo" aria-expanded="false" aria-controls="phrasesCollapseTwo">
+                                            Time-related Expressions
+                                        </button>
+                                    </h2>
+                                    <div id="phrasesCollapseTwo" class="accordion-collapse collapse" aria-labelledby="phrasesHeadingTwo" data-bs-parent="#phrasesAccordion">
+                                        <div class="accordion-body">
+                                            <ul>
+                                                <li>今何時ですか (Ima nanji desu ka?) - What time is it now?</li>
+                                                <li>今日は何日ですか (Kyou wa nannichi desu ka?) - What is the date today?</li>
+                                                <li>明日は何曜日ですか (Ashita wa nanyoubi desu ka?) - What day of the week is it tomorrow?</li>
+                                                <li>きのう (Kinou) - Yesterday</li>
+                                                <li>あした (Ashita) - Tomorrow</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
