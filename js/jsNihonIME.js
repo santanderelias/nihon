@@ -619,4 +619,34 @@ function replacekana()
 	if (answerInput) {
 		answerInput.value = str;
 	}
+
+	// Kanji suggestions
+	const suggestions = getKanjiSuggestions(str);
+	const suggestionsContainer = document.getElementById('kanji-suggestions');
+	if (suggestionsContainer) {
+		suggestionsContainer.innerHTML = '';
+		suggestions.forEach(suggestion => {
+			const suggestionElement = document.createElement('span');
+			suggestionElement.textContent = suggestion;
+			suggestionElement.onclick = () => {
+				answerInput.value = suggestion;
+				suggestionsContainer.innerHTML = '';
+			};
+			suggestionsContainer.appendChild(suggestionElement);
+		});
+	}
+}
+
+function getKanjiSuggestions(input) {
+    const suggestions = [];
+    for (let level = 1; level <= 7; level++) {
+        const kanjiList = kanji(level);
+        for (let i = 0; i < kanjiList.length; i++) {
+            const kanjiInfo = kanjiList[i];
+            if (kanjiInfo.kun.indexOf(input) !== -1 || kanjiInfo.on.indexOf(input) !== -1) {
+                suggestions.push(kanjiInfo.char);
+            }
+        }
+    }
+    return suggestions;
 }

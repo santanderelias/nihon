@@ -406,20 +406,6 @@ function startQuiz(type) {
     const answerInput = document.getElementById('answer-input');
     answerInput.onkeyup = () => {
         replacekana();
-        if (type === 'kanji' && isDictionaryReady) {
-            const suggestions = getKanjiSuggestions(answerInput.value);
-            const suggestionsContainer = document.getElementById('kanji-suggestions');
-            suggestionsContainer.innerHTML = '';
-            suggestions.forEach(suggestion => {
-                const suggestionElement = document.createElement('span');
-                suggestionElement.textContent = suggestion;
-                suggestionElement.onclick = () => {
-                    answerInput.value = suggestion;
-                    suggestionsContainer.innerHTML = '';
-                };
-                suggestionsContainer.appendChild(suggestionElement);
-            });
-        }
     };
 
     loadQuestion(type);
