@@ -197,7 +197,10 @@ function kanji(lvl)
 	}
 
 	// Draws the buttons inside the div
-	document.getElementById("divbuttons").innerHTML = Buttons_tmp;
+	const divButtons = document.getElementById("divbuttons");
+	if (divButtons) {
+		divButtons.innerHTML = Buttons_tmp;
+	}
 	return result;
 }
 
@@ -309,7 +312,9 @@ function katakana()
 function replacekana()
 {
 	// Temporary variable, for efficiency
-	str = document.getElementById("k_textarea").value;
+	const answerInput = document.getElementById("answer-input");
+	if (!answerInput) return;
+	str = answerInput.value;
 
 
 	/*---HIRAGANA; KATAKANA;---*/
@@ -609,5 +614,8 @@ function replacekana()
 
 
 	// Puts the temporary variable inside of the textbox
-	document.getElementById("k_textarea").value = str;
+	const answerInput = document.getElementById("answer-input");
+	if (answerInput) {
+		answerInput.value = str;
+	}
 }
