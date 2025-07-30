@@ -170,6 +170,29 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="correctCharsHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#correctCharsCollapse" aria-expanded="false" aria-controls="correctCharsCollapse">
+                                    Items Answered Correct
+                                </button>
+                            </h2>
+                            <div id="correctCharsCollapse" class="accordion-collapse collapse" aria-labelledby="correctCharsHeading" data-bs-parent="#statsAccordion">
+                                <div class="accordion-body">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Item</th>
+                                            <th>Reading</th>
+                                            <th>Correct Count</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="correct-chars-table-body">
+                                            <!-- Correct items will be loaded here by JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
