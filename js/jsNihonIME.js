@@ -668,10 +668,24 @@ function getKanjiSuggestions(input) {
         return suggestions;
     }
 
+    const quizState = typeof getQuizState === 'function' ? getQuizState() : '';
     const exactMatches = [];
     const partialMatches = [];
 
     const characterSets = {
+        hiragana: {
+            'あ': 'a', 'い': 'i', 'う': 'u', 'え': 'e', 'お': 'o',
+            'か': 'ka', 'き': 'ki', 'く': 'ku', 'け': 'ke', 'こ': 'ko',
+            'さ': 'sa', 'し': 'shi', 'す': 'su', 'せ': 'se', 'そ': 'so',
+            'た': 'ta', 'ち': 'chi', 'つ': 'tsu', 'て': 'te', 'と': 'to',
+            'な': 'na', 'に': 'ni', 'ぬ': 'nu', 'ね': 'ne', 'の': 'no',
+            'は': 'ha', 'ひ': 'hi', 'ふ': 'fu', 'へ': 'he', 'ほ': 'ho',
+            'ま': 'ma', 'み': 'mi', 'む': 'mu', 'め': 'me', 'も': 'mo',
+            'や': 'ya', 'ゆ': 'yu', 'よ': 'yo',
+            'ら': 'ra', 'り': 'ri', 'る': 'ru', 'れ': 're', 'ろ': 'ro',
+            'わ': 'wa', 'を': 'wo',
+            'ん': 'n'
+        },
         dakuten: {
             'が': 'ga', 'ぎ': 'gi', 'ぐ': 'gu', 'げ': 'ge', 'ご': 'go',
             'ざ': 'za', 'じ': 'ji', 'ず': 'zu', 'ぜ': 'ze', 'ぞ': 'zo',
@@ -680,57 +694,98 @@ function getKanjiSuggestions(input) {
         },
         handakuten: {
             'ぱ': 'pa', 'ぴ': 'pi', 'ぷ': 'pu', 'ぺ': 'pe', 'ぽ': 'po'
+        },
+        katakana: {
+            'ア': 'a', 'イ': 'i', 'ウ': 'u', 'エ': 'e', 'オ': 'o',
+            'カ': 'ka', 'キ': 'ki', 'ク': 'ku', 'ケ': 'ke', 'コ': 'ko',
+            'サ': 'sa', 'シ': 'shi', 'ス': 'su', 'セ': 'se', 'ソ': 'so',
+            'タ': 'ta', 'チ': 'chi', 'ツ': 'tsu', 'テ': 'te', 'ト': 'to',
+            'ナ': 'na', 'ニ': 'ni', 'ヌ': 'nu', 'ネ': 'ne', 'ノ': 'no',
+            'ハ': 'ha', 'ヒ': 'hi', 'フ': 'fu', 'ヘ': 'he', 'ホ': 'ho',
+            'マ': 'ma', 'ミ': 'mi', 'ム': 'mu', 'メ': 'me', 'モ': 'mo',
+            'ヤ': 'ya', 'ユ': 'yu', 'ヨ': 'yo',
+            'ラ': 'ra', 'リ': 'ri', 'ル': 'ru', 'レ': 're', 'ロ': 'ro',
+            'ワ': 'wa', 'ヲ': 'wo',
+            'ン': 'n'
         }
     };
 
-    for (const char in characterSets.dakuten) {
-        if (characterSets.dakuten[char] === input) {
-            exactMatches.push(char);
-        } else if (characterSets.dakuten[char].indexOf(input) !== -1) {
-            partialMatches.push(char);
+    if (quizState === 'hiragana') {
+        const lastChar = input.slice(-1);
+        const dakutenSuggestions = {
+            'か': 'が', 'き': 'ぎ', 'く': 'ぐ', 'け': 'げ', 'こ': 'ご',
+            'さ': 'ざ', 'し': 'じ', 'す': 'ず', 'せ': 'ぜ', 'そ': 'ぞ',
+            'た': 'だ', 'ち': 'ぢ', 'つ': 'づ', 'て': 'で', 'と': 'ど',
+            'は': 'ば', 'ひ': 'び', 'ふ': 'ぶ', 'へ': 'べ', 'ほ': 'ぼ'
+        };
+        const handakutenSuggestions = {
+            'は': 'ぱ', 'ひ': 'ぴ', 'ふ': 'ぷ', 'へ': 'ぺ', 'ほ': 'ぽ'
+        };
+
+        if (dakutenSuggestions[lastChar]) {
+            partialMatches.push(dakutenSuggestions[lastChar]);
         }
-    }
-
-    for (const char in characterSets.handakuten) {
-        if (characterSets.handakuten[char] === input) {
-            exactMatches.push(char);
-        } else if (characterSets.handakuten[char].indexOf(input) !== -1) {
-            partialMatches.push(char);
+        if (handakutenSuggestions[lastChar]) {
+            partialMatches.push(handakutenSuggestions[lastChar]);
         }
-    }
 
-    for (let level = 1; level <= 7; level++) {
-        const kanjiList = kanji(level);
-        for (let i = 0; i < kanjiList.length; i++) {
-            const kanjiInfo = kanjiList[i];
-            const kunReadings = kanjiInfo.kun.split(',');
-            const onReadings = kanjiInfo.on.split(',');
-
-            let isExactMatch = false;
-            for (const reading of kunReadings) {
-                if (reading.trim() === input) {
-                    exactMatches.push(kanjiInfo.char);
-                    isExactMatch = true;
-                    break;
-                }
+        for (const char in characterSets.hiragana) {
+            if (characterSets.hiragana[char].indexOf(input) !== -1) {
+                partialMatches.push(char);
             }
+        }
+    } else if (quizState === 'hiraganaSpecial') {
+        for (const char in characterSets.dakuten) {
+            if (characterSets.dakuten[char].indexOf(input) !== -1) {
+                partialMatches.push(char);
+            }
+        }
+        for (const char in characterSets.handakuten) {
+            if (characterSets.handakuten[char].indexOf(input) !== -1) {
+                partialMatches.push(char);
+            }
+        }
+    } else if (quizState === 'katakana') {
+        for (const char in characterSets.katakana) {
+            if (characterSets.katakana[char].indexOf(input) !== -1) {
+                partialMatches.push(char);
+            }
+        }
+    } else if (quizState === 'kanji') {
+        for (let level = 1; level <= 7; level++) {
+            const kanjiList = kanji(level);
+            for (let i = 0; i < kanjiList.length; i++) {
+                const kanjiInfo = kanjiList[i];
+                const kunReadings = kanjiInfo.kun.split(',');
+                const onReadings = kanjiInfo.on.split(',');
 
-            if (!isExactMatch) {
-                for (const reading of onReadings) {
+                let isExactMatch = false;
+                for (const reading of kunReadings) {
                     if (reading.trim() === input) {
                         exactMatches.push(kanjiInfo.char);
                         isExactMatch = true;
                         break;
                     }
                 }
-            }
 
-            if (!isExactMatch) {
-                if (kanjiInfo.kun.indexOf(input) !== -1 || kanjiInfo.on.indexOf(input) !== -1) {
-                    partialMatches.push(kanjiInfo.char);
+                if (!isExactMatch) {
+                    for (const reading of onReadings) {
+                        if (reading.trim() === input) {
+                            exactMatches.push(kanjiInfo.char);
+                            isExactMatch = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!isExactMatch) {
+                    if (kanjiInfo.kun.indexOf(input) !== -1 || kanjiInfo.on.indexOf(input) !== -1) {
+                        partialMatches.push(kanjiInfo.char);
+                    }
                 }
             }
         }
     }
+
     return [...new Set([...exactMatches, ...partialMatches])];
 }

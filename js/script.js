@@ -285,6 +285,11 @@ const characterSets = {
 
 let progress = JSON.parse(localStorage.getItem('nihon-progress')) || {};
 let currentCharset = {};
+let currentQuizType = '';
+
+function getQuizState() {
+    return currentQuizType;
+}
 
 function initializeProgress(characterSet) {
     let updated = false;
@@ -377,6 +382,7 @@ function showHomePage() {
 
 function startQuiz(type) {
     isSectionActive = true;
+    currentQuizType = type;
     if (type === 'hiraganaSpecial') {
         currentCharset = { ...characterSets.hiragana, ...characterSets.dakuten, ...characterSets.handakuten };
     } else {
