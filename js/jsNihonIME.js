@@ -671,6 +671,34 @@ function getKanjiSuggestions(input) {
     const exactMatches = [];
     const partialMatches = [];
 
+    const characterSets = {
+        dakuten: {
+            'が': 'ga', 'ぎ': 'gi', 'ぐ': 'gu', 'げ': 'ge', 'ご': 'go',
+            'ざ': 'za', 'じ': 'ji', 'ず': 'zu', 'ぜ': 'ze', 'ぞ': 'zo',
+            'だ': 'da', 'ぢ': 'ji', 'づ': 'zu', 'で': 'de', 'ど': 'do',
+            'ば': 'ba', 'び': 'bi', 'ぶ': 'bu', 'べ': 'be', 'ぼ': 'bo'
+        },
+        handakuten: {
+            'ぱ': 'pa', 'ぴ': 'pi', 'ぷ': 'pu', 'ぺ': 'pe', 'ぽ': 'po'
+        }
+    };
+
+    for (const char in characterSets.dakuten) {
+        if (characterSets.dakuten[char] === input) {
+            exactMatches.push(char);
+        } else if (characterSets.dakuten[char].indexOf(input) !== -1) {
+            partialMatches.push(char);
+        }
+    }
+
+    for (const char in characterSets.handakuten) {
+        if (characterSets.handakuten[char] === input) {
+            exactMatches.push(char);
+        } else if (characterSets.handakuten[char].indexOf(input) !== -1) {
+            partialMatches.push(char);
+        }
+    }
+
     for (let level = 1; level <= 7; level++) {
         const kanjiList = kanji(level);
         for (let i = 0; i < kanjiList.length; i++) {
