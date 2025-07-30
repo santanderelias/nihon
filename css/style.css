@@ -97,3 +97,27 @@ input, textarea, .form-control {
         font-size: 4rem;
     }
 }
+
+/* Fullscreen Modal */
+.modal.fade {
+    background: var(--bs-body-bg);
+}
+.modal-dialog {
+  min-height: 100vh;
+  min-width: 100vw;
+  margin: 0;
+}
+
+.modal-content {
+    height: 100vh;
+    border: 0;
+    border-radius: 0;
+}
+
+.modal-header {
+    border-radius: 0;
+}
+
+.modal-body {
+    overflow-y: auto;
+}
