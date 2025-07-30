@@ -313,11 +313,51 @@ function katakana()
 /* Function that replaces the roman letters for their corresponding kana */
 function replacekana()
 {
+    setTimeout(() => {
 	// Temporary variable, for efficiency
 	const answerInput = document.getElementById("answer-input");
 	if (!answerInput) return;
 	let str = answerInput.value;
 
+	// Kanji suggestions
+	const suggestions = getKanjiSuggestions(str);
+	let suggestionsContainer = document.getElementById('kanji-suggestions-card');
+	if (suggestionsContainer) {
+		suggestionsContainer.remove();
+	}
+	if (suggestions.length > 0) {
+		suggestionsContainer = document.createElement('div');
+		suggestionsContainer.id = 'kanji-suggestions-card';
+		suggestionsContainer.className = 'card shadow border-primary';
+		suggestionsContainer.style.position = 'fixed';
+		suggestionsContainer.style.bottom = '10px';
+		suggestionsContainer.style.right = '10px';
+		suggestionsContainer.style.width = '300px';
+		suggestionsContainer.style.zIndex = '1050';
+		suggestionsContainer.style.maxHeight = '33vh';
+		suggestionsContainer.style.overflowY = 'auto';
+
+		const cardBody = document.createElement('div');
+		cardBody.className = 'card-body';
+
+		const list = document.createElement('ul');
+		list.className = 'list-group list-group-flush';
+		suggestions.forEach(suggestion => {
+			const listItem = document.createElement('li');
+			listItem.className = 'list-group-item';
+			listItem.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
+			listItem.textContent = suggestion;
+			listItem.onclick = () => {
+				answerInput.value += suggestion;
+				suggestionsContainer.remove();
+			};
+			list.appendChild(listItem);
+		});
+
+		cardBody.appendChild(list);
+		suggestionsContainer.appendChild(cardBody);
+		document.body.appendChild(suggestionsContainer);
+	}
 
 	/*---HIRAGANA; KATAKANA;---*/
 
@@ -620,13 +660,6 @@ function replacekana()
 		answerInput.value = str;
 	}
 
-	// Kanji suggestions
-	const suggestions = getKanjiSuggestions(answerInput.value);
-	let suggestionsContainer = document.getElementById('kanji-suggestions-card');
-	if (suggestionsContainer) {
-		suggestionsContainer.remove();
-	}
-
 	if (suggestions.length > 0) {
 		suggestionsContainer = document.createElement('div');
 		suggestionsContainer.id = 'kanji-suggestions-card';
@@ -660,6 +693,7 @@ function replacekana()
 		suggestionsContainer.appendChild(cardBody);
 		document.body.appendChild(suggestionsContainer);
 	}
+}, 100);
 }
 
 function getKanjiSuggestions(input) {
