@@ -1,5 +1,17 @@
+function getKanjiSuggestions(input) {
+    const suggestions = [];
+    for (let level = 1; level <= 7; level++) {
+        const kanjiList = kanji(level);
+        for (let i = 0; i < kanjiList.length; i++) {
+            const kanjiInfo = kanjiList[i];
+            if (kanjiInfo.kun.indexOf(input) !== -1 || kanjiInfo.on.indexOf(input) !== -1) {
+                suggestions.push(kanjiInfo.char);
+            }
+        }
+    }
+    return suggestions;
+}
 // --- Service Worker and PWA ---
-const isWanakanaEnabled = () => true; // Always true as switch is removed
 
 // --- Dark Mode ---
 const themeToggleIcon = document.getElementById('theme-toggle-icon');
@@ -144,7 +156,7 @@ dictionaryWorker.onmessage = (event) => {
                     let html = '<div class="accordion" id="dictionary-accordion">';
                     results.forEach((entry, i) => {
                         const entryId = `entry-${i}`;
-                        const romaji = wanakana.toRomaji(entry.reading);
+                        const romaji = entry.reading;
                         html += `
                             <div class="accordion-item">
                                 <h2 class="accordion-header" id="heading-${entryId}">
@@ -379,6 +391,7 @@ function startQuiz(type) {
                 <div id="feedback-area" class="mb-2" style="height: 24px;"></div>
                 <h1 id="char-display" class="display-1"></h1>
                 <div id="example-word-area" class="mt-3"></div>
+                <div id="kanji-suggestions"></div>
                 <div class="mb-3">
                     <input type="text" class="form-control text-center" id="answer-input" onkeypress="if(event.key === 'Enter') document.getElementById('check-button').click()">
                 </div>
@@ -391,15 +404,21 @@ function startQuiz(type) {
     
 
     const answerInput = document.getElementById('answer-input');
-    if (isWanakanaEnabled()) {
-        console.log('[SCRIPT.JS] Wanakana is enabled. Attempting to bind to input.');
-        console.log('[SCRIPT.JS] wanakana object:', typeof wanakana, wanakana);
-        if (type === 'katakana') {
-            wanakana.bind(answerInput, { to: 'katakana' });
-        } else {
-            wanakana.bind(answerInput, { to: 'hiragana' });
-        }
-    }
+    answerInput.onkeyup = () => {
+        replacekana();
+        const suggestions = getKanjiSuggestions(answerInput.value);
+        const suggestionsContainer = document.getElementById('kanji-suggestions');
+        suggestionsContainer.innerHTML = '';
+        suggestions.forEach(suggestion => {
+            const suggestionElement = document.createElement('span');
+            suggestionElement.textContent = suggestion;
+            suggestionElement.onclick = () => {
+                answerInput.value = suggestion;
+                suggestionsContainer.innerHTML = '';
+            };
+            suggestionsContainer.appendChild(suggestionElement);
+        });
+    };
 
     loadQuestion(type);
 }
@@ -570,9 +589,9 @@ function startListeningQuiz() {
     `;
 
     const answerInput = document.getElementById('answer-input');
-    if (isWanakanaEnabled()) {
-        wanakana.bind(answerInput, { to: 'hiragana' });
-    }
+    answerInput.onkeyup = () => {
+        replacekana();
+    };
 
     loadListeningQuestion();
 }
@@ -691,9 +710,7 @@ function checkAnswer(char, correctAnswer, type) {
     let p = progress[char];
 
     // Convert user input to Romaji if Wanakana is enabled
-    if (isWanakanaEnabled()) {
-        userAnswer = wanakana.toRomaji(userAnswer);
-    }
+    userAnswer = userAnswer;
 
     if (userAnswer === correctAnswer) {
         if (!p) {
