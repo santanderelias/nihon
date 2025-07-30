@@ -625,20 +625,31 @@ function replacekana()
 	const suggestionsContainer = document.getElementById('kanji-suggestions');
 	if (suggestionsContainer) {
 		suggestionsContainer.innerHTML = '';
-		suggestions.forEach(suggestion => {
-			const suggestionElement = document.createElement('span');
-			suggestionElement.textContent = suggestion;
-			suggestionElement.onclick = () => {
-				answerInput.value = suggestion;
-				suggestionsContainer.innerHTML = '';
-			};
-			suggestionsContainer.appendChild(suggestionElement);
-		});
+		if (suggestions.length > 0) {
+			const list = document.createElement('ul');
+			list.className = 'list-group';
+			list.id = 'kanji-suggestions-list';
+			suggestions.forEach(suggestion => {
+				const listItem = document.createElement('li');
+				listItem.className = 'list-group-item';
+				listItem.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
+				listItem.textContent = suggestion;
+				listItem.onclick = () => {
+					answerInput.value = suggestion;
+					suggestionsContainer.innerHTML = '';
+				};
+				list.appendChild(listItem);
+			});
+			suggestionsContainer.appendChild(list);
+		}
 	}
 }
 
 function getKanjiSuggestions(input) {
     const suggestions = [];
+    if (input.length === 0) {
+        return suggestions;
+    }
     for (let level = 1; level <= 7; level++) {
         const kanjiList = kanji(level);
         for (let i = 0; i < kanjiList.length; i++) {

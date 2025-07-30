@@ -391,7 +391,7 @@ function startQuiz(type) {
                 <div id="feedback-area" class="mb-2" style="height: 24px;"></div>
                 <h1 id="char-display" class="display-1"></h1>
                 <div id="example-word-area" class="mt-3"></div>
-                <div id="kanji-suggestions"></div>
+                <div id="kanji-suggestions" class="mt-3"></div>
                 <div class="mb-3">
                     <input type="text" class="form-control text-center" id="answer-input" onkeypress="if(event.key === 'Enter') document.getElementById('check-button').click()">
                 </div>
