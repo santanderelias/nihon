@@ -35,6 +35,9 @@
                 <button class="btn btn-outline-secondary me-2" id="dictionary-button" data-bs-toggle="modal" data-bs-target="#dictionary-modal">
                     <img src="/nihon/icons/history.png" alt="Dictionary" style="height: 1.5rem;">
                 </button>
+                <button class="btn btn-outline-secondary me-2" id="grammar-button" data-bs-toggle="modal" data-bs-target="#grammar-modal">
+                    <img src="/nihon/icons/reference.png" alt="Grammar" style="height: 1.5rem;">
+                </button>
                 <button class="btn btn-outline-secondary me-2" id="references-button" data-bs-toggle="modal" data-bs-target="#references-modal">
                     <img src="/nihon/icons/reference.png" alt="References" style="height: 1.5rem;">
                 </button>
@@ -48,6 +51,21 @@
             <!-- Dynamic content will be loaded here -->
         </div>
     </main>
+
+    <!-- Grammar Modal -->
+    <div class="modal fade" id="grammar-modal" tabindex="-1" aria-labelledby="grammarModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="grammarModalLabel">Grammar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Grammar content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- References Modal -->
     <div class="modal fade" id="references-modal" tabindex="-1" aria-labelledby="referencesModalLabel" aria-hidden="true">
@@ -132,7 +150,7 @@
                         <div class="accordion-item">
                             <h2 class="accordion-header" id="wrongCharsHeading">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#wrongCharsCollapse" aria-expanded="false" aria-controls="wrongCharsCollapse">
-                                    Characters Answered Wrong
+                                    Items Answered Wrong
                                 </button>
                             </h2>
                             <div id="wrongCharsCollapse" class="accordion-collapse collapse" aria-labelledby="wrongCharsHeading" data-bs-parent="#statsAccordion">
@@ -140,13 +158,13 @@
                                     <table class="table table-striped">
                                         <thead>
                                             <tr>
-                                                <th>Character</th>
-                                            <th>Romaji</th>
+                                                <th>Item</th>
+                                            <th>Reading</th>
                                             <th>Wrong Count</th>
                                             </tr>
                                         </thead>
                                         <tbody id="wrong-chars-table-body">
-                                            <!-- Wrong characters will be loaded here by JavaScript -->
+                                            <!-- Wrong items will be loaded here by JavaScript -->
                                         </tbody>
                                     </table>
                                 </div>
