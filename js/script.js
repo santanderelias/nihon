@@ -964,6 +964,31 @@ if (grammarModal) {
                         </div>
                     </div>
                 </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingFour">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                            Common Phrases
+                        </button>
+                    </h2>
+                    <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#grammarAccordion">
+                        <div class="accordion-body" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
+                            <p><strong>Greetings:</strong></p>
+                            <ul>
+                                <li>おはようございます (Ohayou gozaimasu) - Good morning</li>
+                                <li>こんにちは (Konnichiwa) - Hello/Good afternoon</li>
+                                <li>こんばんは (Konbanwa) - Good evening</li>
+                                <li>さようなら (Sayounara) - Goodbye</li>
+                                <li>おやすみなさい (Oyasuminasai) - Good night</li>
+                            </ul>
+                            <p><strong>Time-related Expressions:</strong></p>
+                            <ul>
+                                <li>今何時ですか (Ima nanji desu ka?) - What time is it now?</li>
+                                <li>今日は何日ですか (Kyou wa nannichi desu ka?) - What is the date today?</li>
+                                <li>明日は何曜日ですか (Ashita wa nanyoubi desu ka?) - What day of the week is it tomorrow?</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
     });
