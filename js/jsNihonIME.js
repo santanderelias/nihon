@@ -614,7 +614,6 @@ function replacekana()
 
 
 	// Puts the temporary variable inside of the textbox
-	const answerInput = document.getElementById("answer-input");
 	if (answerInput) {
 		answerInput.value = str;
 	}
