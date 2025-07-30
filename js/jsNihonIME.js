@@ -636,6 +636,8 @@ function replacekana()
 		suggestionsContainer.style.right = '10px';
 		suggestionsContainer.style.width = '300px';
 		suggestionsContainer.style.zIndex = '1050';
+		suggestionsContainer.style.maxHeight = '33vh';
+		suggestionsContainer.style.overflowY = 'auto';
 
 		const cardBody = document.createElement('div');
 		cardBody.className = 'card-body';
