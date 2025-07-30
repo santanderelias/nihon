@@ -621,7 +621,7 @@ function replacekana()
 	}
 
 	// Kanji suggestions
-	const suggestions = getKanjiSuggestions(str);
+	const suggestions = getKanjiSuggestions(answerInput.value);
 	let suggestionsContainer = document.getElementById('kanji-suggestions-card');
 	if (suggestionsContainer) {
 		suggestionsContainer.remove();
@@ -650,7 +650,7 @@ function replacekana()
 			listItem.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
 			listItem.textContent = suggestion;
 			listItem.onclick = () => {
-				answerInput.value = suggestion;
+				answerInput.value += suggestion;
 				suggestionsContainer.remove();
 			};
 			list.appendChild(listItem);
