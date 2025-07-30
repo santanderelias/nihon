@@ -401,6 +401,7 @@ function startFlashcardMode(type) {
     contentArea.innerHTML = `
         <div class="card text-center shadow-sm flashcard-container">
             <div class="card-body">
+                <div id="feedback-area" class="mb-2" style="height: 24px;"></div>
                 <div class="flashcard" id="flashcard">
                     <div class="flashcard-inner">
                         <div class="flashcard-front d-flex align-items-center justify-content-center">
@@ -496,13 +497,19 @@ function flipFlashcard() {
 }
 
 function markFlashcardProgress(char, isCorrect, type) {
+    const feedbackArea = document.getElementById('feedback-area');
     if (isCorrect) {
         progress[char].correct++;
+        feedbackArea.innerHTML = `<span class="text-success">Correct!</span>`;
     } else {
         progress[char].incorrect++;
+        feedbackArea.innerHTML = `<span class="text-danger">Incorrect.</span>`;
     }
     localStorage.setItem('nihon-progress', JSON.stringify(progress));
-    loadFlashcard(type);
+    setTimeout(() => {
+        feedbackArea.innerHTML = ''; // Clear feedback after a short delay
+        loadFlashcard(type);
+    }, 1200);
 }
 
 
