@@ -773,6 +773,7 @@ function getKanjiSuggestions(input) {
                 partialMatches.push(char);
             }
         }
+        return [...new Set([...exactMatches, ...partialMatches])];
     } else if (quizState === 'hiraganaSpecial') {
         for (const char in characterSets.dakuten) {
             if (characterSets.dakuten[char].indexOf(input) !== -1) {
@@ -784,12 +785,14 @@ function getKanjiSuggestions(input) {
                 partialMatches.push(char);
             }
         }
+        return [...new Set([...exactMatches, ...partialMatches])];
     } else if (quizState === 'katakana') {
         for (const char in characterSets.katakana) {
             if (characterSets.katakana[char].indexOf(input) !== -1) {
                 partialMatches.push(char);
             }
         }
+        return [...new Set([...exactMatches, ...partialMatches])];
     }
 
     if (quizState === 'kanji') {
