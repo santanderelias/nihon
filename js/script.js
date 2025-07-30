@@ -288,16 +288,35 @@ function initializeProgress(characterSet) {
 }
 
 function getNextCharacter() {
+    let now = new Date().getTime();
+    let items = Object.keys(currentCharset);
     let weightedList = [];
-    for (const char in currentCharset) {
-        const stat = progress[char];
-        const weight = Math.max(1, 1 + (stat.incorrect * 5) - stat.correct);
-        for (let i = 0; i < weight; i++) {
-            weightedList.push(char);
+
+    for (const item of items) {
+        let p = progress[item];
+        if (!p.nextReview) p.nextReview = now;
+
+        if (p.nextReview <= now) {
+            const weight = Math.max(1, 1 + (p.incorrect * 5) - p.correct);
+            for (let i = 0; i < weight; i++) {
+                weightedList.push(item);
+            }
         }
     }
 
-    if (weightedList.length === 0) return null;
+    if (weightedList.length === 0) {
+        // If no items are due for review, find the one with the soonest review time
+        let soonestItem = null;
+        let soonestTime = Infinity;
+        for (const item of items) {
+            let p = progress[item];
+            if (p.nextReview < soonestTime) {
+                soonestTime = p.nextReview;
+                soonestItem = item;
+            }
+        }
+        return soonestItem;
+    }
 
     const randomIndex = Math.floor(Math.random() * weightedList.length);
     return weightedList[randomIndex];
@@ -318,6 +337,7 @@ function showHomePage() {
                             <button class="btn btn-secondary" id="quizKatakana">Katakana</button>
                             <button class="btn btn-secondary" id="quizKanji">Kanji</button>
                             <button class="btn btn-secondary" id="quizNumbers">Numbers</button>
+                            <button class="btn btn-secondary" id="quizListening">Listening</button>
                         </div>
                     </div>
                 </div>
@@ -516,12 +536,83 @@ function markFlashcardProgress(char, isCorrect, type) {
 
 
 
+function startListeningQuiz() {
+    isSectionActive = true;
+    currentCharset = { ...characterSets.hiragana, ...characterSets.dakuten, ...characterSets.handakuten, ...characterSets.katakana, ...characterSets.kanji, ...characterSets.numbers };
+    initializeProgress(currentCharset);
+    updateHomeButton(true);
+
+    contentArea.innerHTML = `
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <div id="feedback-area" class="mb-2" style="height: 24px;"></div>
+                <button class="btn btn-primary mb-3" id="play-audio-button">
+                    <i class="fas fa-volume-up"></i> Play Audio
+                </button>
+                <div class="mb-3">
+                    <input type="text" class="form-control text-center" id="answer-input" onkeypress="if(event.key === 'Enter') document.getElementById('check-button').click()">
+                </div>
+                <button class="btn btn-success" id="check-button">Check</button>
+                <button class="btn btn-secondary" id="skip-button">Skip</button>
+            </div>
+        </div>
+    `;
+
+    const answerInput = document.getElementById('answer-input');
+    if (isWanakanaEnabled()) {
+        wanakana.bind(answerInput, { to: 'hiragana' });
+    }
+
+    loadListeningQuestion();
+}
+
+function loadListeningQuestion() {
+    const charToTest = getNextCharacter();
+
+    if (!charToTest) {
+        contentArea.innerHTML = `
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Congratulations!</h5>
+                    <p class="card-text">You have mastered this set.</p>
+                    <button class="btn btn-secondary" onclick="showHomePage()">Back to Home</button>
+                </div>
+            </div>`;
+        return;
+    }
+
+    const correctAnswer = currentCharset[charToTest].romaji || currentCharset[charToTest];
+
+    document.getElementById('feedback-area').innerHTML = '';
+
+    const answerInput = document.getElementById('answer-input');
+    answerInput.value = '';
+    answerInput.readOnly = false;
+
+    const checkButton = document.getElementById('check-button');
+    checkButton.disabled = false;
+    checkButton.onclick = () => checkAnswer(charToTest, correctAnswer, 'listening');
+
+    const skipButton = document.getElementById('skip-button');
+    skipButton.onclick = () => loadListeningQuestion();
+
+    const playAudioButton = document.getElementById('play-audio-button');
+    playAudioButton.onclick = () => {
+        const utterance = new SpeechSynthesisUtterance(charToTest);
+        utterance.lang = 'ja-JP';
+        speechSynthesis.speak(utterance);
+    };
+
+    answerInput.focus();
+}
+
 function setupHomePageListeners() {
     document.getElementById('quizHiragana').addEventListener('click', () => startQuiz('hiragana'));
     document.getElementById('quizHiraganaSpecial').addEventListener('click', () => startQuiz('hiraganaSpecial'));
     document.getElementById('quizKatakana').addEventListener('click', () => startQuiz('katakana'));
     document.getElementById('quizKanji').addEventListener('click', () => startQuiz('kanji'));
     document.getElementById('quizNumbers').addEventListener('click', () => startQuiz('numbers'));
+    document.getElementById('quizListening').addEventListener('click', () => startListeningQuiz());
 
     document.getElementById('flashcardHiragana').addEventListener('click', () => startFlashcardMode('hiragana'));
     document.getElementById('flashcardHiraganaSpecial').addEventListener('click', () => startFlashcardMode('hiraganaSpecial'));
@@ -585,6 +676,8 @@ function checkAnswer(char, correctAnswer, type) {
     const answerInput = document.getElementById('answer-input');
     let userAnswer = answerInput.value.trim();
     const feedbackArea = document.getElementById('feedback-area');
+    let now = new Date().getTime();
+    let p = progress[char];
 
     // Convert user input to Romaji if Wanakana is enabled
     if (isWanakanaEnabled()) {
@@ -592,10 +685,22 @@ function checkAnswer(char, correctAnswer, type) {
     }
 
     if (userAnswer === correctAnswer) {
-        progress[char].correct++;
+        if (!p) {
+            p = { correct: 0, incorrect: 0, streak: 0, nextReview: now };
+            progress[char] = p;
+        }
+        p.correct++;
+        p.streak = (p.streak || 0) + 1;
+        p.nextReview = now + Math.pow(2, p.streak) * 60 * 60 * 1000; // Exponential backoff
         feedbackArea.innerHTML = `<span class="text-success">Correct!</span>`;
     } else {
-        progress[char].incorrect++;
+        if (!p) {
+            p = { correct: 0, incorrect: 0, streak: 0, nextReview: now };
+            progress[char] = p;
+        }
+        p.incorrect++;
+        p.streak = 0;
+        p.nextReview = now + 60 * 60 * 1000; // Review in 1 hour
         feedbackArea.innerHTML = `<span class="text-danger">Incorrect. It's "${correctAnswer}".</span>`;
     }
     
@@ -603,7 +708,11 @@ function checkAnswer(char, correctAnswer, type) {
 
     document.getElementById('check-button').disabled = true;
 
-    setTimeout(() => loadQuestion(type), 1200);
+    if (type === 'listening') {
+        setTimeout(() => loadListeningQuestion(), 1200);
+    } else {
+        setTimeout(() => loadQuestion(type), 1200);
+    }
 }
 
 async function main() {
@@ -656,45 +765,45 @@ const wrongCharsTableBody = document.getElementById('wrong-chars-table-body');
 if (statsModal) {
     statsModal.addEventListener('show.bs.modal', () => {
         wrongCharsTableBody.innerHTML = ''; // Clear previous content
-        const wrongCharacters = [];
-        for (const char in progress) {
-            if (progress[char].incorrect > 0) {
-                // Find the romaji for the character
-                let romaji = '';
+        const wrongItems = [];
+        for (const item in progress) {
+            if (progress[item].incorrect > 0) {
+                // Find the reading for the item
+                let reading = '';
                 for (const setKey in characterSets) {
-                    if (characterSets[setKey][char]) {
+                    if (characterSets[setKey][item]) {
                         if (setKey === 'numbers') {
-                            romaji = characterSets[setKey][char].romaji;
+                            reading = characterSets[setKey][item].romaji;
                         } 
                         else {
-                            romaji = characterSets[setKey][char];
+                            reading = characterSets[setKey][item];
                         }
                         break;
                     }
                 }
-                wrongCharacters.push({ char: char, romaji: romaji, count: progress[char].incorrect });
+                wrongItems.push({ item: item, reading: reading, count: progress[item].incorrect });
             }
         }
 
         // Sort by incorrect count in descending order
-        wrongCharacters.sort((a, b) => b.count - a.count);
+        wrongItems.sort((a, b) => b.count - a.count);
 
-        if (wrongCharacters.length === 0) {
-            wrongCharsTableBody.innerHTML = '<tr><td colspan="3">No characters answered incorrectly yet!</td></tr>';
+        if (wrongItems.length === 0) {
+            wrongCharsTableBody.innerHTML = '<tr><td colspan="3">No items answered incorrectly yet!</td></tr>';
         } 
         else {
-            wrongCharacters.forEach(item => {
+            wrongItems.forEach(item => {
                 const row = wrongCharsTableBody.insertRow();
-                const charCell = row.insertCell();
-                const romajiCell = row.insertCell();
+                const itemCell = row.insertCell();
+                const readingCell = row.insertCell();
                 const countCell = row.insertCell();
-                charCell.textContent = item.char;
-                romajiCell.textContent = item.romaji;
+                itemCell.textContent = item.item;
+                readingCell.textContent = item.reading;
                 countCell.textContent = item.count;
 
-                // Apply the font to the character and romaji cells
-                charCell.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
-                romajiCell.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
+                // Apply the font to the item and reading cells
+                itemCell.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
+                readingCell.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
             });
         }
     });
@@ -722,6 +831,36 @@ if (dictionaryModal) {
             dictionaryLoadingStatus.innerHTML = '';
         }
         dictionaryResultArea.innerHTML = ''; // Clear previous search results
+    });
+}
+
+// --- Grammar Modal Logic ---
+const grammarModal = document.getElementById('grammar-modal');
+
+if (grammarModal) {
+    grammarModal.addEventListener('show.bs.modal', () => {
+        const grammarBody = grammarModal.querySelector('.modal-body');
+        grammarBody.innerHTML = `
+            <h4>Basic Sentence Structure</h4>
+            <p>The basic sentence structure in Japanese is Subject-Object-Verb (SOV).</p>
+            <p>Example: 私はリンゴを食べます (Watashi wa ringo o tabemasu) - I eat an apple.</p>
+            <ul>
+                <li>私 (Watashi) - I (Subject)</li>
+                <li>リンゴ (ringo) - apple (Object)</li>
+                <li>を食べます (o tabemasu) - eat (Verb)</li>
+            </ul>
+            <hr>
+            <h4>Particles</h4>
+            <p>Particles are used to mark the grammatical function of a word.</p>
+            <ul>
+                <li>は (wa) - topic marker</li>
+                <li>が (ga) - subject marker</li>
+                <li>を (o) - object marker</li>
+                <li>に (ni) - place/time marker</li>
+                <li>へ (e) - direction marker</li>
+                <li>で (de) - place of action marker</li>
+            </ul>
+        `;
     });
 }
 
