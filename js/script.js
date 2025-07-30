@@ -138,7 +138,7 @@ dictionaryWorker.onmessage = (event) => {
                                 <h2 class="accordion-header" id="heading-${entryId}">
                                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${entryId}" aria-expanded="false" aria-controls="collapse-${entryId}">
                                         <div class="w-100">
-                                            <strong style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.kanji} (${entry.reading})</strong>
+                                            <strong style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.kanji}</strong> <span style="font-family: 'Noto Sans JP Embedded', sans-serif;">(${entry.reading})</span>
                                             <br>
                                             <small class="text-muted">${romaji}</small>
                                             <div class="text-truncate">${entry.gloss}</div>
