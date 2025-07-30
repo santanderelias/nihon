@@ -825,6 +825,7 @@ function updateHomeButton(isSection) {
         appTitle.classList.add('back-button');
         appTitle.style.fontSize = ''; // Reset font size as image handles size
         isSectionActive = true;
+        appTitle.addEventListener('click', showHomePage())
     } else {
         appTitle.textContent = 'Nihon';
         appTitle.classList.remove('back-button');
