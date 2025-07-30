@@ -436,10 +436,9 @@ function startFlashcardMode(type) {
                 <div class="d-grid gap-2 mt-3">
                     <button class="btn btn-primary" id="flip-button">Flip</button>
                     <div class="d-flex justify-content-around">
-                        <button class="btn btn-danger flex-fill me-2" id="mark-incorrect-button">Mark Incorrect</button>
-                        <button class="btn btn-success flex-fill ms-2" id="mark-correct-button">Mark Correct</button>
+                        <button class="btn btn-danger flex-fill me-2" id="false-button">False</button>
+                        <button class="btn btn-success flex-fill ms-2" id="true-button">True</button>
                     </div>
-                    <button class="btn btn-secondary" id="next-flashcard-button">Next Flashcard</button>
                 </div>
             </div>
         </div>
@@ -452,6 +451,7 @@ function startFlashcardMode(type) {
 
 let currentFlashcardChar = '';
 let currentFlashcardType = '';
+let isCurrentCardCorrect = true;
 
 function loadFlashcard(type) {
     const charToDisplay = getNextCharacter();
@@ -481,12 +481,13 @@ function loadFlashcard(type) {
     // Reset flip state
     flashcard.classList.remove('flipped');
 
+    // Decide if the card should be correct or incorrect
+    isCurrentCardCorrect = Math.random() < 0.5;
+
     // Set up event listeners
-            // Set up event listeners
     document.getElementById('flip-button').onclick = () => flipFlashcard(type);
-    document.getElementById('next-flashcard-button').onclick = () => loadFlashcard(type);
-    document.getElementById('mark-correct-button').onclick = () => markFlashcardProgress(currentFlashcardChar, true, type);
-    document.getElementById('mark-incorrect-button').onclick = () => markFlashcardProgress(currentFlashcardChar, false, type);
+    document.getElementById('true-button').onclick = () => checkFlashcardAnswer(true, type);
+    document.getElementById('false-button').onclick = () => checkFlashcardAnswer(false, type);
 }
 
 function populateFlashcardBack(char, type) {
@@ -496,12 +497,25 @@ function populateFlashcardBack(char, type) {
     let reading = '';
     let meaning = '';
 
-    if (type === 'numbers') {
-        reading = currentCharset[char].romaji;
-        meaning = currentCharset[char].latin;
+    if (isCurrentCardCorrect) {
+        if (type === 'numbers') {
+            reading = currentCharset[char].romaji;
+            meaning = currentCharset[char].latin;
+        } else {
+            reading = currentCharset[char];
+            meaning = ''; // For hiragana/katakana/kanji, meaning is the reading
+        }
     } else {
-        reading = currentCharset[char];
-        meaning = ''; // For hiragana/katakana/kanji, meaning is the reading
+        // Get a random incorrect reading
+        const allReadings = Object.values(currentCharset);
+        const correctReading = (type === 'numbers') ? currentCharset[char].romaji : currentCharset[char];
+        let incorrectReading;
+        do {
+            const randomIndex = Math.floor(Math.random() * allReadings.length);
+            incorrectReading = (typeof allReadings[randomIndex] === 'object') ? allReadings[randomIndex].romaji : allReadings[randomIndex];
+        } while (incorrectReading === correctReading);
+        reading = incorrectReading;
+        meaning = '';
     }
 
     flashcardReading.textContent = reading;
@@ -514,6 +528,11 @@ function flipFlashcard() {
     if (document.getElementById('flashcard').classList.contains('flipped')) {
         populateFlashcardBack(currentFlashcardChar, currentFlashcardType);
     }
+}
+
+function checkFlashcardAnswer(userAnswer, type) {
+    const isCorrect = (userAnswer === isCurrentCardCorrect);
+    markFlashcardProgress(currentFlashcardChar, isCorrect, type);
 }
 
 function markFlashcardProgress(char, isCorrect, type) {
