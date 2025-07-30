@@ -841,25 +841,27 @@ if (grammarModal) {
     grammarModal.addEventListener('show.bs.modal', () => {
         const grammarBody = grammarModal.querySelector('.modal-body');
         grammarBody.innerHTML = `
-            <h4>Basic Sentence Structure</h4>
-            <p>The basic sentence structure in Japanese is Subject-Object-Verb (SOV).</p>
-            <p>Example: 私はリンゴを食べます (Watashi wa ringo o tabemasu) - I eat an apple.</p>
-            <ul>
-                <li>私 (Watashi) - I (Subject)</li>
-                <li>リンゴ (ringo) - apple (Object)</li>
-                <li>を食べます (o tabemasu) - eat (Verb)</li>
-            </ul>
-            <hr>
-            <h4>Particles</h4>
-            <p>Particles are used to mark the grammatical function of a word.</p>
-            <ul>
-                <li>は (wa) - topic marker</li>
-                <li>が (ga) - subject marker</li>
-                <li>を (o) - object marker</li>
-                <li>に (ni) - place/time marker</li>
-                <li>へ (e) - direction marker</li>
-                <li>で (de) - place of action marker</li>
-            </ul>
+            <div style="font-family: 'Noto Sans JP Embedded', sans-serif;">
+                <h4>Basic Sentence Structure</h4>
+                <p>The basic sentence structure in Japanese is Subject-Object-Verb (SOV).</p>
+                <p>Example: 私はリンゴを食べます (Watashi wa ringo o tabemasu) - I eat an apple.</p>
+                <ul>
+                    <li>私 (Watashi) - I (Subject)</li>
+                    <li>リンゴ (ringo) - apple (Object)</li>
+                    <li>を食べます (o tabemasu) - eat (Verb)</li>
+                </ul>
+                <hr>
+                <h4>Particles</h4>
+                <p>Particles are used to mark the grammatical function of a word.</p>
+                <ul>
+                    <li>は (wa) - topic marker</li>
+                    <li>が (ga) - subject marker</li>
+                    <li>を (o) - object marker</li>
+                    <li>に (ni) - place/time marker</li>
+                    <li>へ (e) - direction marker</li>
+                    <li>で (de) - place of action marker</li>
+                </ul>
+            </div>
         `;
     });
 }
