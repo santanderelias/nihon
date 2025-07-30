@@ -311,57 +311,52 @@ function katakana()
 
 
 /* Function that replaces the roman letters for their corresponding kana */
-function replacekana() {
-    const answerInput = document.getElementById("answer-input");
-    if (!answerInput) return;
-    let str = answerInput.value;
+function replacekana()
+{
+	// Temporary variable, for efficiency
+	const answerInput = document.getElementById("answer-input");
+	if (!answerInput) return;
+	let str = answerInput.value;
 
-    // Kanji suggestions
-    const suggestions = getKanjiSuggestions(str);
-    let suggestionsContainer = document.getElementById('kanji-suggestions-card');
+	// Kanji suggestions
+	const suggestions = getKanjiSuggestions(str);
+	let suggestionsContainer = document.getElementById('kanji-suggestions-card');
+	if (suggestionsContainer) {
+		suggestionsContainer.remove();
+	}
+	if (suggestions.length > 0) {
+		suggestionsContainer = document.createElement('div');
+		suggestionsContainer.id = 'kanji-suggestions-card';
+		suggestionsContainer.className = 'card shadow border-primary';
+		suggestionsContainer.style.position = 'fixed';
+		suggestionsContainer.style.bottom = '10px';
+		suggestionsContainer.style.right = '10px';
+		suggestionsContainer.style.width = '300px';
+		suggestionsContainer.style.zIndex = '1050';
+		suggestionsContainer.style.maxHeight = '33vh';
+		suggestionsContainer.style.overflowY = 'auto';
 
-    if (suggestions.length > 0) {
-        if (!suggestionsContainer) {
-            suggestionsContainer = document.createElement('div');
-            suggestionsContainer.id = 'kanji-suggestions-card';
-            suggestionsContainer.className = 'card shadow border-primary';
-            suggestionsContainer.style.position = 'fixed';
-            suggestionsContainer.style.bottom = '10px';
-            suggestionsContainer.style.right = '10px';
-            suggestionsContainer.style.width = '300px';
-            suggestionsContainer.style.zIndex = '1050';
-            suggestionsContainer.style.maxHeight = '33vh';
-            suggestionsContainer.style.overflowY = 'auto';
-            document.body.appendChild(suggestionsContainer);
-        }
+		const cardBody = document.createElement('div');
+		cardBody.className = 'card-body';
 
-        const cardBody = document.createElement('div');
-        cardBody.className = 'card-body';
-
-        const buttonGroup = document.createElement('div');
+		const buttonGroup = document.createElement('div');
         buttonGroup.className = 'd-flex flex-wrap gap-2';
-        suggestions.forEach(suggestion => {
-            const button = document.createElement('button');
-            button.className = 'btn btn-secondary';
-            button.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
-            button.textContent = suggestion;
-            button.onclick = () => {
-                answerInput.value += suggestion;
-                if (suggestionsContainer) {
-                    suggestionsContainer.remove();
-                }
-            };
-            buttonGroup.appendChild(button);
-        });
+		suggestions.forEach(suggestion => {
+			const button = document.createElement('button');
+			button.className = 'btn btn-secondary';
+			button.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
+			button.textContent = suggestion;
+			button.onclick = () => {
+				answerInput.value += suggestion;
+				suggestionsContainer.remove();
+			};
+			buttonGroup.appendChild(button);
+		});
 
-        cardBody.appendChild(buttonGroup);
-        suggestionsContainer.innerHTML = ''; // Clear previous content
-        suggestionsContainer.appendChild(cardBody);
-    } else {
-        if (suggestionsContainer) {
-            suggestionsContainer.remove();
-        }
-    }
+		cardBody.appendChild(buttonGroup);
+		suggestionsContainer.appendChild(cardBody);
+		document.body.appendChild(suggestionsContainer);
+	}
 
 	/*---HIRAGANA; KATAKANA;---*/
 
@@ -568,8 +563,8 @@ function replacekana() {
 
 	// zya
 	str = str.replace("zya","\u3058\u3083");	str = str.replace("ZYA","\u30B8\u30E3");
-	str = str.replace("zyu","\u3058\u3085");	str = str.replace("ZYU","\u30B8\u30A5");
-	str = str.replace("zyo","\u3058\u3087");	str = str.replace("ZYO","\u30B8\u30A9");
+	str = str.replace("zyu","\u3058\u3085");	str = str.replace("ZYU","\u30B8\u30E5");
+	str = str.replace("zyo","\u3058\u3087");	str = str.replace("ZYO","\u30B8\u30E7");
 
 	// bya
 	str = str.replace("bya","\u3073\u3083");	str = str.replace("BYA","\u30D3\u30E3");
@@ -662,6 +657,40 @@ function replacekana() {
 	// Puts the temporary variable inside of the textbox
 	if (answerInput) {
 		answerInput.value = str;
+	}
+
+	if (suggestions.length > 0) {
+		suggestionsContainer = document.createElement('div');
+		suggestionsContainer.id = 'kanji-suggestions-card';
+		suggestionsContainer.className = 'card shadow border-primary';
+		suggestionsContainer.style.position = 'fixed';
+		suggestionsContainer.style.bottom = '10px';
+		suggestionsContainer.style.right = '10px';
+		suggestionsContainer.style.width = '300px';
+		suggestionsContainer.style.zIndex = '1050';
+		suggestionsContainer.style.maxHeight = '33vh';
+		suggestionsContainer.style.overflowY = 'auto';
+
+		const cardBody = document.createElement('div');
+		cardBody.className = 'card-body';
+
+		const buttonGroup = document.createElement('div');
+        buttonGroup.className = 'd-flex flex-wrap gap-2';
+		suggestions.forEach(suggestion => {
+			const button = document.createElement('button');
+			button.className = 'btn btn-secondary';
+			button.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
+			button.textContent = suggestion;
+			button.onclick = () => {
+				answerInput.value += suggestion;
+				suggestionsContainer.remove();
+			};
+			buttonGroup.appendChild(button);
+		});
+
+		cardBody.appendChild(buttonGroup);
+		suggestionsContainer.appendChild(cardBody);
+		document.body.appendChild(suggestionsContainer);
 	}
 }
 
