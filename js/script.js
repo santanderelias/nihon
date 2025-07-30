@@ -485,12 +485,10 @@ function loadFlashcard(type) {
     isCurrentCardCorrect = Math.random() < 0.5;
 
     // Set up event listeners
-    document.getElementById('flip-button').onclick = () => flipFlashcard(type);
+    document.getElementById('flip-button').onclick = () => flipFlashcard();
     document.getElementById('true-button').onclick = () => checkFlashcardAnswer(true, type);
     document.getElementById('false-button').onclick = () => checkFlashcardAnswer(false, type);
-}
 
-function populateFlashcardBack(char, type) {
     const flashcardReading = document.getElementById('flashcard-reading');
     const flashcardMeaning = document.getElementById('flashcard-meaning');
 
@@ -499,16 +497,16 @@ function populateFlashcardBack(char, type) {
 
     if (isCurrentCardCorrect) {
         if (type === 'numbers') {
-            reading = currentCharset[char].romaji;
-            meaning = currentCharset[char].latin;
+            reading = currentCharset[currentFlashcardChar].romaji;
+            meaning = currentCharset[currentFlashcardChar].latin;
         } else {
-            reading = currentCharset[char];
+            reading = currentCharset[currentFlashcardChar];
             meaning = ''; // For hiragana/katakana/kanji, meaning is the reading
         }
     } else {
         // Get a random incorrect reading
         const allReadings = Object.values(currentCharset);
-        const correctReading = (type === 'numbers') ? currentCharset[char].romaji : currentCharset[char];
+        const correctReading = (type === 'numbers') ? currentCharset[currentFlashcardChar].romaji : currentCharset[currentFlashcardChar];
         let incorrectReading;
         do {
             const randomIndex = Math.floor(Math.random() * allReadings.length);
@@ -524,10 +522,6 @@ function populateFlashcardBack(char, type) {
 
 function flipFlashcard() {
     document.getElementById('flashcard').classList.toggle('flipped');
-    // If flipped, populate the back side
-    if (document.getElementById('flashcard').classList.contains('flipped')) {
-        populateFlashcardBack(currentFlashcardChar, currentFlashcardType);
-    }
 }
 
 function checkFlashcardAnswer(userAnswer, type) {
