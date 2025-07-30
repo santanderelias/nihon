@@ -629,6 +629,8 @@ function replacekana()
 			const list = document.createElement('ul');
 			list.className = 'list-group';
 			list.id = 'kanji-suggestions-list';
+			list.style.maxHeight = '200px';
+			list.style.overflowY = 'auto';
 			suggestions.forEach(suggestion => {
 				const listItem = document.createElement('li');
 				listItem.className = 'list-group-item';
