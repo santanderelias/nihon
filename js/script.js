@@ -328,11 +328,11 @@ function showHomePage() {
                         <h5 class="card-title">Flashcards</h5>
                         <p class="card-text">Practice with flashcards.</p>
                         <div class="d-grid gap-2">
-                            <button class="btn btn-secondary" id="flashcardHiragana">Flashcards (Hiragana)</button>
-                            <button class="btn btn-secondary" id="flashcardHiraganaSpecial">Flashcards (Hiragana Special)</button>
-                            <button class="btn btn-secondary" id="flashcardKatakana">Flashcards (Katakana)</button>
-                            <button class="btn btn-secondary" id="flashcardKanji">Flashcards (Kanji)</button>
-                            <button class="btn btn-secondary" id="flashcardNumbers">Flashcards (Numbers)</button>
+                            <button class="btn btn-secondary" id="flashcardHiragana">Cards Hiragana</button>
+                            <button class="btn btn-secondary" id="flashcardHiraganaSpecial">Cards Hiragana Special</button>
+                            <button class="btn btn-secondary" id="flashcardKatakana">Cards Katakana</button>
+                            <button class="btn btn-secondary" id="flashcardKanji">Cards Kanji</button>
+                            <button class="btn btn-secondary" id="flashcardNumbers">Cards Numbers</button>
                         </div>
                     </div>
                 </div>
