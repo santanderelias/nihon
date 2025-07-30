@@ -317,10 +317,6 @@ function getNextCharacter() {
 
 function showHomePage() {
     updateHomeButton(false); // No section is active
-    const suggestionsContainer = document.getElementById('kanji-suggestions-card');
-    if (suggestionsContainer) {
-        suggestionsContainer.remove();
-    }
     contentArea.innerHTML = `
         <div class="row">
             <div class="col-md-6 mb-3">
