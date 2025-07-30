@@ -374,7 +374,7 @@ function startQuiz(type) {
                 <h1 id="char-display" class="display-1"></h1>
                 <div id="example-word-area" class="mt-3"></div>
                 <div class="mb-3">
-                    <input type="text" class="form-control text-center" id="answer-input" onkeypress="if(event.key === 'Enter') document.getElementById('check-button').click()">
+                    <input type="text" class="form-control text-center" id="answer-input" autocomplete="off" onkeypress="if(event.key === 'Enter') document.getElementById('check-button').click()">
                 </div>
                 <div id="kanji-suggestions" class="mt-3"></div>
                 <button class="btn btn-success" id="check-button">Check</button>
