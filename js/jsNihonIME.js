@@ -82,9 +82,7 @@
  * Uncomment the desired line(and comment the other) to change it.
  * Comment all of them for no buttons.
  */
-document.addEventListener('DOMContentLoaded', function() {
-    hiragana();
-});
+//window.onload = hiragana;
 //window.onload = katakana;
 //window.onload = kanji(1); // Change the number to select the level
 
@@ -262,7 +260,10 @@ function hiragana()
 	nbsp2();
 	kana("&#12431;", "wa"); kana("&#12434;", "(w)o"); kana("&#12435;", "n");
 
-	document.getElementById("divbuttons").innerHTML = Buttons_tmp;
+	const divButtons = document.getElementById("divbuttons");
+	if (divButtons) {
+		divButtons.innerHTML = Buttons_tmp;
+	}
 }
 
 
@@ -306,7 +307,10 @@ function katakana()
 	nbsp2();
 	kana("&#12527;", "wa"); kana("&#12530;", "(w)o"); kana("&#12531;", "n");
 
-	document.getElementById("divbuttons").innerHTML = Buttons_tmp;
+	const divButtons = document.getElementById("divbuttons");
+	if (divButtons) {
+		divButtons.innerHTML = Buttons_tmp;
+	}
 }
 
 
