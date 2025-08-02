@@ -180,6 +180,131 @@ async function loadDictionary() {
 const contentArea = document.getElementById('content-area');
 const homeButton = document.getElementById('home-button');
 
+const achievements = {
+    // Hiragana Achievements
+    'hiragana_apprentice': {
+        name: 'Hiragana Apprentice',
+        description: 'Answer all Hiragana vowels correctly 5 times.',
+        requires: [],
+        characters: () => characterLevels.hiragana[0].set
+    },
+    'hiragana_experienced': {
+        name: 'Hiragana Experienced',
+        description: 'Answer all basic Hiragana syllables correctly 5 times.',
+        requires: ['hiragana_apprentice'],
+        characters: () => {
+            let sets = {};
+            for (let i = 0; i < 10; i++) { // First 10 levels are basic hiragana
+                Object.assign(sets, characterLevels.hiragana[i].set);
+            }
+            return sets;
+        }
+    },
+    'hiragana_master': {
+        name: 'Hiragana Master',
+        description: 'Answer all Hiragana characters correctly 5 times.',
+        requires: ['hiragana_experienced'],
+        characters: () => {
+            let sets = {};
+            characterLevels.hiragana.forEach(level => Object.assign(sets, level.set));
+            return sets;
+        }
+    },
+    // Katakana Achievements
+    'katakana_apprentice': {
+        name: 'Katakana Apprentice',
+        description: 'Answer all Katakana vowels correctly 5 times.',
+        requires: [],
+        characters: () => characterLevels.katakana[0].set
+    },
+    'katakana_experienced': {
+        name: 'Katakana Experienced',
+        description: 'Answer all basic Katakana syllables correctly 5 times.',
+        requires: ['katakana_apprentice'],
+        characters: () => {
+            let sets = {};
+            for (let i = 0; i < 10; i++) { // First 10 levels are basic katakana
+                Object.assign(sets, characterLevels.katakana[i].set);
+            }
+            return sets;
+        }
+    },
+    'katakana_master': {
+        name: 'Katakana Master',
+        description: 'Answer all Katakana characters correctly 5 times.',
+        requires: ['katakana_experienced'],
+        characters: () => {
+            let sets = {};
+            characterLevels.katakana.forEach(level => Object.assign(sets, level.set));
+            return sets;
+        }
+    },
+    // Kanji Achievements
+    'kanji_initiate_1': {
+        name: 'Kanji Initiate (Grade 1)',
+        description: 'Answer all Grade 1 Kanji correctly 5 times.',
+        requires: [],
+        characters: () => {
+            let sets = {};
+            for (let i = 0; i < 4; i++) { // First 4 levels are Grade 1
+                Object.assign(sets, characterLevels.kanji[i].set);
+            }
+            return sets;
+        }
+    },
+    'kanji_initiate_2': {
+        name: 'Kanji Initiate (Grade 2)',
+        description: 'Answer all Grade 2 Kanji correctly 5 times.',
+        requires: ['kanji_initiate_1'],
+        characters: () => {
+            let sets = {};
+            for (let i = 4; i < characterLevels.kanji.length; i++) { // The rest are Grade 2
+                Object.assign(sets, characterLevels.kanji[i].set);
+            }
+            return sets;
+        }
+    },
+    'kanji_master': {
+        name: 'Kanji Master',
+        description: 'Answer all Kanji correctly 5 times.',
+        requires: ['kanji_initiate_2'],
+        characters: () => {
+            let sets = {};
+            characterLevels.kanji.forEach(level => Object.assign(sets, level.set));
+            return sets;
+        }
+    },
+    // Numbers Achievements
+    'accountant': {
+        name: 'Accountant',
+        description: 'Answer numbers 1-50 correctly 5 times.',
+        requires: [],
+        characters: () => {
+            let sets = {};
+            for (let i = 0; i < 5; i++) { // First 5 levels are 1-50
+                Object.assign(sets, characterLevels.numbers[i].set);
+            }
+            return sets;
+        }
+    },
+    'comptroller': {
+        name: 'Comptroller',
+        description: 'Answer numbers 1-100 correctly 5 times.',
+        requires: ['accountant'],
+        characters: () => {
+            let sets = {};
+            characterLevels.numbers.forEach(level => Object.assign(sets, level.set));
+            return sets;
+        }
+    },
+    // Overall Achievement
+    'nihon_pro': {
+        name: 'Nihon Pro',
+        description: 'Achieve Master level in all categories.',
+        requires: ['hiragana_master', 'katakana_master', 'kanji_master', 'comptroller']
+    }
+};
+
 const characterLevels = {
     hiragana: [
         { name: "Vowels (a, i, u, e, o)", set: { 'あ': 'a', 'い': 'i', 'う': 'u', 'え': 'e', 'お': 'o' } },
@@ -229,7 +354,7 @@ const characterLevels = {
         { name: "Kanji Adjectives (State)", set: { '元': 'gen', '気': 'ki', '病': 'byou', '院': 'in', '薬': 'kusuri', '速': 'haya', '遅': 'oso', '近': 'chika', '遠': 'too', '広': 'hiro' } },
         { name: "Kanji Adjectives (Qualities)", set: { '狭': 'sema', '明': 'aka', '暗': 'kura', '暑': 'atsu', '寒': 'samu', '暖': 'atata', '涼': 'suzu', '静': 'shizu', '賑': 'nigi', '有名': 'yuumei' } },
         { name: "Kanji Adjectives (People/Things)", set: { '親切': 'shinsetsu', '便利': 'benri', '不便': 'fuben', '元気': 'genki', '綺麗': 'kirei', '汚': 'kitana', '可愛': 'kawaii', '赤': 'aka', '青': 'ao', '白': 'shiro' } },
-        { name: "Kanji Colors & Seasons", set: { '黒': 'kuro', '色': 'iro', '春': 'haru', '夏': 'natsu', '秋': 'aki', '冬': 'fuyu', '雨': 'ame', '雪': 'yuki', '風': 'kaze', '晴': 'ha' } },
+        { name:g: "Kanji Colors & Seasons", set: { '黒': 'kuro', '色': 'iro', '春': 'haru', '夏': 'natsu', '秋': 'aki', '冬': 'fuyu', '雨': 'ame', '雪': 'yuki', '風': 'kaze', '晴': 'ha' } },
         { name: "Kanji Nature & Places", set: { '曇': 'kumo', '空': 'sora', '海': 'umi', '山': 'yama', '川': 'kawa', '池': 'ike', '庭': 'niwa', '店': 'mise', '駅': 'eki', '道': 'michi' } },
         { name: "Kanji Places & Things", set: { '部屋': 'heya', '家': 'ie', '会社': 'kaisha', '電話': 'denwa', '番号': 'bangou', '机': 'tsukue', '椅子': 'isu', '鞄': 'kaban', '靴': 'kutsu', '鉛筆': 'enpitsu' } },
         { name: "Kanji Things & Transport", set: { '時計': 'tokei', '写真': 'shashin', '車': 'kuruma', '自転車': 'jitensha', '飛行機': 'hikouki', '船': 'fune', '電車': 'densha', '地下鉄': 'chikatetsu', '新幹線': 'shinkansen', '切符': 'kippu' } },
@@ -328,7 +453,8 @@ let playerState = JSON.parse(localStorage.getItem('nihon-player-state')) || {
         katakana: 0,
         kanji: 0,
         numbers: 0
-    }
+    },
+    unlockedAchievements: []
 };
 
 function getXpForLevel(level) {
@@ -446,6 +572,46 @@ function showHomePage() {
     setupHomePageListeners();
 }
 
+
+function unlockAchievement(id) {
+    if (!playerState.unlockedAchievements) {
+        playerState.unlockedAchievements = [];
+    }
+    playerState.unlockedAchievements.push(id);
+    localStorage.setItem('nihon-player-state', JSON.stringify(playerState));
+
+    const achievement = achievements[id];
+    showToast("Achievement Unlocked!", achievement.name);
+}
+
+function checkAchievements() {
+    const unlocked = playerState.unlockedAchievements || [];
+
+    for (const id in achievements) {
+        if (unlocked.includes(id)) {
+            continue; // Already unlocked
+        }
+
+        const achievement = achievements[id];
+        const hasPrerequisites = achievement.requires.every(reqId => unlocked.includes(reqId));
+
+        if (hasPrerequisites) {
+            if (achievement.characters) { // Character-based achievement
+                const characterSet = achievement.characters();
+                const allMastered = Object.keys(characterSet).every(char => {
+                    const p = progress[char];
+                    return p && p.correct >= 5;
+                });
+
+                if (allMastered) {
+                    unlockAchievement(id);
+                }
+            } else { // Prerequisite-based achievement (like Nihon Pro)
+                unlockAchievement(id);
+            }
+        }
+    }
+}
 
 function checkLevelUp(type) {
     // No level up for listening quiz as it's a mix of everything
@@ -852,6 +1018,7 @@ function checkAnswer(char, correctAnswer, type) {
         feedbackArea.innerHTML = `<span class="text-success">Correct!</span>`;
         gainXP(10);
         checkLevelUp(type);
+        checkAchievements();
     } else {
         if (!p) {
             p = { correct: 0, incorrect: 0, streak: 0, nextReview: now };
@@ -984,6 +1151,46 @@ if (statsModal) {
 
         wrongCharsTableBody.innerHTML = ''; // Clear previous content
         correctCharsTableBody.innerHTML = ''; // Clear previous content
+
+        // Add Achievements display
+        const oldAchievementsSection = statsBody.querySelector('#achievements-section');
+        if (oldAchievementsSection) {
+            oldAchievementsSection.remove();
+        }
+        const achievementsSection = document.createElement('div');
+        achievementsSection.id = 'achievements-section';
+        achievementsSection.innerHTML = `
+            <h4 class="text-center mt-4">Achievements</h4>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Achievement</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody id="achievements-table-body">
+                </tbody>
+            </table>
+        `;
+        statsBody.appendChild(achievementsSection);
+
+        const achievementsTableBody = document.getElementById('achievements-table-body');
+        const unlocked = playerState.unlockedAchievements || [];
+
+        if (unlocked.length === 0) {
+            achievementsTableBody.innerHTML = '<tr><td colspan="2">No achievements unlocked yet. Keep trying!</td></tr>';
+        } else {
+            unlocked.forEach(id => {
+                const achievement = achievements[id];
+                if (achievement) {
+                    const row = achievementsTableBody.insertRow();
+                    const nameCell = row.insertCell();
+                    const descCell = row.insertCell();
+                    nameCell.textContent = achievement.name;
+                    descCell.textContent = achievement.description;
+                }
+            });
+        }
 
         const wrongItems = [];
         const correctItems = [];
