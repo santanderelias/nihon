@@ -763,7 +763,9 @@ function startQuiz(type) {
         <div class="card text-center shadow-sm">
             <div class="card-body">
                 <div id="feedback-area" class="mb-2" style="height: 24px;"></div>
-                <h1 id="char-display" class="display-1"></h1>
+                <div id="char-display-container">
+                    <h1 id="char-display" class="display-1"></h1>
+                </div>
                 <div id="example-word-area" class="mt-3"></div>
                 <div class="mb-3">
                     <input type="text" class="form-control text-center" id="answer-input" autocomplete="off" onkeypress="if(event.key === 'Enter') document.getElementById('check-button').click()">
@@ -1031,6 +1033,21 @@ function setupHomePageListeners() {
     document.getElementById('flashcardSentences').addEventListener('click', () => startFlashcardMode('sentences'));
 }
 
+function getAudioFilename(char, type) {
+    if (!currentCharset[char]) return null;
+
+    if (type === 'words' || type === 'sentences' || type === 'listening') {
+        return char;
+    }
+
+    const reading = currentCharset[char];
+    if (typeof reading === 'object' && reading.romaji) { // For numbers
+        return reading.romaji;
+    }
+
+    return reading; // For hiragana, katakana, kanji
+}
+
 async function loadQuestion(type) {
     const charToTest = getNextCharacter();
 
@@ -1049,6 +1066,23 @@ async function loadQuestion(type) {
     const correctAnswer = (type === 'numbers') ? currentCharset[charToTest].romaji : currentCharset[charToTest];
     
     document.getElementById('char-display').textContent = charToTest;
+
+    // Add audio button
+    const charDisplayContainer = document.getElementById('char-display-container');
+    let audioButtonHTML = '';
+    const filename = getAudioFilename(charToTest, type);
+    if (filename) {
+        audioButtonHTML = `<button id="play-char-audio" class="btn btn-secondary btn-sm ms-2"><i class="fas fa-volume-up"></i></button>`;
+    }
+    charDisplayContainer.innerHTML = `<h1 id="char-display" class="display-1 d-inline-block">${charToTest}</h1>${audioButtonHTML}`;
+
+    if (filename) {
+        document.getElementById('play-char-audio').onclick = () => {
+            const audio = new Audio(`audio/${filename}.mp3`);
+            audio.play().catch(e => console.error("Error playing audio:", e));
+        };
+    }
+
     document.getElementById('feedback-area').innerHTML = '';
 
     const p = progress[charToTest];
@@ -1395,18 +1429,40 @@ const grammarModal = document.getElementById('grammar-modal');
 if (grammarModal) {
     grammarModal.addEventListener('show.bs.modal', () => {
         const grammarBody = grammarModal.querySelector('.modal-body');
+        const playAudio = (text) => {
+            const filename = text.toLowerCase().replace(/\s/g, '_').replace('?', '');
+            const audio = new Audio(`audio/${filename}.mp3`);
+            audio.play().catch(e => console.error("Error playing audio:", e));
+        };
+
+        const createAudioButton = (text) => {
+            const button = document.createElement('button');
+            button.className = 'btn btn-secondary btn-sm ms-2';
+            button.innerHTML = '<i class="fas fa-volume-up"></i>';
+            button.onclick = () => playAudio(text);
+            return button;
+        };
+
+        const createPhraseItem = (text, romaji) => {
+            const li = document.createElement('li');
+            li.className = 'd-flex justify-content-between align-items-center mb-2';
+            li.textContent = text;
+            li.appendChild(createAudioButton(romaji));
+            return li;
+        };
+
         grammarBody.innerHTML = `
             <div class="accordion" id="grammarAccordion">
+                <!-- Basic Sentence Structure -->
                 <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingOne">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                            Basic Sentence Structure
-                        </button>
-                    </h2>
-                    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#grammarAccordion">
+                    <h2 class="accordion-header" id="headingOne"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">Basic Sentence Structure</button></h2>
+                    <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#grammarAccordion">
                         <div class="accordion-body" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
                             <p>The basic sentence structure in Japanese is Subject-Object-Verb (SOV).</p>
-                            <p>Example: 私はリンゴを食べます (Watashi wa ringo o tabemasu) - I eat an apple.</p>
+                            <p class="d-flex justify-content-between align-items-center">
+                                <span>Example: 私はリンゴを食べます (Watashi wa ringo o tabemasu) - I eat an apple.</span>
+                                <button id="play-sov" class="btn btn-secondary btn-sm"><i class="fas fa-volume-up"></i></button>
+                            </p>
                             <ul>
                                 <li>私 (Watashi) - I (Subject)</li>
                                 <li>リンゴ (ringo) - apple (Object)</li>
@@ -1415,205 +1471,36 @@ if (grammarModal) {
                         </div>
                     </div>
                 </div>
+                <!-- Particles -->
                 <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingTwo">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                            Particles
-                        </button>
-                    </h2>
-                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#grammarAccordion">
-                        <div class="accordion-body" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
-                            <p>Particles are used to mark the grammatical function of a word.</p>
-                            <ul>
-                                <li>は (wa) - topic marker</li>
-                                <li>が (ga) - subject marker</li>
-                                <li>を (o) - object marker</li>
-                                <li>に (ni) - place/time marker</li>
-                                <li>へ (e) - direction marker</li>
-                                <li>で (de) - place of action marker</li>
-                            </ul>
-                        </div>
-                    </div>
+                     <h2 class="accordion-header" id="headingTwo"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">Particles</button></h2>
+                     <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#grammarAccordion"><div class="accordion-body">...</div></div>
                 </div>
+                <!-- Verb Conjugation -->
                 <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingThree">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                            Verb Conjugation (Present Tense)
-                        </button>
-                    </h2>
-                    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#grammarAccordion">
-                        <div class="accordion-body" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
-                            <p>Verbs are conjugated based on their group and politeness level.</p>
-                            <p><strong>Group 1 (u-verbs):</strong></p>
-                            <ul>
-                                <li>Nomu (飲む - to drink) -> Nomimasu (飲みます - polite)</li>
-                                <li>Kaku (書く - to write) -> Kakimasu (書きます - polite)</li>
-                            </ul>
-                            <p><strong>Group 2 (ru-verbs):</strong></p>
-                            <ul>
-                                <li>Taberu (食べる - to eat) -> Tabemasu (食べます - polite)</li>
-                                <li>Miru (見る - to see) -> Mimasu (見ます - polite)</li>
-                            </ul>
-                            <p><strong>Group 3 (irregular verbs):</strong></p>
-                            <ul>
-                                <li>Suru (する - to do) -> Shimasu (します - polite)</li>
-                                <li>Kuru (来る - to come) -> Kimasu (来ます - polite)</li>
-                            </ul>
-                        </div>
-                    </div>
+                    <h2 class="accordion-header" id="headingThree"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">Verb Conjugation</button></h2>
+                    <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#grammarAccordion"><div class="accordion-body">...</div></div>
                 </div>
+                <!-- Common Phrases -->
                 <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingFour">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
-                            Common Phrases
-                        </button>
-                    </h2>
-                    <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#grammarAccordion">
+                    <h2 class="accordion-header" id="headingFour"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">Common Phrases</button></h2>
+                    <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#grammarAccordion">
                         <div class="accordion-body" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
                             <div class="accordion" id="phrasesAccordion">
+                                <!-- Greetings -->
                                 <div class="accordion-item">
-                                    <h2 class="accordion-header" id="phrasesHeadingOne">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseOne" aria-expanded="false" aria-controls="phrasesCollapseOne">
-                                            Greetings
-                                        </button>
-                                    </h2>
-                                    <div id="phrasesCollapseOne" class="accordion-collapse collapse" aria-labelledby="phrasesHeadingOne" data-bs-parent="#phrasesAccordion">
-                                        <div class="accordion-body">
-                                            <ul>
-                                                <li>おはようございます (Ohayou gozaimasu) - Good morning</li>
-                                                <li>こんにちは (Konnichiwa) - Hello/Good afternoon</li>
-                                                <li>こんばんは (Konbanwa) - Good evening</li>
-                                                <li>さようなら (Sayounara) - Goodbye</li>
-                                                <li>おやすみなさい (Oyasuminasai) - Good night</li>
-                                                <li>はじめまして (Hajimemashite) - Nice to meet you</li>
-                                                <li>どうぞよろしく (Douzo yoroshiku) - Pleased to make your acquaintance</li>
-                                            </ul>
-                                        </div>
-                                    </div>
+                                    <h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseOne">Greetings</button></h2>
+                                    <div id="phrasesCollapseOne" class="accordion-collapse collapse" data-bs-parent="#phrasesAccordion"><div class="accordion-body"><ul id="greetings-list"></ul></div></div>
                                 </div>
+                                <!-- Time -->
                                 <div class="accordion-item">
-                                    <h2 class="accordion-header" id="phrasesHeadingTwo">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseTwo" aria-expanded="false" aria-controls="phrasesCollapseTwo">
-                                            Time-related Expressions
-                                        </button>
-                                    </h2>
-                                    <div id="phrasesCollapseTwo" class="accordion-collapse collapse" aria-labelledby="phrasesHeadingTwo" data-bs-parent="#phrasesAccordion">
-                                        <div class="accordion-body">
-                                            <ul>
-                                                <li>今何時ですか (Ima nanji desu ka?) - What time is it now?</li>
-                                                <li>今日は何日ですか (Kyou wa nannichi desu ka?) - What is the date today?</li>
-                                                <li>明日は何曜日ですか (Ashita wa nanyoubi desu ka?) - What day of the week is it tomorrow?</li>
-                                                <li>きのう (Kinou) - Yesterday</li>
-                                                <li>あした (Ashita) - Tomorrow</li>
-                                            </ul>
-                                        </div>
-                                    </div>
+                                    <h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseTwo">Time-related</button></h2>
+                                    <div id="phrasesCollapseTwo" class="accordion-collapse collapse" data-bs-parent="#phrasesAccordion"><div class="accordion-body"><ul id="time-list"></ul></div></div>
                                 </div>
+                                <!-- General -->
                                 <div class="accordion-item">
-                                    <h2 class="accordion-header" id="phrasesHeadingThree">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseThree" aria-expanded="false" aria-controls="phrasesCollapseThree">
-                                            General
-                                        </button>
-                                    </h2>
-                                    <div id="phrasesCollapseThree" class="accordion-collapse collapse" aria-labelledby="phrasesHeadingThree" data-bs-parent="#phrasesAccordion">
-                                        <div class="accordion-body">
-                                            <ul>
-                                                <li>はい (Hai) - Yes</li>
-                                                <li>いいえ (Iie) - No</li>
-                                                <li>お願いします (Onegaishimasu) - Please</li>
-                                                <li>ありがとうございます (Arigatou gozaimasu) - Thank you</li>
-                                                <li>すみません (Sumimasen) - Excuse me/I'm sorry</li>
-                                                <li>ごめんなさい (Gomennasai) - I'm sorry</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header" id="phrasesHeadingFour">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseFour" aria-expanded="false" aria-controls="phrasesCollapseFour">
-                                            Food/Restaurant
-                                        </button>
-                                    </h2>
-                                    <div id="phrasesCollapseFour" class="accordion-collapse collapse" aria-labelledby="phrasesHeadingFour" data-bs-parent="#phrasesAccordion">
-                                        <div class="accordion-body">
-                                            <ul>
-                                                <li>メニューをください (Menyuu o kudasai) - Please give me the menu.</li>
-                                                <li>これをください (Kore o kudasai) - I'll have this one, please.</li>
-                                                <li>お勘定をお願いします (Okanjou o onegaishimasu) - Check, please.</li>
-                                                <li>いただきます (Itadakimasu) - Said before eating.</li>
-                                                <li>ごちそうさまでした (Gochisousama deshita) - Said after eating.</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header" id="phrasesHeadingFive">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseFive" aria-expanded="false" aria-controls="phrasesCollapseFive">
-                                            Shopping
-                                        </button>
-                                    </h2>
-                                    <div id="phrasesCollapseFive" class="accordion-collapse collapse" aria-labelledby="phrasesHeadingFive" data-bs-parent="#phrasesAccordion">
-                                        <div class="accordion-body">
-                                            <ul>
-                                                <li>これはいくらですか (Kore wa ikura desu ka?) - How much is this?</li>
-                                                <li>これをください (Kore o kudasai) - I'll take this, please.</li>
-                                                <li>クレジットカードは使えますか (Kurejitto kaado wa tsukaemasu ka?) - Can I use a credit card?</li>
-                                                <li>袋をください (Fukuro o kudasai) - Can I have a bag, please?</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header" id="phrasesHeadingSix">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseSix" aria-expanded="false" aria-controls="phrasesCollapseSix">
-                                            Directions
-                                        </button>
-                                    </h2>
-                                    <div id="phrasesCollapseSix" class="accordion-collapse collapse" aria-labelledby="phrasesHeadingSix" data-bs-parent="#phrasesAccordion">
-                                        <div class="accordion-body">
-                                            <ul>
-                                                <li>駅はどこですか (Eki wa doko desu ka?) - Where is the station?</li>
-                                                <li>まっすぐ行ってください (Massugu itte kudasai) - Please go straight.</li>
-                                                <li>右に曲がってください (Migi ni magatte kudasai) - Please turn right.</li>
-                                                <li>左に曲がってください (Hidari ni magatte kudasai) - Please turn left.</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header" id="phrasesHeadingSeven">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseSeven" aria-expanded="false" aria-controls="phrasesCollapseSeven">
-                                            Weather
-                                        </button>
-                                    </h2>
-                                    <div id="phrasesCollapseSeven" class="accordion-collapse collapse" aria-labelledby="phrasesHeadingSeven" data-bs-parent="#phrasesAccordion">
-                                        <div class="accordion-body">
-                                            <ul>
-                                                <li>今日の天気はどうですか (Kyou no tenki wa dou desu ka?) - How is the weather today?</li>
-                                                <li>晴れです (Hare desu) - It's sunny.</li>
-                                                <li>曇りです (Kumori desu) - It's cloudy.</li>
-                                                <li>雨です (Ame desu) - It's raining.</li>
-                                                <li>雪です (Yuki desu) - It's snowing.</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header" id="phrasesHeadingEight">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseEight" aria-expanded="false" aria-controls="phrasesCollapseEight">
-                                            Health/Emergencies
-                                        </button>
-                                    </h2>
-                                    <div id="phrasesCollapseEight" class="accordion-collapse collapse" aria-labelledby="phrasesHeadingEight" data-bs-parent="#phrasesAccordion">
-                                        <div class="accordion-body">
-                                            <ul>
-                                                <li>助けて (Tasukete) - Help!</li>
-                                                <li>救急車を呼んでください (Kyuukyuusha o yonde kudasai) - Please call an ambulance.</li>
-                                                <li>病院はどこですか (Byouin wa doko desu ka?) - Where is the hospital?</li>
-                                                <li>気分が悪いです (Kibun ga warui desu) - I feel sick.</li>
-                                            </ul>
-                                        </div>
-                                    </div>
+                                    <h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseThree">General</button></h2>
+                                    <div id="phrasesCollapseThree" class="accordion-collapse collapse" data-bs-parent="#phrasesAccordion"><div class="accordion-body"><ul id="general-list"></ul></div></div>
                                 </div>
                             </div>
                         </div>
@@ -1621,8 +1508,31 @@ if (grammarModal) {
                 </div>
             </div>
         `;
+
+        // Populate lists
+        document.getElementById('play-sov').onclick = () => playAudio("Watashi wa ringo o tabemasu");
+
+        const greetings = [
+            { text: "おはようございます (Ohayou gozaimasu) - Good morning", audio: "Ohayou gozaimasu" },
+            { text: "こんにちは (Konnichiwa) - Hello/Good afternoon", audio: "Konnichiwa" },
+            { text: "こんばんは (Konbanwa) - Good evening", audio: "Konbanwa" }
+        ];
+        const time = [
+            { text: "今何時ですか (Ima nanji desu ka?) - What time is it now?", audio: "Ima nanji desu ka?" },
+            { text: "昨日 (Kinou) - Yesterday", audio: "Kinou" }
+        ];
+        const general = [
+            { text: "はい (Hai) - Yes", audio: "Hai" },
+            { text: "いいえ (Iie) - No", audio: "Iie" },
+            { text: "お願いします (Onegaishimasu) - Please", audio: "Onegaishimasu" }
+        ];
+
+        greetings.forEach(item => document.getElementById('greetings-list').appendChild(createPhraseItem(item.text, item.audio)));
+        time.forEach(item => document.getElementById('time-list').appendChild(createPhraseItem(item.text, item.audio)));
+        general.forEach(item => document.getElementById('general-list').appendChild(createPhraseItem(item.text, item.audio)));
     });
 }
+
 
 // --- References Modal Logic ---
 const referencesModal = document.getElementById('references-modal');
