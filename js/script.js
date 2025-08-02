@@ -129,26 +129,17 @@ dictionaryWorker.onmessage = (event) => {
             const dictionaryResultArea = document.getElementById('dictionary-result-area');
             if (dictionaryResultArea) {
                 if (results.length > 0) {
-                    let html = '<div class="accordion" id="dictionary-accordion">';
+                    let html = '<div>'; // Use a simple div container
                     results.forEach((entry, i) => {
-                        const entryId = `entry-${i}`;
-                        const romaji = entry.reading;
+                        const romaji = wanakana.toRomaji(entry.reading); // Convert kana to romaji
                         html += `
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="heading-${entryId}">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${entryId}" aria-expanded="false" aria-controls="collapse-${entryId}">
-                                        <div class="w-100">
-                                            <strong style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.kanji}</strong> <span style="font-family: 'Noto Sans JP Embedded', sans-serif;">(${entry.reading})</span>
-                                            <br>
-                                            <small class="text-muted">${romaji}</small>
-                                            <div class="text-truncate" style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.gloss}</div>
-                                        </div>
-                                    </button>
-                                </h2>
-                                <div id="collapse-${entryId}" class="accordion-collapse collapse" aria-labelledby="heading-${entryId}" data-bs-parent="#dictionary-accordion">
-                                    <div class="accordion-body">
-                                        <p style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.gloss}</p>
-                                    </div>
+                            <div class="card mb-2 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
+                                        ${entry.kanji} <span class="text-muted">(${entry.reading})</span>
+                                    </h5>
+                                    <h6 class="card-subtitle mb-2 text-muted">${romaji}</h6>
+                                    <p class="card-text" style="font-family: 'Noto Sans JP Embedded', sans-serif;">${entry.gloss}</p>
                                 </div>
                             </div>
                         `;
@@ -188,6 +179,77 @@ async function loadDictionary() {
 
 const contentArea = document.getElementById('content-area');
 const homeButton = document.getElementById('home-button');
+
+const characterLevels = {
+    hiragana: [
+        { name: "Vowels (a, i, u, e, o)", set: { 'あ': 'a', 'い': 'i', 'う': 'u', 'え': 'e', 'お': 'o' } },
+        { name: "K-Group (ka, ki, ku, ke, ko)", set: { 'か': 'ka', 'き': 'ki', 'く': 'ku', 'け': 'ke', 'こ': 'ko' } },
+        { name: "S-Group (sa, shi, su, se, so)", set: { 'さ': 'sa', 'し': 'shi', 'す': 'su', 'せ': 'se', 'そ': 'so' } },
+        { name: "T-Group (ta, chi, tsu, te, to)", set: { 'た': 'ta', 'ち': 'chi', 'つ': 'tsu', 'て': 'te', 'と': 'to' } },
+        { name: "N-Group (na, ni, nu, ne, no)", set: { 'な': 'na', 'に': 'ni', 'ぬ': 'nu', 'ね': 'ne', 'の': 'no' } },
+        { name: "H-Group (ha, hi, fu, he, ho)", set: { 'は': 'ha', 'ひ': 'hi', 'ふ': 'fu', 'へ': 'he', 'ほ': 'ho' } },
+        { name: "M-Group (ma, mi, mu, me, mo)", set: { 'ま': 'ma', 'み': 'mi', 'む': 'mu', 'め': 'me', 'も': 'mo' } },
+        { name: "Y-Group (ya, yu, yo)", set: { 'や': 'ya', 'ゆ': 'yu', 'よ': 'yo' } },
+        { name: "R-Group (ra, ri, ru, re, ro)", set: { 'ら': 'ra', 'り': 'ri', 'る': 'ru', 'れ': 're', 'ろ': 'ro' } },
+        { name: "W-Group & N (wa, wo, n)", set: { 'わ': 'wa', 'を': 'wo', 'ん': 'n' } },
+        { name: "G, Z, D-Group (Dakuten)", set: { 'が': 'ga', 'ぎ': 'gi', 'ぐ': 'gu', 'げ': 'ge', 'ご': 'go', 'ざ': 'za', 'じ': 'ji', 'ず': 'zu', 'ぜ': 'ze', 'ぞ': 'zo', 'だ': 'da', 'ぢ': 'ji', 'づ': 'zu', 'で': 'de', 'ど': 'do' } },
+        { name: "B, P-Group (Dakuten/Handakuten)", set: { 'ば': 'ba', 'び': 'bi', 'ぶ': 'bu', 'べ': 'be', 'ぼ': 'bo', 'ぱ': 'pa', 'ぴ': 'pi', 'ぷ': 'pu', 'ぺ': 'pe', 'ぽ': 'po' } }
+    ],
+    katakana: [
+        { name: "Vowels (a, i, u, e, o)", set: { 'ア': 'a', 'イ': 'i', 'ウ': 'u', 'エ': 'e', 'オ': 'o' } },
+        { name: "K-Group (ka, ki, ku, ke, ko)", set: { 'カ': 'ka', 'キ': 'ki', 'ク': 'ku', 'ケ': 'ke', 'コ': 'ko' } },
+        { name: "S-Group (sa, shi, su, se, so)", set: { 'サ': 'sa', 'シ': 'shi', 'ス': 'su', 'セ': 'se', 'ソ': 'so' } },
+        { name: "T-Group (ta, chi, tsu, te, to)", set: { 'タ': 'ta', 'チ': 'chi', 'ツ': 'tsu', 'テ': 'te', 'ト': 'to' } },
+        { name: "N-Group (na, ni, nu, ne, no)", set: { 'ナ': 'na', 'ニ': 'ni', 'ヌ': 'nu', 'ネ': 'ne', 'ノ': 'no' } },
+        { name: "H-Group (ha, hi, fu, he, ho)", set: { 'ハ': 'ha', 'ヒ': 'hi', 'フ': 'fu', 'ヘ': 'he', 'ホ': 'ho' } },
+        { name: "M-Group (ma, mi, mu, me, mo)", set: { 'マ': 'ma', 'ミ': 'mi', 'ム': 'mu', 'メ': 'me', 'モ': 'mo' } },
+        { name: "Y-Group (ya, yu, yo)", set: { 'ヤ': 'ya', 'ユ': 'yu', 'ヨ': 'yo' } },
+        { name: "R-Group (ra, ri, ru, re, ro)", set: { 'ラ': 'ra', 'リ': 'ri', 'ル': 'ru', 'レ': 're', 'ロ': 'ro' } },
+        { name: "W-Group & N (wa, wo, n)", set: { 'ワ': 'wa', 'ヲ': 'wo', 'ン': 'n' } },
+        { name: "G, Z, D-Group (Dakuten)", set: { 'ガ': 'ga', 'ギ': 'gi', 'グ': 'gu', 'ゲ': 'ge', 'ゴ': 'go', 'ザ': 'za', 'ジ': 'ji', 'ズ': 'zu', 'ゼ': 'ze', 'ゾ': 'zo', 'ダ': 'da', 'ヂ': 'ji', 'ヅ': 'zu', 'デ': 'de', 'ド': 'do' } },
+        { name: "B, P-Group (Dakuten/Handakuten)", set: { 'バ': 'ba', 'ビ': 'bi', 'ブ': 'bu', 'ベ': 'be', 'ボ': 'bo', 'パ': 'pa', 'ピ': 'pi', 'プ': 'pu', 'ペ': 'pe', 'ポ': 'po' } }
+    ],
+    kanji: [
+        // Grade 1
+        { name: "Kanji Basics 1", set: { '一': 'ichi', '二': 'ni', '三': 'san', '四': 'shi', '五': 'go', '六': 'roku', '七': 'shichi', '八': 'hachi', '九': 'kyuu', '十': 'juu' } },
+        { name: "Kanji Basics 2", set: { '百': 'hyaku', '千': 'sen', '万': 'man', '円': 'en', '時': 'ji', '日': 'nichi', '月': 'getsu', '火': 'ka', '水': 'sui', '木': 'moku' } },
+        { name: "Kanji Nature", set: { '金': 'kin', '土': 'do', '曜': 'you', '上': 'ue', '下': 'shita', '中': 'naka', '半': 'han', '山': 'yama', '川': 'kawa', '元': 'gen' } },
+        { name: "Kanji People & Body", set: { '気': 'ki', '天': 'ten', '私': 'watashi', '今': 'ima', '田': 'ta', '女': 'onna', '男': 'otoko', '見': 'mi', '行': 'i', '食': 'ta', '飲': 'no' } },
+        // Grade 2
+        { name: "Kanji Language", set: { '語': 'go', '本': 'hon', '学生': 'gakusei', '学校': 'gakkou', '先生': 'sensei', '友': 'tomo', '達': 'dachi', '何': 'nan', '毎': 'mai', '朝': 'asa' } },
+        { name: "Kanji Time & Places", set: { '昼': 'hiru', '晩': 'ban', '時': 'toki', '分': 'fun', '半': 'han', '国': 'kuni', '人': 'jin', '会': 'a', '社': 'sha', '員': 'in' } },
+        { name: "Kanji Professions & Places", set: { '医': 'i', '者': 'sha', '大': 'dai', '学': 'gaku', '高': 'kou', '校': 'kou', '小': 'shou', '中': 'chuu', '電': 'den', '車': 'sha' } },
+        { name: "Kanji Verbs & Directions", set: { '自': 'ji', '転': 'ten', '乗': 'no', '駅': 'eki', '銀': 'gin', '行': 'kou', '郵': 'yuu', '便': 'bin', '局': 'kyoku', '図': 'to' } },
+        { name: "Kanji Places & Directions", set: { '書': 'sho', '館': 'kan', '映': 'ei', '画': 'ga', '右': 'migi', '左': 'hidari', '前': 'mae', '後': 'ushiro', '外': 'soto', '東': 'higashi' } },
+        { name: "Kanji Family", set: { '西': 'nishi', '南': 'minami', '北': 'kita', '名': 'na', '前': 'mae', '父': 'chichi', '母': 'haha', '子': 'ko', '供': 'domo', '犬': 'inu' } },
+        { name: "Kanji Animals & Nature", set: { '猫': 'neko', '鳥': 'tori', '魚': 'sakana', '花': 'hana', '肉': 'niku', '野菜': 'yasai', '果物': 'kudamono', '水': 'mizu', '茶': 'cha', '牛': 'gyuu' } },
+        { name: "Kanji Verbs (Life)", set: { '乳': 'nyuu', '来': 'ki', '帰': 'kae', '聞': 'ki', '読': 'yo', '書': 'ka', '話': 'hana', '買': 'ka', '起': 'o', '寝': 'ne' } },
+        { name: "Kanji Verbs (Mind)", set: { '見': 'mi', '勉': 'ben', '強': 'kyou', '働': 'hatara', '休': 'yasu', '言': 'i', '思': 'omo', '知': 'shi', '入': 'hai', '出': 'de' } },
+        { name: "Kanji Verbs (Actions)", set: { '待': 'ma', '作': 'tsuku', '使': 'tsuka', '会': 'a', '同': 'ona', '楽': 'tano', '好': 'su', '嫌': 'kira', '上手': 'jouzu', '下手': 'heta' } },
+        { name: "Kanji Adjectives (State)", set: { '元': 'gen', '気': 'ki', '病': 'byou', '院': 'in', '薬': 'kusuri', '速': 'haya', '遅': 'oso', '近': 'chika', '遠': 'too', '広': 'hiro' } },
+        { name: "Kanji Adjectives (Qualities)", set: { '狭': 'sema', '明': 'aka', '暗': 'kura', '暑': 'atsu', '寒': 'samu', '暖': 'atata', '涼': 'suzu', '静': 'shizu', '賑': 'nigi', '有名': 'yuumei' } },
+        { name: "Kanji Adjectives (People/Things)", set: { '親切': 'shinsetsu', '便利': 'benri', '不便': 'fuben', '元気': 'genki', '綺麗': 'kirei', '汚': 'kitana', '可愛': 'kawaii', '赤': 'aka', '青': 'ao', '白': 'shiro' } },
+        { name: "Kanji Colors & Seasons", set: { '黒': 'kuro', '色': 'iro', '春': 'haru', '夏': 'natsu', '秋': 'aki', '冬': 'fuyu', '雨': 'ame', '雪': 'yuki', '風': 'kaze', '晴': 'ha' } },
+        { name: "Kanji Nature & Places", set: { '曇': 'kumo', '空': 'sora', '海': 'umi', '山': 'yama', '川': 'kawa', '池': 'ike', '庭': 'niwa', '店': 'mise', '駅': 'eki', '道': 'michi' } },
+        { name: "Kanji Places & Things", set: { '部屋': 'heya', '家': 'ie', '会社': 'kaisha', '電話': 'denwa', '番号': 'bangou', '机': 'tsukue', '椅子': 'isu', '鞄': 'kaban', '靴': 'kutsu', '鉛筆': 'enpitsu' } },
+        { name: "Kanji Things & Transport", set: { '時計': 'tokei', '写真': 'shashin', '車': 'kuruma', '自転車': 'jitensha', '飛行機': 'hikouki', '船': 'fune', '電車': 'densha', '地下鉄': 'chikatetsu', '新幹線': 'shinkansen', '切符': 'kippu' } },
+        { name: "Kanji Time & Money", set: { 'お金': 'okane', '時間': 'jikan', '今日': 'kyou', '明日': 'ashita', '昨日': 'kinou', '今週': 'konshuu', '来週': 'raishuu', '先週': 'senshuu', '今年': 'kotoshi', '来年': 'rainen' } },
+        { name: "Kanji Time & Question Words", set: { '去年': 'kyonen', '毎': 'mai', '何': 'nani', '誰': 'dare', '何処': 'doko', '何時': 'itsu', '何故': 'naze', '如何': 'dou', '一': 'hito' } },
+        { name: "Kanji Numbers (Native)", set: { '二': 'futa', '三': 'mi', '四': 'yon', '五': 'itsu', '六': 'mu', '七': 'nana', '八': 'ya', '九': 'kokono', '十': 'too', '百': 'hyaku', '千': 'chi', '万': 'yorozu' } }
+    ],
+    numbers: [
+        { name: "Numbers 1-10", set: { '一': { latin: '1', romaji: 'ichi' }, '二': { latin: '2', romaji: 'ni' }, '三': { latin: '3', romaji: 'san' }, '四': { latin: '4', romaji: 'shi' }, '五': { latin: '5', romaji: 'go' }, '六': { latin: '6', romaji: 'roku' }, '七': { latin: '7', romaji: 'shichi' }, '八': { latin: '8', romaji: 'hachi' }, '九': { latin: '9', romaji: 'kyuu' }, '十': { latin: '10', romaji: 'juu' } } },
+        { name: "Numbers 11-20", set: { '十一': { latin: '11', romaji: 'juuichi' }, '十二': { latin: '12', romaji: 'juuni' }, '十三': { latin: '13', romaji: 'juusan' }, '十四': { latin: '14', romaji: 'juushi' }, '十五': { latin: '15', romaji: 'juugo' }, '十六': { latin: '16', romaji: 'juuroku' }, '十七': { latin: '17', romaji: 'juushichi' }, '十八': { latin: '18', romaji: 'juuhachi' }, '十九': { latin: '19', romaji: 'juukyuu' }, '二十': { latin: '20', romaji: 'nijuu' } } },
+        { name: "Numbers 21-30", set: { '二十一': { latin: '21', romaji: 'nijuuichi' }, '二十二': { latin: '22', romaji: 'nijuuni' }, '二十三': { latin: '23', romaji: 'nijuusan' }, '二十四': { latin: '24', romaji: 'nijuushi' }, '二十五': { latin: '25', romaji: 'nijuugo' }, '二十六': { latin: '26', romaji: 'nijuuroku' }, '二十七': { latin: '27', romaji: 'nijuushichi' }, '二十八': { latin: '28', romaji: 'nijuuhachi' }, '二十九': { latin: '29', romaji: 'nijuukyuu' }, '三十': { latin: '30', romaji: 'sanjuu' } } },
+        { name: "Numbers 31-40", set: { '三十一': { latin: '31', romaji: 'sanjuuichi' }, '三十二': { latin: '32', romaji: 'sanjuuni' }, '三十三': { latin: '33', romaji: 'sanjuusan' }, '三十四': { latin: '34', romaji: 'sanjuushi' }, '三十五': { latin: '35', romaji: 'sanjuugo' }, '三十六': { latin: '36', romaji: 'sanjuuroku' }, '三十七': { latin: '37', romaji: 'sanjuushichi' }, '三十八': { latin: '38', romaji: 'sanjuuhachi' }, '三十九': { latin: '39', romaji: 'sanjuukyuu' }, '四十': { latin: '40', romaji: 'yonjuu' } } },
+        { name: "Numbers 41-50", set: { '四十一': { latin: '41', romaji: 'yonjuuichi' }, '四十二': { latin: '42', romaji: 'yonjuuni' }, '四十三': { latin: '43', romaji: 'yonjuusan' }, '四十四': { latin: '44', romaji: 'yonjuushi' }, '四十五': { latin: '45', romaji: 'yonjuugo' }, '四十六': { latin: '46', romaji: 'yonjuuroku' }, '四十七': { latin: '47', romaji: 'yonjuushichi' }, '四十八': { latin: '48', romaji: 'yonjuuhachi' }, '四十九': { latin: '49', romaji: 'yonjuukyuu' }, '五十': { latin: '50', romaji: 'gojuu' } } },
+        { name: "Numbers 51-60", set: { '五十一': { latin: '51', romaji: 'gojuuichi' }, '五十二': { latin: '52', romaji: 'gojuuni' }, '五十三': { latin: '53', romaji: 'gojuusan' }, '五十四': { latin: '54', romaji: 'gojuushi' }, '五十五': { latin: '55', romaji: 'gojuugo' }, '五十六': { latin: '56', romaji: 'gojuuroku' }, '五十七': { latin: '57', romaji: 'gojuushichi' }, '五十八': { latin: '58', romaji: 'gojuuhachi' }, '五十九': { latin: '59', romaji: 'gojuukyuu' }, '六十': { latin: '60', romaji: 'rokujuu' } } },
+        { name: "Numbers 61-70", set: { '六十一': { latin: '61', romaji: 'rokujuuichi' }, '六十二': { latin: '62', romaji: 'rokujuuni' }, '六十三': { latin: '63', romaji: 'rokujuusan' }, '六十四': { latin: '64', romaji: 'rokujuushi' }, '六十五': { latin: '65', romaji: 'rokujuugo' }, '六十六': { latin: '66', romaji: 'rokujuuroku' }, '六十七': { latin: '67', romaji: 'rokujuushichi' }, '六十八': { latin: '68', romaji: 'rokujuuhachi' }, '六十九': { latin: '69', romaji: 'rokujuukyuu' }, '七十': { latin: '70', romaji: 'nanajuu' } } },
+        { name: "Numbers 71-80", set: { '七十一': { latin: '71', romaji: 'nanajuuichi' }, '七十二': { latin: '72', romaji: 'nanajuuni' }, '七十三': { latin: '73', romaji: 'nanajuusan' }, '七十四': { latin: '74', romaji: 'nanajuushi' }, '七十五': { latin: '75', romaji: 'nanajuugo' }, '七十六': { latin: '76', romaji: 'nanajuuroku' }, '七十七': { latin: '77', romaji: 'nanajuushichi' }, '七十八': { latin: '78', romaji: 'nanajuuhachi' }, '七十九': { latin: '79', romaji: 'nanajuukyuu' }, '八十': { latin: '80', romaji: 'hachijuu' } } },
+        { name: "Numbers 81-90", set: { '八十一': { latin: '81', romaji: 'hachijuuichi' }, '八十二': { latin: '82', romaji: 'hachijuuni' }, '八十三': { latin: '83', romaji: 'hachijuusan' }, '八十四': { latin: '84', romaji: 'hachijuushi' }, '八十五': { latin: '85', romaji: 'hachijuugo' }, '八十六': { latin: '86', romaji: 'hachijuuroku' }, '八十七': { latin: '87', romaji: 'hachijuushichi' }, '八十八': { latin: '88', romaji: 'hachijuuhachi' }, '八十九': { latin: '89', romaji: 'hachijuukyuu' }, '九十': { latin: '90', romaji: 'kyuujuu' } } },
+        { name: "Numbers 91-100", set: { '九十一': { latin: '91', romaji: 'kyuujuuichi' }, '九十二': { latin: '92', romaji: 'kyuujuuni' }, '九十三': { latin: '93', romaji: 'kyuujuusan' }, '九十四': { latin: '94', romaji: 'kyuujuushi' }, '九十五': { latin: '95', romaji: 'kyuujuugo' }, '九十六': { latin: '96', romaji: 'kyuujuuroku' }, '九十七': { latin: '97', romaji: 'kyuujuushichi' }, '九十八': { latin: '98', romaji: 'kyuujuuhachi' }, '九十九': { latin: '99', romaji: 'kyuujuukyuu' }, '百': { latin: '100', romaji: 'hyaku' } } }
+    ]
+};
 
 const characterSets = {
     hiragana: {
@@ -256,6 +318,34 @@ const characterSets = {
 };
 
 let progress = JSON.parse(localStorage.getItem('nihon-progress')) || {};
+
+let playerState = JSON.parse(localStorage.getItem('nihon-player-state')) || {
+    level: 1,
+    xp: 0,
+    xpToNextLevel: 100,
+    levels: {
+        hiragana: 0,
+        katakana: 0,
+        kanji: 0,
+        numbers: 0
+    }
+};
+
+function getXpForLevel(level) {
+    return Math.floor(100 * Math.pow(1.2, level - 1));
+}
+
+function gainXP(amount) {
+    playerState.xp += amount;
+    while (playerState.xp >= playerState.xpToNextLevel) {
+        playerState.level++;
+        playerState.xp -= playerState.xpToNextLevel;
+        playerState.xpToNextLevel = getXpForLevel(playerState.level);
+        showToast("Player Level Up!", `You've reached level ${playerState.level}!`);
+    }
+    localStorage.setItem('nihon-player-state', JSON.stringify(playerState));
+}
+
 let currentCharset = {};
 let currentQuizType = '';
 
@@ -322,7 +412,6 @@ function showHomePage() {
                         <p class="card-text">Test your knowledge with quizzes.</p>
                         <div class="d-grid gap-2">
                             <button class="btn btn-secondary" id="quizHiragana">Hiragana</button>
-                            <button class="btn btn-secondary" id="quizHiraganaSpecial">Hiragana Special</button>
                             <button class="btn btn-secondary" id="quizKatakana">Katakana</button>
                             <button class="btn btn-secondary" id="quizKanji">Kanji</button>
                             <button class="btn btn-secondary" id="quizNumbers">Numbers</button>
@@ -338,7 +427,6 @@ function showHomePage() {
                         <p class="card-text">Practice with flashcards.</p>
                         <div class="d-grid gap-2">
                             <button class="btn btn-secondary" id="flashcardHiragana">Cards Hiragana</button>
-                            <button class="btn btn-secondary" id="flashcardHiraganaSpecial">Cards Hiragana Special</button>
                             <button class="btn btn-secondary" id="flashcardKatakana">Cards Katakana</button>
                             <button class="btn btn-secondary" id="flashcardKanji">Cards Kanji</button>
                             <button class="btn btn-secondary" id="flashcardNumbers">Cards Numbers</button>
@@ -352,14 +440,62 @@ function showHomePage() {
 }
 
 
+function checkLevelUp(type) {
+    // No level up for listening quiz as it's a mix of everything
+    if (type === 'listening' || !characterLevels[type]) {
+        return;
+    }
+
+    const userLevel = playerState.levels[type];
+    const levelsForType = characterLevels[type];
+
+    // Check if user is already at max level for this type
+    if (userLevel >= levelsForType.length - 1) {
+        return;
+    }
+
+    const currentLevelChars = Object.keys(levelsForType[userLevel].set);
+    const allMastered = currentLevelChars.every(char => {
+        const p = progress[char];
+        // Mastery is defined as a streak of 3 or more.
+        return p && p.streak >= 3;
+    });
+
+    if (allMastered) {
+        playerState.levels[type]++;
+        localStorage.setItem('nihon-player-state', JSON.stringify(playerState));
+        const newLevelName = characterLevels[type][playerState.levels[type]].name;
+        showToast("Topic Level Up!", `You've unlocked ${type}: ${newLevelName}!`);
+    }
+}
+
 function startQuiz(type) {
     isSectionActive = true;
     currentQuizType = type;
-    if (type === 'hiraganaSpecial') {
-        currentCharset = { ...characterSets.hiragana, ...characterSets.dakuten, ...characterSets.handakuten };
+
+    if (type === 'listening') {
+        let allUnlockedChars = {};
+        for (const charType in characterLevels) {
+            const userLevel = playerState.levels[charType];
+            const levelsForType = characterLevels[charType];
+            for (let i = 0; i <= userLevel && i < levelsForType.length; i++) {
+                Object.assign(allUnlockedChars, levelsForType[i].set);
+            }
+        }
+        currentCharset = allUnlockedChars;
     } else {
-        currentCharset = characterSets[type];
+        const userLevel = playerState.levels[type];
+        const levelsForType = characterLevels[type];
+        let charsForQuiz = {};
+        // Always include the first level
+        Object.assign(charsForQuiz, levelsForType[0].set);
+        // Include all levels up to the user's current level
+        for (let i = 1; i <= userLevel && i < levelsForType.length; i++) {
+            Object.assign(charsForQuiz, levelsForType[i].set);
+        }
+        currentCharset = charsForQuiz;
     }
+
     initializeProgress(currentCharset);
     updateHomeButton(true); // A section is now active
 
@@ -395,11 +531,18 @@ function startQuiz(type) {
 
 function startFlashcardMode(type) {
     isSectionActive = true;
-    if (type === 'hiraganaSpecial') {
-        currentCharset = { ...characterSets.hiragana, ...characterSets.dakuten, ...characterSets.handakuten };
-    } else {
-        currentCharset = characterSets[type];
+
+    const userLevel = playerState.levels[type];
+    const levelsForType = characterLevels[type];
+    let charsForQuiz = {};
+    // Always include the first level
+    Object.assign(charsForQuiz, levelsForType[0].set);
+    // Include all levels up to the user's current level
+    for (let i = 1; i <= userLevel && i < levelsForType.length; i++) {
+        Object.assign(charsForQuiz, levelsForType[i].set);
     }
+    currentCharset = charsForQuiz;
+
     initializeProgress(currentCharset);
     updateHomeButton(true); // A section is now active
 
@@ -517,6 +660,7 @@ function markFlashcardProgress(char, isCorrect, type) {
     if (isCorrect) {
         progress[char].correct++;
         feedbackArea.innerHTML = `<span class="text-success">Correct!</span>`;
+        gainXP(10);
     } else {
         progress[char].incorrect++;
         feedbackArea.innerHTML = `<span class="text-danger">Incorrect.</span>`;
@@ -604,14 +748,12 @@ function loadListeningQuestion() {
 
 function setupHomePageListeners() {
     document.getElementById('quizHiragana').addEventListener('click', () => startQuiz('hiragana'));
-    document.getElementById('quizHiraganaSpecial').addEventListener('click', () => startQuiz('hiraganaSpecial'));
     document.getElementById('quizKatakana').addEventListener('click', () => startQuiz('katakana'));
     document.getElementById('quizKanji').addEventListener('click', () => startQuiz('kanji'));
     document.getElementById('quizNumbers').addEventListener('click', () => startQuiz('numbers'));
     document.getElementById('quizListening').addEventListener('click', () => startListeningQuiz());
 
     document.getElementById('flashcardHiragana').addEventListener('click', () => startFlashcardMode('hiragana'));
-    document.getElementById('flashcardHiraganaSpecial').addEventListener('click', () => startFlashcardMode('hiraganaSpecial'));
     document.getElementById('flashcardKatakana').addEventListener('click', () => startFlashcardMode('katakana'));
     document.getElementById('flashcardKanji').addEventListener('click', () => startFlashcardMode('kanji'));
     document.getElementById('flashcardNumbers').addEventListener('click', () => startFlashcardMode('numbers'));
@@ -636,6 +778,19 @@ async function loadQuestion(type) {
     
     document.getElementById('char-display').textContent = charToTest;
     document.getElementById('feedback-area').innerHTML = '';
+
+    const p = progress[charToTest];
+    const isFirstTime = !p || (p.correct === 0 && p.incorrect === 0 && !p.seen);
+
+    if (isFirstTime) {
+        document.getElementById('feedback-area').innerHTML = `<span class="text-info">First time seeing this character. The answer is "${correctAnswer}".</span>`;
+        if (!p) {
+            // Ensure progress object exists even if they just skip it
+            progress[charToTest] = { correct: 0, incorrect: 0, streak: 0, nextReview: new Date().getTime() };
+        }
+        progress[charToTest].seen = true; // Mark as seen so hint doesn't show again
+        localStorage.setItem('nihon-progress', JSON.stringify(progress));
+    }
     document.getElementById('kanji-suggestions').innerHTML = '';
     
     const answerInput = document.getElementById('answer-input');
@@ -688,6 +843,8 @@ function checkAnswer(char, correctAnswer, type) {
         p.streak = (p.streak || 0) + 1;
         p.nextReview = now + Math.pow(2, p.streak) * 60 * 60 * 1000; // Exponential backoff
         feedbackArea.innerHTML = `<span class="text-success">Correct!</span>`;
+        gainXP(10);
+        checkLevelUp(type);
     } else {
         if (!p) {
             p = { correct: 0, incorrect: 0, streak: 0, nextReview: now };
@@ -760,6 +917,28 @@ const correctCharsTableBody = document.getElementById('correct-chars-table-body'
 
 if (statsModal) {
     statsModal.addEventListener('show.bs.modal', () => {
+        const statsBody = statsModal.querySelector('.modal-body');
+        // Remove old player stats if it exists to prevent duplication
+        const oldPlayerStats = statsBody.querySelector('#player-stats');
+        if (oldPlayerStats) {
+            oldPlayerStats.remove();
+        }
+
+        const playerStatsDiv = document.createElement('div');
+        playerStatsDiv.id = 'player-stats';
+        playerStatsDiv.className = 'text-center mb-4';
+        playerStatsDiv.innerHTML = `
+            <h4>Player Level: ${playerState.level}</h4>
+            <div class="progress" style="height: 20px;">
+                <div class="progress-bar" role="progressbar" style="width: ${Math.round((playerState.xp / playerState.xpToNextLevel) * 100)}%;" aria-valuenow="${playerState.xp}" aria-valuemin="0" aria-valuemax="${playerState.xpToNextLevel}">
+                    ${playerState.xp} / ${playerState.xpToNextLevel} XP
+                </div>
+            </div>
+            <hr>
+        `;
+        const accordion = statsBody.querySelector('#statsAccordion');
+        statsBody.insertBefore(playerStatsDiv, accordion);
+
         wrongCharsTableBody.innerHTML = ''; // Clear previous content
         correctCharsTableBody.innerHTML = ''; // Clear previous content
 
