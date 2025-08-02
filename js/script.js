@@ -414,7 +414,7 @@ const characterLevels = {
         { name: "Kanji Adjectives (State)", set: { '元': 'gen', '気': 'ki', '病': 'byou', '院': 'in', '薬': 'kusuri', '速': 'haya', '遅': 'oso', '近': 'chika', '遠': 'too', '広': 'hiro' } },
         { name: "Kanji Adjectives (Qualities)", set: { '狭': 'sema', '明': 'aka', '暗': 'kura', '暑': 'atsu', '寒': 'samu', '暖': 'atata', '涼': 'suzu', '静': 'shizu', '賑': 'nigi', '有名': 'yuumei' } },
         { name: "Kanji Adjectives (People/Things)", set: { '親切': 'shinsetsu', '便利': 'benri', '不便': 'fuben', '元気': 'genki', '綺麗': 'kirei', '汚': 'kitana', '可愛': 'kawaii', '赤': 'aka', '青': 'ao', '白': 'shiro' } },
-        { name: "Kanji Colors & Seasons", set: { '黒': 'kuro', '色': 'iro', '春': 'haru', '夏': 'natsu', '秋': 'aki', '冬': 'fuyu', '雨': 'ame', '雪': 'yuki', '風': 'kaze', '晴': 'ha' } },
+        { name:g: "Kanji Colors & Seasons", set: { '黒': 'kuro', '色': 'iro', '春': 'haru', '夏': 'natsu', '秋': 'aki', '冬': 'fuyu', '雨': 'ame', '雪': 'yuki', '風': 'kaze', '晴': 'ha' } },
         { name: "Kanji Nature & Places", set: { '曇': 'kumo', '空': 'sora', '海': 'umi', '山': 'yama', '川': 'kawa', '池': 'ike', '庭': 'niwa', '店': 'mise', '駅': 'eki', '道': 'michi' } },
         { name: "Kanji Places & Things", set: { '部屋': 'heya', '家': 'ie', '会社': 'kaisha', '電話': 'denwa', '番号': 'bangou', '机': 'tsukue', '椅子': 'isu', '鞄': 'kaban', '靴': 'kutsu', '鉛筆': 'enpitsu' } },
         { name: "Kanji Things & Transport", set: { '時計': 'tokei', '写真': 'shashin', '車': 'kuruma', '自転車': 'jitensha', '飛行機': 'hikouki', '船': 'fune', '電車': 'densha', '地下鉄': 'chikatetsu', '新幹線': 'shinkansen', '切符': 'kippu' } },
@@ -453,11 +453,14 @@ const characterLevels = {
         { name: "Common Nouns 1", set: { 'neko': 'neko', 'inu': 'inu', 'sushi': 'sushi', 'sensei': 'sensei', 'gakkou': 'gakkou' } },
         { name: "Common Nouns 2", set: { 'pen': 'pen', 'hon': 'hon', 'tsukue': 'tsukue', 'isu': 'isu', 'kuruma': 'kuruma' } },
         { name: "Common Verbs", set: { 'tabemasu': 'tabemasu', 'nomimasu': 'nomimasu', 'ikimasu': 'ikimasu', 'mimasu': 'mimasu' } },
-        { name: "Common Adjectives", set: { 'oishii': 'oishii', 'ookii': 'ookii', 'chiisai': 'chiisai', 'hayai': 'hayai' } }
+        { name: "Common Adjectives", set: { 'oishii': 'oishii', 'ookii': 'ookii', 'chiisai': 'chiisai', 'hayai': 'hayai' } },
+        { name: "Colors", set: { 'aka': 'aka', 'ao': 'ao', 'shiro': 'shiro', 'kuro': 'kuro' } }
     ],
     sentences: [
         { name: "Basic Sentences 1", set: { 'kore wa pen desu': 'kore wa pen desu', 'sore wa hon desu': 'sore wa hon desu' } },
-        { name: "Basic Sentences 2", set: { 'eki wa doko desu ka': 'eki wa doko desu ka', 'watashi wa gakusei desu': 'watashi wa gakusei desu' } }
+        { name: "Basic Sentences 2", set: { 'eki wa doko desu ka': 'eki wa doko desu ka', 'watashi wa gakusei desu': 'watashi wa gakusei desu' } },
+        { name: "Asking Prices", set: { 'kore wa ikura desu ka': 'kore wa ikura desu ka' } },
+        { name: "At a Restaurant", set: { 'menyuu o kudasai': 'menyuu o kudasai', 'itadakimasu': 'itadakimasu' } }
     ]
 };
 
@@ -1033,6 +1036,32 @@ function setupHomePageListeners() {
     document.getElementById('flashcardSentences').addEventListener('click', () => startFlashcardMode('sentences'));
 }
 
+function playReferenceAudio(filename) {
+    if (!filename || filename === 'null') return;
+    const audio = new Audio(`audio/${filename}.mp3`);
+    audio.play().catch(e => console.error("Error playing audio:", e));
+}
+
+function getAudioFilenameForReference(char) {
+    // Search all character levels to find the character and its audio filename
+    for (const type in characterLevels) {
+        for (const level of characterLevels[type]) {
+            if (level.set[char]) {
+                const reading = level.set[char];
+                if (typeof reading === 'object' && reading.romaji) {
+                    return reading.romaji; // For numbers
+                }
+                return reading; // For kana/kanji
+            }
+        }
+    }
+    // Fallback for words/sentences which might be passed directly
+    if (characterLevels.words.some(level => level.set[char]) || characterLevels.sentences.some(level => level.set[char])) {
+        return char;
+    }
+    return null;
+}
+
 function getAudioFilename(char, type) {
     if (!currentCharset[char]) return null;
 
@@ -1575,9 +1604,10 @@ function generateCharacterCards(characterSet) {
             displayRomaji = characterSet[char].romaji; // Romaji
         }
 
+        const filename = getAudioFilenameForReference(char);
         html += `
             <div class="col">
-                <div class="card text-center h-100">
+                <div class="card text-center h-100" onclick="playReferenceAudio('${filename}')" style="cursor: pointer;">
                     <div class="card-body d-flex flex-column justify-content-center align-items-center">
                         <h3 class="card-title" style="font-family: 'Noto Sans JP Embedded', sans-serif;">${displayChar}</h3>
                         <p class="card-text">${displayRomaji}${latinNumber ? ` (${latinNumber})` : ''}</p>

@@ -57,7 +57,9 @@ AUDIO_MAP.update(kanji_g1)
 words_and_sentences = [
     "neko", "inu", "sushi", "sensei", "gakkou", "pen", "hon", "tsukue", "isu", "kuruma",
     "tabemasu", "nomimasu", "ikimasu", "mimasu", "oishii", "ookii", "chiisai", "hayai",
-    "kore wa pen desu", "sore wa hon desu", "eki wa doko desu ka", "watashi wa gakusei desu"
+    "aka", "ao", "shiro", "kuro",
+    "kore wa pen desu", "sore wa hon desu", "eki wa doko desu ka", "watashi wa gakusei desu",
+    "kore wa ikura desu ka", "menyuu o kudasai", "itadakimasu"
 ]
 for item in words_and_sentences:
     AUDIO_MAP[item] = item

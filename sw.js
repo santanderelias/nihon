@@ -6,7 +6,7 @@ if (workbox) {
     // Set the cache name prefix for Workbox
     workbox.core.setCacheNameDetails({
         prefix: 'nihon',
-        suffix: 'v1.2.0' // New version for Workbox cache
+        suffix: 'v1.3.0' // New version for Workbox cache
     });
 
     // Generate a comprehensive list of all assets to precache
@@ -35,10 +35,11 @@ if (workbox) {
     // --- Audio Files ---
     const hiragana_audio = "a i u e o ka ki ku ke ko sa shi su se so ta chi tsu te to na ni nu ne no ha hi fu he ho ma mi mu me mo ya yu yo ra ri ru re ro wa wo n ga gi gu ge go za ji zu ze zo da dji dzu de do ba bi bu be bo pa pi pu pe po".split(" ");
     const katakana_audio = "A I U E O KA KI KU KE KO SA SHI SU SE SO TA CHI TSU TE TO NA NI NU NE NO HA HI FU HE HO MA MI MU ME MO YA YU YO RA RI RU RE RO WA WO N_k GA GI GU GE GO ZA JI ZU ZE ZO DA DJI DZU DE DO BA BI BU BE BO PA PI PU PE PO".split(" ");
-    const words_audio = "neko inu sushi sensei gakkou pen hon tsukue isu kuruma tabemasu nomimasu ikimasu mimasu oishii ookii chiisai hayai".split(" ");
+    const words_audio = "neko inu sushi sensei gakkou pen hon tsukue isu kuruma tabemasu nomimasu ikimasu mimasu oishii ookii chiisai hayai aka ao shiro kuro".split(" ");
     const sentences_audio = [
         "kore wa pen desu", "sore wa hon desu",
-        "eki wa doko desu ka", "watashi wa gakusei desu"
+        "eki wa doko desu ka", "watashi wa gakusei desu",
+        "kore wa ikura desu ka", "menyuu o kudasai", "itadakimasu"
     ];
     const grammar_audio = [
         "Watashi wa ringo o tabemasu", "Ohayou gozaimasu", "Konnichiwa", "Konbanwa", "Sayounara", "Oyasuminasai",
@@ -51,11 +52,11 @@ if (workbox) {
         "Byouin wa doko desu ka?", "Kibun ga warui desu"
     ];
 
-    const all_audio = [...hiragana_audio, ...katakana_audio, ...words_audio, ...sentences_audio, ...grammar_audio];
+    const all_audio_keys = [...hiragana_audio, ...katakana_audio, ...words_audio, ...sentences_audio];
+    grammar_audio.forEach(text => all_audio_keys.push(text.toLowerCase().replace(/\s/g, '_').replace('?', '')));
 
-    all_audio.forEach(item => {
-        const filename = item.toLowerCase().replace(/\s/g, '_').replace('?', '');
-        assetsToPrecache.push({ url: `/nihon/audio/${filename}.mp3`, revision: null });
+    all_audio_keys.forEach(key => {
+        assetsToPrecache.push({ url: `/nihon/audio/${key}.mp3`, revision: null });
     });
 
     workbox.precaching.precacheAndRoute(assetsToPrecache);
