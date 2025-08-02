@@ -414,7 +414,7 @@ const characterLevels = {
         { name: "Kanji Adjectives (State)", set: { '元': 'gen', '気': 'ki', '病': 'byou', '院': 'in', '薬': 'kusuri', '速': 'haya', '遅': 'oso', '近': 'chika', '遠': 'too', '広': 'hiro' } },
         { name: "Kanji Adjectives (Qualities)", set: { '狭': 'sema', '明': 'aka', '暗': 'kura', '暑': 'atsu', '寒': 'samu', '暖': 'atata', '涼': 'suzu', '静': 'shizu', '賑': 'nigi', '有名': 'yuumei' } },
         { name: "Kanji Adjectives (People/Things)", set: { '親切': 'shinsetsu', '便利': 'benri', '不便': 'fuben', '元気': 'genki', '綺麗': 'kirei', '汚': 'kitana', '可愛': 'kawaii', '赤': 'aka', '青': 'ao', '白': 'shiro' } },
-        { name: "Kanji Colors & Seasons", set: { '黒': 'kuro', '色': 'iro', '春': 'haru', '夏': 'natsu', '秋': 'aki', '冬': 'fuyu', '雨': 'ame', '雪': 'yuki', '風': 'kaze', '晴': 'ha' } },
+        { name:g: "Kanji Colors & Seasons", set: { '黒': 'kuro', '色': 'iro', '春': 'haru', '夏': 'natsu', '秋': 'aki', '冬': 'fuyu', '雨': 'ame', '雪': 'yuki', '風': 'kaze', '晴': 'ha' } },
         { name: "Kanji Nature & Places", set: { '曇': 'kumo', '空': 'sora', '海': 'umi', '山': 'yama', '川': 'kawa', '池': 'ike', '庭': 'niwa', '店': 'mise', '駅': 'eki', '道': 'michi' } },
         { name: "Kanji Places & Things", set: { '部屋': 'heya', '家': 'ie', '会社': 'kaisha', '電話': 'denwa', '番号': 'bangou', '机': 'tsukue', '椅子': 'isu', '鞄': 'kaban', '靴': 'kutsu', '鉛筆': 'enpitsu' } },
         { name: "Kanji Things & Transport", set: { '時計': 'tokei', '写真': 'shashin', '車': 'kuruma', '自転車': 'jitensha', '飛行機': 'hikouki', '船': 'fune', '電車': 'densha', '地下鉄': 'chikatetsu', '新幹線': 'shinkansen', '切符': 'kippu' } },
@@ -446,6 +446,16 @@ const characterLevels = {
         { name: "Common Verbs", set: { 'tabemasu': 'tabemasu', 'nomimasu': 'nomimasu', 'ikimasu': 'ikimasu', 'mimasu': 'mimasu' } },
         { name: "Common Adjectives", set: { 'oishii': 'oishii', 'ookii': 'ookii', 'chiisai': 'chiisai', 'hayai': 'hayai' } },
         // Sentences
+        { name: "Basic Sentences 1", set: { 'kore wa pen desu': 'kore wa pen desu', 'sore wa hon desu': 'sore wa hon desu' } },
+        { name: "Basic Sentences 2", set: { 'eki wa doko desu ka': 'eki wa doko desu ka', 'watashi wa gakusei desu': 'watashi wa gakusei desu' } }
+    ],
+    words: [
+        { name: "Common Nouns 1", set: { 'neko': 'neko', 'inu': 'inu', 'sushi': 'sushi', 'sensei': 'sensei', 'gakkou': 'gakkou' } },
+        { name: "Common Nouns 2", set: { 'pen': 'pen', 'hon': 'hon', 'tsukue': 'tsukue', 'isu': 'isu', 'kuruma': 'kuruma' } },
+        { name: "Common Verbs", set: { 'tabemasu': 'tabemasu', 'nomimasu': 'nomimasu', 'ikimasu': 'ikimasu', 'mimasu': 'mimasu' } },
+        { name: "Common Adjectives", set: { 'oishii': 'oishii', 'ookii': 'ookii', 'chiisai': 'chiisai', 'hayai': 'hayai' } }
+    ],
+    sentences: [
         { name: "Basic Sentences 1", set: { 'kore wa pen desu': 'kore wa pen desu', 'sore wa hon desu': 'sore wa hon desu' } },
         { name: "Basic Sentences 2", set: { 'eki wa doko desu ka': 'eki wa doko desu ka', 'watashi wa gakusei desu': 'watashi wa gakusei desu' } }
     ]
@@ -611,37 +621,39 @@ function showHomePage() {
         suggestionsContainer.remove();
     }
 
+    const sections = [
+        { id: 'hiragana', title: 'Hiragana', description: 'The basic Japanese syllabary.' },
+        { id: 'katakana', title: 'Katakana', description: 'Used for foreign words and emphasis.' },
+        { id: 'kanji', title: 'Kanji', description: 'Logographic Chinese characters.' },
+        { id: 'numbers', title: 'Numbers', description: 'Learn to count in Japanese.' },
+        { id: 'listening', title: 'Listening', description: 'Train your ears to Japanese sounds.' },
+        { id: 'words', title: 'Words', description: 'Practice with common vocabulary.' },
+        { id: 'sentences', title: 'Sentences', description: 'Learn basic sentence structures.' }
+    ];
+
+    let cardsHTML = '';
+    sections.forEach(section => {
+        const capitalizedTitle = section.title.charAt(0).toUpperCase() + section.title.slice(1);
+        cardsHTML += `
+            <div class="col">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">${section.title}</h5>
+                        <p class="card-text">${section.description}</p>
+                        <div class="mt-auto btn-group">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="quiz${capitalizedTitle}">Quiz</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="flashcard${capitalizedTitle}">Cards</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
     contentArea.innerHTML = `
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">Quizzes</h5>
-                        <p class="card-text">Test your knowledge with quizzes.</p>
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-secondary" id="quizHiragana">Hiragana</button>
-                            <button class="btn btn-secondary" id="quizKatakana">Katakana</button>
-                            <button class="btn btn-secondary" id="quizKanji">Kanji</button>
-                            <button class="btn btn-secondary" id="quizNumbers">Numbers</button>
-                            <button class="btn btn-secondary" id="quizListening">Listening</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">Flashcards</h5>
-                        <p class="card-text">Practice with flashcards.</p>
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-secondary" id="flashcardHiragana">Cards Hiragana</button>
-                            <button class="btn btn-secondary" id="flashcardKatakana">Cards Katakana</button>
-                            <button class="btn btn-secondary" id="flashcardKanji">Cards Kanji</button>
-                            <button class="btn btn-secondary" id="flashcardNumbers">Cards Numbers</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <h2 class="pb-2 border-bottom">Learning Sections</h2>
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+            ${cardsHTML}
         </div>
     `;
     setupHomePageListeners();
@@ -1008,11 +1020,15 @@ function setupHomePageListeners() {
     document.getElementById('quizKanji').addEventListener('click', () => startQuiz('kanji'));
     document.getElementById('quizNumbers').addEventListener('click', () => startQuiz('numbers'));
     document.getElementById('quizListening').addEventListener('click', () => startListeningQuiz());
+    document.getElementById('quizWords').addEventListener('click', () => startQuiz('words'));
+    document.getElementById('quizSentences').addEventListener('click', () => startQuiz('sentences'));
 
     document.getElementById('flashcardHiragana').addEventListener('click', () => startFlashcardMode('hiragana'));
     document.getElementById('flashcardKatakana').addEventListener('click', () => startFlashcardMode('katakana'));
     document.getElementById('flashcardKanji').addEventListener('click', () => startFlashcardMode('kanji'));
     document.getElementById('flashcardNumbers').addEventListener('click', () => startFlashcardMode('numbers'));
+    document.getElementById('flashcardWords').addEventListener('click', () => startFlashcardMode('words'));
+    document.getElementById('flashcardSentences').addEventListener('click', () => startFlashcardMode('sentences'));
 }
 
 async function loadQuestion(type) {
@@ -1725,4 +1741,3 @@ function updateHomeButton(isSection) {
         isSectionActive = false;
     }
 }
-

@@ -1,11 +1,12 @@
 #!/bin/bash
 
-# This script generates audio files for the Japanese learning app using Google Cloud Text-to-Speech.
+# This script generates all necessary audio files for the application using Google Cloud Text-to-Speech.
 #
 # Prerequisites:
 # 1. A Google Cloud Platform project with the Text-to-Speech API enabled.
-# 2. An API key for your project.
+# 2. An API key for your project. Get one from the Google Cloud Console.
 # 3. `curl` and `jq` installed on your system.
+# 4. You may need to be authenticated via gcloud CLI: `gcloud auth application-default login`
 #
 # Usage:
 # 1. Replace 'YOUR_API_KEY' with your actual Google Cloud API key.
@@ -15,19 +16,60 @@
 API_KEY="YOUR_API_KEY"
 AUDIO_DIR="audio"
 
-# --- Character & Word Lists ---
+# --- Data Mapping ---
+# Using associative arrays to map filenames to the text to be synthesized.
 
-# All Hiragana
-HIRAGANA="a i u e o ka ki ku ke ko sa shi su se so ta chi tsu te to na ni nu ne no ha hi fu he ho ma mi mu me mo ya yu yo ra ri ru re ro wa wo n ga gi gu ge go za ji zu ze zo da dji dzu de do ba bi bu be bo pa pi pu pe po"
+declare -A AUDIO_MAP
 
-# All Katakana
-KATAKANA="A I U E O KA KI KU KE KO SA SHI SU SE SO TA CHI TSU TE TO NA NI NU NE NO HA HI FU HE HO MA MI MU ME MO YA YU YO RA RI RU RE RO WA WO N GA GI GU GE GO ZA JI ZU ZE ZO DA DJI DZU DE DO BA BI BU BE BO PA PI PU PE PO"
+# Hiragana
+AUDIO_MAP["a"]="あ" AUDIO_MAP["i"]="い" AUDIO_MAP["u"]="う" AUDIO_MAP["e"]="え" AUDIO_MAP["o"]="お"
+AUDIO_MAP["ka"]="か" AUDIO_MAP["ki"]="き" AUDIO_MAP["ku"]="く" AUDIO_MAP["ke"]="け" AUDIO_MAP["ko"]="こ"
+AUDIO_MAP["sa"]="さ" AUDIO_MAP["shi"]="し" AUDIO_MAP["su"]="す" AUDIO_MAP["se"]="せ" AUDIO_MAP["so"]="そ"
+AUDIO_MAP["ta"]="た" AUDIO_MAP["chi"]="ち" AUDIO_MAP["tsu"]="つ" AUDIO_MAP["te"]="て" AUDIO_MAP["to"]="と"
+AUDIO_MAP["na"]="な" AUDIO_MAP["ni"]="に" AUDIO_MAP["nu"]="ぬ" AUDIO_MAP["ne"]="ね" AUDIO_MAP["no"]="の"
+AUDIO_MAP["ha"]="は" AUDIO_MAP["hi"]="ひ" AUDIO_MAP["fu"]="ふ" AUDIO_MAP["he"]="へ" AUDIO_MAP["ho"]="ほ"
+AUDIO_MAP["ma"]="ま" AUDIO_MAP["mi"]="み" AUDIO_MAP["mu"]="む" AUDIO_MAP["me"]="め" AUDIO_MAP["mo"]="も"
+AUDIO_MAP["ya"]="や" AUDIO_MAP["yu"]="ゆ" AUDIO_MAP["yo"]="よ"
+AUDIO_MAP["ra"]="ら" AUDIO_MAP["ri"]="り" AUDIO_MAP["ru"]="る" AUDIO_MAP["re"]="れ" AUDIO_MAP["ro"]="ろ"
+AUDIO_MAP["wa"]="わ" AUDIO_MAP["wo"]="を" AUDIO_MAP["n"]="ん"
+AUDIO_MAP["ga"]="が" AUDIO_MAP["gi"]="ぎ" AUDIO_MAP["gu"]="ぐ" AUDIO_MAP["ge"]="げ" AUDIO_MAP["go"]="ご"
+AUDIO_MAP["za"]="ざ" AUDIO_MAP["ji"]="じ" AUDIO_MAP["zu"]="ず" AUDIO_MAP["ze"]="ぜ" AUDIO_MAP["zo"]="ぞ"
+AUDIO_MAP["da"]="だ" AUDIO_MAP["dji"]="ぢ" AUDIO_MAP["dzu"]="づ" AUDIO_MAP["de"]="で" AUDIO_MAP["do"]="ど"
+AUDIO_MAP["ba"]="ば" AUDIO_MAP["bi"]="び" AUDIO_MAP["bu"]="ぶ" AUDIO_MAP["be"]="べ" AUDIO_MAP["bo"]="ぼ"
+AUDIO_MAP["pa"]="ぱ" AUDIO_MAP["pi"]="ぴ" AUDIO_MAP["pu"]="ぷ" AUDIO_MAP["pe"]="ぺ" AUDIO_MAP["po"]="ぽ"
 
-# Common Grade 1 Kanji (Romaji representation for filename)
-KANJI_G1="ichi ni san shi go roku shichi hachi kyuu juu hyaku sen man en ji nichi getsu ka sui moku kin do you ue shita naka han yama kawa gen ki ten watashi ima ta onna otoko mi i ta no"
+# Katakana (using uppercase for filenames to distinguish from Hiragana)
+AUDIO_MAP["A"]="ア" AUDIO_MAP["I"]="イ" AUDIO_MAP["U"]="ウ" AUDIO_MAP["E"]="エ" AUDIO_MAP["O"]="オ"
+AUDIO_MAP["KA"]="カ" AUDIO_MAP["KI"]="キ" AUDIO_MAP["KU"]="ク" AUDIO_MAP["KE"]="ケ" AUDIO_MAP["KO"]="コ"
+AUDIO_MAP["SA"]="サ" AUDIO_MAP["SHI"]="シ" AUDIO_MAP["SU"]="ス" AUDIO_MAP["SE"]="セ" AUDIO_MAP["SO"]="ソ"
+AUDIO_MAP["TA"]="タ" AUDIO_MAP["CHI"]="チ" AUDIO_MAP["TSU"]="ツ" AUDIO_MAP["TE"]="テ" AUDIO_MAP["TO"]="ト"
+AUDIO_MAP["NA"]="ナ" AUDIO_MAP["NI"]="ニ" AUDIO_MAP["NU"]="ヌ" AUDIO_MAP["NE"]="ネ" AUDIO_MAP["NO"]="ノ"
+AUDIO_MAP["HA"]="ハ" AUDIO_MAP["HI"]="ヒ" AUDIO_MAP["FU"]="フ" AUDIO_MAP["HE"]="ヘ" AUDIO_MAP["HO"]="ホ"
+AUDIO_MAP["MA"]="マ" AUDIO_MAP["MI"]="ミ" AUDIO_MAP["MU"]="ム" AUDIO_MAP["ME"]="メ" AUDIO_MAP["MO"]="モ"
+AUDIO_MAP["YA"]="ヤ" AUDIO_MAP["YU"]="ユ" AUDIO_MAP["YO"]="ヨ"
+AUDIO_MAP["RA"]="ラ" AUDIO_MAP["RI"]="リ" AUDIO_MAP["RU"]="ル" AUDIO_MAP["RE"]="レ" AUDIO_MAP["RO"]="ロ"
+AUDIO_MAP["WA"]="ワ" AUDIO_MAP["WO"]="ヲ" AUDIO_MAP["N"]="ン"
+AUDIO_MAP["GA"]="ガ" AUDIO_MAP["GI"]="ギ" AUDIO_MAP["GU"]="グ" AUDIO_MAP["GE"]="ゲ" AUDIO_MAP["GO"]="ゴ"
+AUDIO_MAP["ZA"]="ザ" AUDIO_MAP["JI"]="ジ" AUDIO_MAP["ZU"]="ズ" AUDIO_MAP["ZE"]="ゼ" AUDIO_MAP["ZO"]="ゾ"
+AUDIO_MAP["DA"]="ダ" AUDIO_MAP["DJI"]="ヂ" AUDIO_MAP["DZU"]="ヅ" AUDIO_MAP["DE"]="デ" AUDIO_MAP["DO"]="ド"
+AUDIO_MAP["BA"]="バ" AUDIO_MAP["BI"]="ビ" AUDIO_MAP["BU"]="ブ" AUDIO_MAP["BE"]="ベ" AUDIO_MAP["BO"]="ボ"
+AUDIO_MAP["PA"]="パ" AUDIO_MAP["PI"]="ピ" AUDIO_MAP["PU"]="プ" AUDIO_MAP["PE"]="ペ" AUDIO_MAP["PO"]="ポ"
 
-# Common Vocabulary
-WORDS="neko inu sushi sensei gakkou ohayou konnichiwa sayounara watashi anata kare kanojo sore kore are pen hon tsukue isu"
+# Words and Sentences
+# For these, the filename and the text to synthesize are the same.
+WORDS_AND_SENTENCES=(
+    "neko" "inu" "sushi" "sensei" "gakkou"
+    "pen" "hon" "tsukue" "isu" "kuruma"
+    "tabemasu" "nomimasu" "ikimasu" "mimasu"
+    "oishii" "ookii" "chiisai" "hayai"
+    "kore wa pen desu" "sore wa hon desu"
+    "eki wa doko desu ka" "watashi wa gakusei desu"
+)
+
+for item in "${WORDS_AND_SENTENCES[@]}"; do
+    AUDIO_MAP["$item"]="$item"
+done
+
 
 # --- Script Logic ---
 
@@ -36,7 +78,7 @@ mkdir -p "$AUDIO_DIR"
 
 # Function to generate audio for a given text
 generate_audio() {
-  local text="$1"
+  local text_to_speak="$1"
   local filename="$2"
   local filepath="${AUDIO_DIR}/${filename}.mp3"
 
@@ -45,11 +87,11 @@ generate_audio() {
     return
   fi
 
-  echo "Generating audio for: ${text} -> ${filename}.mp3"
+  echo "Generating audio for: '${text_to_speak}' -> ${filepath}"
 
   # Construct the JSON payload for the Google TTS API
   json_payload=$(jq -n \
-    --arg text "$text" \
+    --arg text "$text_to_speak" \
     '{
       "input": {"text": $text},
       "voice": {"languageCode": "ja-JP", "name": "ja-JP-Wavenet-B"},
@@ -58,16 +100,15 @@ generate_audio() {
 
   # Make the API call with curl
   response=$(curl -s -X POST \
-    -H "Authorization: Bearer $(gcloud auth application-default print-access-token)" \
     -H "Content-Type: application/json; charset=utf-8" \
-    -d "$json_payload" \
-    "https://texttospeech.googleapis.com/v1/text:synthesize?key=${API_KEY}")
+    "https://texttospeech.googleapis.com/v1/text:synthesize?key=${API_KEY}" \
+    -d "$json_payload")
 
   # Extract the audio content (which is base64 encoded) and decode it
   audio_content=$(echo "$response" | jq -r '.audioContent')
 
   if [ -z "$audio_content" ] || [ "$audio_content" == "null" ]; then
-    echo "ERROR: Failed to get audio for '${text}'. Response was:"
+    echo "ERROR: Failed to get audio for '${text_to_speak}'. Response was:"
     echo "$response"
   else
     echo "$audio_content" | base64 --decode > "$filepath"
@@ -77,27 +118,10 @@ generate_audio() {
   sleep 0.5
 }
 
-# Generate audio for all items
-# Note: This script uses the romaji name for the filename.
-# The actual text sent to the API is the Japanese character.
-# This requires a mapping from romaji back to kana/kanji.
-# For simplicity in this script, we will assume a direct mapping exists
-# or that the filename is the same as the text to synthesize for words.
-
-# This is a simplified loop. A real implementation would need a mapping.
-# For now, we will just generate for the words to demonstrate the API call.
-echo "--- Generating Vocabulary Audio ---"
-for word in $WORDS; do
-  generate_audio "$word" "$word"
+# Iterate over the map and generate audio
+for filename in "${!AUDIO_MAP[@]}"; do
+  text="${AUDIO_MAP[$filename]}"
+  generate_audio "$text" "$filename"
 done
 
-# The following are placeholders for how you would map romaji to kana/kanji
-# to generate the audio for them.
-# Example:
-# generate_audio "あ" "a"
-# generate_audio "い" "i"
-# ...etc.
-
-echo "Audio generation script is set up."
-echo "Please expand the character lists and mapping to generate all necessary files."
-echo "Remember to replace YOUR_API_KEY with a valid Google Cloud TTS API key."
+echo "Audio generation script finished."
