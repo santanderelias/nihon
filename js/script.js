@@ -229,7 +229,7 @@ const characterLevels = {
         { name: "Kanji Adjectives (State)", set: { '元': 'gen', '気': 'ki', '病': 'byou', '院': 'in', '薬': 'kusuri', '速': 'haya', '遅': 'oso', '近': 'chika', '遠': 'too', '広': 'hiro' } },
         { name: "Kanji Adjectives (Qualities)", set: { '狭': 'sema', '明': 'aka', '暗': 'kura', '暑': 'atsu', '寒': 'samu', '暖': 'atata', '涼': 'suzu', '静': 'shizu', '賑': 'nigi', '有名': 'yuumei' } },
         { name: "Kanji Adjectives (People/Things)", set: { '親切': 'shinsetsu', '便利': 'benri', '不便': 'fuben', '元気': 'genki', '綺麗': 'kirei', '汚': 'kitana', '可愛': 'kawaii', '赤': 'aka', '青': 'ao', '白': 'shiro' } },
-        { name: "Kanji Colors & Seasons", set: { '黒': 'kuro', '色': 'iro', '春': 'haru', '夏': 'natsu', '秋': 'aki', '冬': 'fuyu', '雨': 'ame', '雪': 'yuki', '風': 'kaze', '晴': 'ha' } },
+        { name:g: "Kanji Colors & Seasons", set: { '黒': 'kuro', '色': 'iro', '春': 'haru', '夏': 'natsu', '秋': 'aki', '冬': 'fuyu', '雨': 'ame', '雪': 'yuki', '風': 'kaze', '晴': 'ha' } },
         { name: "Kanji Nature & Places", set: { '曇': 'kumo', '空': 'sora', '海': 'umi', '山': 'yama', '川': 'kawa', '池': 'ike', '庭': 'niwa', '店': 'mise', '駅': 'eki', '道': 'michi' } },
         { name: "Kanji Places & Things", set: { '部屋': 'heya', '家': 'ie', '会社': 'kaisha', '電話': 'denwa', '番号': 'bangou', '机': 'tsukue', '椅子': 'isu', '鞄': 'kaban', '靴': 'kutsu', '鉛筆': 'enpitsu' } },
         { name: "Kanji Things & Transport", set: { '時計': 'tokei', '写真': 'shashin', '車': 'kuruma', '自転車': 'jitensha', '飛行機': 'hikouki', '船': 'fune', '電車': 'densha', '地下鉄': 'chikatetsu', '新幹線': 'shinkansen', '切符': 'kippu' } },
@@ -518,8 +518,8 @@ function startQuiz(type) {
     
 
     const answerInput = document.getElementById('answer-input');
-    answerInput.onkeyup = () => {
-        replacekana();
+    answerInput.oninput = () => {
+        replacekana(currentCharset);
     };
 
     loadQuestion(type);
@@ -699,8 +699,8 @@ function startListeningQuiz() {
     `;
 
     const answerInput = document.getElementById('answer-input');
-    answerInput.onkeyup = () => {
-        replacekana();
+    answerInput.oninput = () => {
+        replacekana(currentCharset);
     };
 
     loadListeningQuestion();
@@ -938,6 +938,30 @@ if (statsModal) {
         `;
         const accordion = statsBody.querySelector('#statsAccordion');
         statsBody.insertBefore(playerStatsDiv, accordion);
+
+        // Add Skill Levels display
+        const oldSkillLevels = statsBody.querySelector('#skill-levels');
+        if (oldSkillLevels) {
+            oldSkillLevels.remove();
+        }
+        const skillLevelsDiv = document.createElement('div');
+        skillLevelsDiv.id = 'skill-levels';
+        skillLevelsDiv.className = 'mb-4';
+        let skillLevelsHTML = '<h4 class="text-center">Skill Levels</h4><ul class="list-group">';
+        for (const skill in playerState.levels) {
+            const level = playerState.levels[skill];
+            const skillName = skill.charAt(0).toUpperCase() + skill.slice(1);
+            skillLevelsHTML += `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    ${skillName}
+                    <span class="badge bg-primary rounded-pill">${level}</span>
+                </li>
+            `;
+        }
+        skillLevelsHTML += '</ul>';
+        skillLevelsDiv.innerHTML = skillLevelsHTML;
+        statsBody.insertBefore(skillLevelsDiv, accordion);
+        statsBody.insertBefore(document.createElement('hr'), accordion);
 
         wrongCharsTableBody.innerHTML = ''; // Clear previous content
         correctCharsTableBody.innerHTML = ''; // Clear previous content
