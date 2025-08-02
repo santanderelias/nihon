@@ -180,6 +180,191 @@ async function loadDictionary() {
 const contentArea = document.getElementById('content-area');
 const homeButton = document.getElementById('home-button');
 
+const achievements = {
+    // Hiragana Achievements
+    'hiragana_apprentice': {
+        name: 'Hiragana Apprentice',
+        description: 'Answer all Hiragana vowels correctly 5 times.',
+        requires: [],
+        characters: () => characterLevels.hiragana[0].set
+    },
+    'hiragana_experienced': {
+        name: 'Hiragana Experienced',
+        description: 'Answer all basic Hiragana syllables correctly 5 times.',
+        requires: ['hiragana_apprentice'],
+        characters: () => {
+            let sets = {};
+            for (let i = 0; i < 10; i++) { // First 10 levels are basic hiragana
+                Object.assign(sets, characterLevels.hiragana[i].set);
+            }
+            return sets;
+        }
+    },
+    'hiragana_master': {
+        name: 'Hiragana Master',
+        description: 'Answer all Hiragana characters correctly 5 times.',
+        requires: ['hiragana_experienced'],
+        characters: () => {
+            let sets = {};
+            characterLevels.hiragana.forEach(level => Object.assign(sets, level.set));
+            return sets;
+        }
+    },
+    // Katakana Achievements
+    'katakana_apprentice': {
+        name: 'Katakana Apprentice',
+        description: 'Answer all Katakana vowels correctly 5 times.',
+        requires: [],
+        characters: () => characterLevels.katakana[0].set
+    },
+    'katakana_experienced': {
+        name: 'Katakana Experienced',
+        description: 'Answer all basic Katakana syllables correctly 5 times.',
+        requires: ['katakana_apprentice'],
+        characters: () => {
+            let sets = {};
+            for (let i = 0; i < 10; i++) { // First 10 levels are basic katakana
+                Object.assign(sets, characterLevels.katakana[i].set);
+            }
+            return sets;
+        }
+    },
+    'katakana_master': {
+        name: 'Katakana Master',
+        description: 'Answer all Katakana characters correctly 5 times.',
+        requires: ['katakana_experienced'],
+        characters: () => {
+            let sets = {};
+            characterLevels.katakana.forEach(level => Object.assign(sets, level.set));
+            return sets;
+        }
+    },
+    // Kanji Achievements
+    'kanji_initiate_1': {
+        name: 'Kanji Initiate (Grade 1)',
+        description: 'Answer all Grade 1 Kanji correctly 5 times.',
+        requires: [],
+        characters: () => {
+            let sets = {};
+            for (let i = 0; i < 4; i++) { // First 4 levels are Grade 1
+                Object.assign(sets, characterLevels.kanji[i].set);
+            }
+            return sets;
+        }
+    },
+    'kanji_initiate_2': {
+        name: 'Kanji Initiate (Grade 2)',
+        description: 'Answer all Grade 2 Kanji correctly 5 times.',
+        requires: ['kanji_initiate_1'],
+        characters: () => {
+            let sets = {};
+            for (let i = 4; i < characterLevels.kanji.length; i++) { // The rest are Grade 2
+                Object.assign(sets, characterLevels.kanji[i].set);
+            }
+            return sets;
+        }
+    },
+    'kanji_master': {
+        name: 'Kanji Master',
+        description: 'Answer all Kanji correctly 5 times.',
+        requires: ['kanji_initiate_2'],
+        characters: () => {
+            let sets = {};
+            characterLevels.kanji.forEach(level => Object.assign(sets, level.set));
+            return sets;
+        }
+    },
+    // Numbers Achievements
+    'accountant': {
+        name: 'Accountant',
+        description: 'Answer numbers 1-50 correctly 5 times.',
+        requires: [],
+        characters: () => {
+            let sets = {};
+            for (let i = 0; i < 5; i++) { // First 5 levels are 1-50
+                Object.assign(sets, characterLevels.numbers[i].set);
+            }
+            return sets;
+        }
+    },
+    'comptroller': {
+        name: 'Comptroller',
+        description: 'Answer numbers 1-100 correctly 5 times.',
+        requires: ['accountant'],
+        characters: () => {
+            let sets = {};
+            characterLevels.numbers.forEach(level => Object.assign(sets, level.set));
+            return sets;
+        }
+    },
+    // Overall Achievement
+    'nihon_pro': {
+        name: 'Nihon Pro',
+        description: 'Achieve Master level in all categories.',
+        requires: ['hiragana_master', 'katakana_master', 'kanji_master', 'comptroller']
+    },
+    // Listening Achievements
+    'listening_apprentice': {
+        name: 'Listening Apprentice',
+        description: 'Master the first 3 listening levels.',
+        requires: [],
+        characters: () => {
+            let sets = {};
+            for (let i = 0; i < 3; i++) {
+                Object.assign(sets, characterLevels.listening[i].set);
+            }
+            return sets;
+        }
+    },
+    'sharp_ears': {
+        name: 'Sharp Ears',
+        description: 'Master all single-character listening levels.',
+        requires: ['listening_apprentice'],
+        characters: () => {
+            let sets = {};
+            for (let i = 0; i < 4; i++) { // First 4 levels are single characters
+                Object.assign(sets, characterLevels.listening[i].set);
+            }
+            return sets;
+        }
+    },
+    'fluent_speaker': {
+        name: 'Fluent Speaker',
+        description: 'Master all listening levels.',
+        requires: ['sharp_ears'],
+        characters: () => {
+            let sets = {};
+            characterLevels.listening.forEach(level => Object.assign(sets, level.set));
+            return sets;
+        }
+    },
+    // Advanced Listening Achievements
+    'word_smith': {
+        name: 'Word Smith',
+        description: 'Master all word-based listening levels.',
+        requires: ['sharp_ears'],
+        characters: () => {
+            let sets = {};
+            for (let i = 4; i < 8; i++) { // Levels for words
+                Object.assign(sets, characterLevels.listening[i].set);
+            }
+            return sets;
+        }
+    },
+    'sentence_scholar': {
+        name: 'Sentence Scholar',
+        description: 'Master all sentence-based listening levels.',
+        requires: ['word_smith'],
+        characters: () => {
+            let sets = {};
+            for (let i = 8; i < characterLevels.listening.length; i++) { // Levels for sentences
+                Object.assign(sets, characterLevels.listening[i].set);
+            }
+            return sets;
+        }
+    }
+};
+
 const characterLevels = {
     hiragana: [
         { name: "Vowels (a, i, u, e, o)", set: { 'あ': 'a', 'い': 'i', 'う': 'u', 'え': 'e', 'お': 'o' } },
@@ -229,7 +414,7 @@ const characterLevels = {
         { name: "Kanji Adjectives (State)", set: { '元': 'gen', '気': 'ki', '病': 'byou', '院': 'in', '薬': 'kusuri', '速': 'haya', '遅': 'oso', '近': 'chika', '遠': 'too', '広': 'hiro' } },
         { name: "Kanji Adjectives (Qualities)", set: { '狭': 'sema', '明': 'aka', '暗': 'kura', '暑': 'atsu', '寒': 'samu', '暖': 'atata', '涼': 'suzu', '静': 'shizu', '賑': 'nigi', '有名': 'yuumei' } },
         { name: "Kanji Adjectives (People/Things)", set: { '親切': 'shinsetsu', '便利': 'benri', '不便': 'fuben', '元気': 'genki', '綺麗': 'kirei', '汚': 'kitana', '可愛': 'kawaii', '赤': 'aka', '青': 'ao', '白': 'shiro' } },
-        { name: "Kanji Colors & Seasons", set: { '黒': 'kuro', '色': 'iro', '春': 'haru', '夏': 'natsu', '秋': 'aki', '冬': 'fuyu', '雨': 'ame', '雪': 'yuki', '風': 'kaze', '晴': 'ha' } },
+        { name:g: "Kanji Colors & Seasons", set: { '黒': 'kuro', '色': 'iro', '春': 'haru', '夏': 'natsu', '秋': 'aki', '冬': 'fuyu', '雨': 'ame', '雪': 'yuki', '風': 'kaze', '晴': 'ha' } },
         { name: "Kanji Nature & Places", set: { '曇': 'kumo', '空': 'sora', '海': 'umi', '山': 'yama', '川': 'kawa', '池': 'ike', '庭': 'niwa', '店': 'mise', '駅': 'eki', '道': 'michi' } },
         { name: "Kanji Places & Things", set: { '部屋': 'heya', '家': 'ie', '会社': 'kaisha', '電話': 'denwa', '番号': 'bangou', '机': 'tsukue', '椅子': 'isu', '鞄': 'kaban', '靴': 'kutsu', '鉛筆': 'enpitsu' } },
         { name: "Kanji Things & Transport", set: { '時計': 'tokei', '写真': 'shashin', '車': 'kuruma', '自転車': 'jitensha', '飛行機': 'hikouki', '船': 'fune', '電車': 'densha', '地下鉄': 'chikatetsu', '新幹線': 'shinkansen', '切符': 'kippu' } },
@@ -248,6 +433,34 @@ const characterLevels = {
         { name: "Numbers 71-80", set: { '七十一': { latin: '71', romaji: 'nanajuuichi' }, '七十二': { latin: '72', romaji: 'nanajuuni' }, '七十三': { latin: '73', romaji: 'nanajuusan' }, '七十四': { latin: '74', romaji: 'nanajuushi' }, '七十五': { latin: '75', romaji: 'nanajuugo' }, '七十六': { latin: '76', romaji: 'nanajuuroku' }, '七十七': { latin: '77', romaji: 'nanajuushichi' }, '七十八': { latin: '78', romaji: 'nanajuuhachi' }, '七十九': { latin: '79', romaji: 'nanajuukyuu' }, '八十': { latin: '80', romaji: 'hachijuu' } } },
         { name: "Numbers 81-90", set: { '八十一': { latin: '81', romaji: 'hachijuuichi' }, '八十二': { latin: '82', romaji: 'hachijuuni' }, '八十三': { latin: '83', romaji: 'hachijuusan' }, '八十四': { latin: '84', romaji: 'hachijuushi' }, '八十五': { latin: '85', romaji: 'hachijuugo' }, '八十六': { latin: '86', romaji: 'hachijuuroku' }, '八十七': { latin: '87', romaji: 'hachijuushichi' }, '八十八': { latin: '88', romaji: 'hachijuuhachi' }, '八十九': { latin: '89', romaji: 'hachijuukyuu' }, '九十': { latin: '90', romaji: 'kyuujuu' } } },
         { name: "Numbers 91-100", set: { '九十一': { latin: '91', romaji: 'kyuujuuichi' }, '九十二': { latin: '92', romaji: 'kyuujuuni' }, '九十三': { latin: '93', romaji: 'kyuujuusan' }, '九十四': { latin: '94', romaji: 'kyuujuushi' }, '九十五': { latin: '95', romaji: 'kyuujuugo' }, '九十六': { latin: '96', romaji: 'kyuujuuroku' }, '九十七': { latin: '97', romaji: 'kyuujuushichi' }, '九十八': { latin: '98', romaji: 'kyuujuuhachi' }, '九十九': { latin: '99', romaji: 'kyuujuukyuu' }, '百': { latin: '100', romaji: 'hyaku' } } }
+    ],
+    listening: [
+        // Characters
+        { name: "Hiragana Vowels", set: { 'a': 'a', 'i': 'i', 'u': 'u', 'e': 'e', 'o': 'o' } },
+        { name: "Hiragana K-Group", set: { 'ka': 'ka', 'ki': 'ki', 'ku': 'ku', 'ke': 'ke', 'ko': 'ko' } },
+        { name: "Hiragana S-Group", set: { 'sa': 'sa', 'shi': 'shi', 'su': 'su', 'se': 'se', 'so': 'so' } },
+        { name: "Katakana Vowels", set: { 'A': 'A', 'I': 'I', 'U': 'U', 'E': 'E', 'O': 'O' } },
+        // Words
+        { name: "Common Nouns 1", set: { 'neko': 'neko', 'inu': 'inu', 'sushi': 'sushi', 'sensei': 'sensei', 'gakkou': 'gakkou' } },
+        { name: "Common Nouns 2", set: { 'pen': 'pen', 'hon': 'hon', 'tsukue': 'tsukue', 'isu': 'isu', 'kuruma': 'kuruma' } },
+        { name: "Common Verbs", set: { 'tabemasu': 'tabemasu', 'nomimasu': 'nomimasu', 'ikimasu': 'ikimasu', 'mimasu': 'mimasu' } },
+        { name: "Common Adjectives", set: { 'oishii': 'oishii', 'ookii': 'ookii', 'chiisai': 'chiisai', 'hayai': 'hayai' } },
+        // Sentences
+        { name: "Basic Sentences 1", set: { 'kore wa pen desu': 'kore wa pen desu', 'sore wa hon desu': 'sore wa hon desu' } },
+        { name: "Basic Sentences 2", set: { 'eki wa doko desu ka': 'eki wa doko desu ka', 'watashi wa gakusei desu': 'watashi wa gakusei desu' } }
+    ],
+    words: [
+        { name: "Common Nouns 1", set: { 'neko': 'neko', 'inu': 'inu', 'sushi': 'sushi', 'sensei': 'sensei', 'gakkou': 'gakkou' } },
+        { name: "Common Nouns 2", set: { 'pen': 'pen', 'hon': 'hon', 'tsukue': 'tsukue', 'isu': 'isu', 'kuruma': 'kuruma' } },
+        { name: "Common Verbs", set: { 'tabemasu': 'tabemasu', 'nomimasu': 'nomimasu', 'ikimasu': 'ikimasu', 'mimasu': 'mimasu' } },
+        { name: "Common Adjectives", set: { 'oishii': 'oishii', 'ookii': 'ookii', 'chiisai': 'chiisai', 'hayai': 'hayai' } },
+        { name: "Colors", set: { 'aka': 'aka', 'ao': 'ao', 'shiro': 'shiro', 'kuro': 'kuro' } }
+    ],
+    sentences: [
+        { name: "Basic Sentences 1", set: { 'kore wa pen desu': 'kore wa pen desu', 'sore wa hon desu': 'sore wa hon desu' } },
+        { name: "Basic Sentences 2", set: { 'eki wa doko desu ka': 'eki wa doko desu ka', 'watashi wa gakusei desu': 'watashi wa gakusei desu' } },
+        { name: "Asking Prices", set: { 'kore wa ikura desu ka': 'kore wa ikura desu ka' } },
+        { name: "At a Restaurant", set: { 'menyuu o kudasai': 'menyuu o kudasai', 'itadakimasu': 'itadakimasu' } }
     ]
 };
 
@@ -328,7 +541,8 @@ let playerState = JSON.parse(localStorage.getItem('nihon-player-state')) || {
         katakana: 0,
         kanji: 0,
         numbers: 0
-    }
+    },
+    unlockedAchievements: []
 };
 
 function getXpForLevel(level) {
@@ -403,42 +617,91 @@ function getNextCharacter() {
 
 function showHomePage() {
     updateHomeButton(false); // No section is active
+
+    // Remove IME if it exists
+    const suggestionsContainer = document.getElementById('kanji-suggestions-card');
+    if (suggestionsContainer) {
+        suggestionsContainer.remove();
+    }
+
+    const sections = [
+        { id: 'hiragana', title: 'Hiragana', description: 'The basic Japanese syllabary.' },
+        { id: 'katakana', title: 'Katakana', description: 'Used for foreign words and emphasis.' },
+        { id: 'kanji', title: 'Kanji', description: 'Logographic Chinese characters.' },
+        { id: 'numbers', title: 'Numbers', description: 'Learn to count in Japanese.' },
+        { id: 'listening', title: 'Listening', description: 'Train your ears to Japanese sounds.' },
+        { id: 'words', title: 'Words', description: 'Practice with common vocabulary.' },
+        { id: 'sentences', title: 'Sentences', description: 'Learn basic sentence structures.' }
+    ];
+
+    let cardsHTML = '';
+    sections.forEach(section => {
+        const capitalizedTitle = section.title.charAt(0).toUpperCase() + section.title.slice(1);
+        cardsHTML += `
+            <div class="col">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">${section.title}</h5>
+                        <p class="card-text">${section.description}</p>
+                        <div class="mt-auto btn-group">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="quiz${capitalizedTitle}">Quiz</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="flashcard${capitalizedTitle}">Cards</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
     contentArea.innerHTML = `
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">Quizzes</h5>
-                        <p class="card-text">Test your knowledge with quizzes.</p>
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-secondary" id="quizHiragana">Hiragana</button>
-                            <button class="btn btn-secondary" id="quizKatakana">Katakana</button>
-                            <button class="btn btn-secondary" id="quizKanji">Kanji</button>
-                            <button class="btn btn-secondary" id="quizNumbers">Numbers</button>
-                            <button class="btn btn-secondary" id="quizListening">Listening</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">Flashcards</h5>
-                        <p class="card-text">Practice with flashcards.</p>
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-secondary" id="flashcardHiragana">Cards Hiragana</button>
-                            <button class="btn btn-secondary" id="flashcardKatakana">Cards Katakana</button>
-                            <button class="btn btn-secondary" id="flashcardKanji">Cards Kanji</button>
-                            <button class="btn btn-secondary" id="flashcardNumbers">Cards Numbers</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <h2 class="pb-2 border-bottom">Learning Sections</h2>
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+            ${cardsHTML}
         </div>
     `;
     setupHomePageListeners();
 }
 
+
+function unlockAchievement(id) {
+    if (!playerState.unlockedAchievements) {
+        playerState.unlockedAchievements = [];
+    }
+    playerState.unlockedAchievements.push(id);
+    localStorage.setItem('nihon-player-state', JSON.stringify(playerState));
+
+    const achievement = achievements[id];
+    showToast("Achievement Unlocked!", achievement.name);
+}
+
+function checkAchievements() {
+    const unlocked = playerState.unlockedAchievements || [];
+
+    for (const id in achievements) {
+        if (unlocked.includes(id)) {
+            continue; // Already unlocked
+        }
+
+        const achievement = achievements[id];
+        const hasPrerequisites = achievement.requires.every(reqId => unlocked.includes(reqId));
+
+        if (hasPrerequisites) {
+            if (achievement.characters) { // Character-based achievement
+                const characterSet = achievement.characters();
+                const allMastered = Object.keys(characterSet).every(char => {
+                    const p = progress[char];
+                    return p && p.correct >= 5;
+                });
+
+                if (allMastered) {
+                    unlockAchievement(id);
+                }
+            } else { // Prerequisite-based achievement (like Nihon Pro)
+                unlockAchievement(id);
+            }
+        }
+    }
+}
 
 function checkLevelUp(type) {
     // No level up for listening quiz as it's a mix of everything
@@ -503,7 +766,9 @@ function startQuiz(type) {
         <div class="card text-center shadow-sm">
             <div class="card-body">
                 <div id="feedback-area" class="mb-2" style="height: 24px;"></div>
-                <h1 id="char-display" class="display-1"></h1>
+                <div id="char-display-container">
+                    <h1 id="char-display" class="display-1"></h1>
+                </div>
                 <div id="example-word-area" class="mt-3"></div>
                 <div class="mb-3">
                     <input type="text" class="form-control text-center" id="answer-input" autocomplete="off" onkeypress="if(event.key === 'Enter') document.getElementById('check-button').click()">
@@ -518,8 +783,8 @@ function startQuiz(type) {
     
 
     const answerInput = document.getElementById('answer-input');
-    answerInput.onkeyup = () => {
-        replacekana();
+    answerInput.oninput = () => {
+        replacekana(currentCharset);
     };
 
     loadQuestion(type);
@@ -678,7 +943,16 @@ function markFlashcardProgress(char, isCorrect, type) {
 
 function startListeningQuiz() {
     isSectionActive = true;
-    currentCharset = { ...characterSets.hiragana, ...characterSets.dakuten, ...characterSets.handakuten, ...characterSets.katakana, ...characterSets.kanji, ...characterSets.numbers };
+    currentQuizType = 'listening';
+
+    const userLevel = playerState.levels.listening || 0;
+    const levelsForType = characterLevels.listening;
+    let charsForQuiz = {};
+    for (let i = 0; i <= userLevel && i < levelsForType.length; i++) {
+        Object.assign(charsForQuiz, levelsForType[i].set);
+    }
+    currentCharset = charsForQuiz;
+
     initializeProgress(currentCharset);
     updateHomeButton(true);
 
@@ -699,8 +973,8 @@ function startListeningQuiz() {
     `;
 
     const answerInput = document.getElementById('answer-input');
-    answerInput.onkeyup = () => {
-        replacekana();
+    answerInput.oninput = () => {
+        replacekana(currentCharset);
     };
 
     loadListeningQuestion();
@@ -738,9 +1012,8 @@ function loadListeningQuestion() {
 
     const playAudioButton = document.getElementById('play-audio-button');
     playAudioButton.onclick = () => {
-        const utterance = new SpeechSynthesisUtterance(charToTest);
-        utterance.lang = 'ja-JP';
-        speechSynthesis.speak(utterance);
+        const audio = new Audio(`audio/${charToTest}.mp3`);
+        audio.play().catch(e => console.error("Error playing audio:", e));
     };
 
     answerInput.focus();
@@ -752,11 +1025,56 @@ function setupHomePageListeners() {
     document.getElementById('quizKanji').addEventListener('click', () => startQuiz('kanji'));
     document.getElementById('quizNumbers').addEventListener('click', () => startQuiz('numbers'));
     document.getElementById('quizListening').addEventListener('click', () => startListeningQuiz());
+    document.getElementById('quizWords').addEventListener('click', () => startQuiz('words'));
+    document.getElementById('quizSentences').addEventListener('click', () => startQuiz('sentences'));
 
     document.getElementById('flashcardHiragana').addEventListener('click', () => startFlashcardMode('hiragana'));
     document.getElementById('flashcardKatakana').addEventListener('click', () => startFlashcardMode('katakana'));
     document.getElementById('flashcardKanji').addEventListener('click', () => startFlashcardMode('kanji'));
     document.getElementById('flashcardNumbers').addEventListener('click', () => startFlashcardMode('numbers'));
+    document.getElementById('flashcardWords').addEventListener('click', () => startFlashcardMode('words'));
+    document.getElementById('flashcardSentences').addEventListener('click', () => startFlashcardMode('sentences'));
+}
+
+function playReferenceAudio(filename) {
+    if (!filename || filename === 'null') return;
+    const audio = new Audio(`audio/${filename}.mp3`);
+    audio.play().catch(e => console.error("Error playing audio:", e));
+}
+
+function getAudioFilenameForReference(char) {
+    // Search all character levels to find the character and its audio filename
+    for (const type in characterLevels) {
+        for (const level of characterLevels[type]) {
+            if (level.set[char]) {
+                const reading = level.set[char];
+                if (typeof reading === 'object' && reading.romaji) {
+                    return reading.romaji; // For numbers
+                }
+                return reading; // For kana/kanji
+            }
+        }
+    }
+    // Fallback for words/sentences which might be passed directly
+    if (characterLevels.words.some(level => level.set[char]) || characterLevels.sentences.some(level => level.set[char])) {
+        return char;
+    }
+    return null;
+}
+
+function getAudioFilename(char, type) {
+    if (!currentCharset[char]) return null;
+
+    if (type === 'words' || type === 'sentences' || type === 'listening') {
+        return char;
+    }
+
+    const reading = currentCharset[char];
+    if (typeof reading === 'object' && reading.romaji) { // For numbers
+        return reading.romaji;
+    }
+
+    return reading; // For hiragana, katakana, kanji
 }
 
 async function loadQuestion(type) {
@@ -777,6 +1095,23 @@ async function loadQuestion(type) {
     const correctAnswer = (type === 'numbers') ? currentCharset[charToTest].romaji : currentCharset[charToTest];
     
     document.getElementById('char-display').textContent = charToTest;
+
+    // Add audio button
+    const charDisplayContainer = document.getElementById('char-display-container');
+    let audioButtonHTML = '';
+    const filename = getAudioFilename(charToTest, type);
+    if (filename) {
+        audioButtonHTML = `<button id="play-char-audio" class="btn btn-secondary btn-sm ms-2"><i class="fas fa-volume-up"></i></button>`;
+    }
+    charDisplayContainer.innerHTML = `<h1 id="char-display" class="display-1 d-inline-block">${charToTest}</h1>${audioButtonHTML}`;
+
+    if (filename) {
+        document.getElementById('play-char-audio').onclick = () => {
+            const audio = new Audio(`audio/${filename}.mp3`);
+            audio.play().catch(e => console.error("Error playing audio:", e));
+        };
+    }
+
     document.getElementById('feedback-area').innerHTML = '';
 
     const p = progress[charToTest];
@@ -845,6 +1180,7 @@ function checkAnswer(char, correctAnswer, type) {
         feedbackArea.innerHTML = `<span class="text-success">Correct!</span>`;
         gainXP(10);
         checkLevelUp(type);
+        checkAchievements();
     } else {
         if (!p) {
             p = { correct: 0, incorrect: 0, streak: 0, nextReview: now };
@@ -879,6 +1215,18 @@ async function main() {
 
 document.addEventListener('DOMContentLoaded', main);
 
+document.addEventListener('click', function(event) {
+    const suggestionsContainer = document.getElementById('kanji-suggestions-card');
+    const answerInput = document.getElementById('answer-input');
+
+    // Check if the click is outside the suggestions container and the input field
+    const isClickInsideSuggestions = suggestionsContainer && suggestionsContainer.contains(event.target);
+    const isClickInsideInput = answerInput && answerInput.contains(event.target);
+
+    if (suggestionsContainer && !isClickInsideSuggestions && !isClickInsideInput) {
+        suggestionsContainer.remove();
+    }
+});
 
 // --- Toast Notification Helper ---
 function showToast(title, message, showRestartButton = false) {
@@ -939,8 +1287,72 @@ if (statsModal) {
         const accordion = statsBody.querySelector('#statsAccordion');
         statsBody.insertBefore(playerStatsDiv, accordion);
 
+        // Add Skill Levels display
+        const oldSkillLevels = statsBody.querySelector('#skill-levels');
+        if (oldSkillLevels) {
+            oldSkillLevels.remove();
+        }
+        const skillLevelsDiv = document.createElement('div');
+        skillLevelsDiv.id = 'skill-levels';
+        skillLevelsDiv.className = 'mb-4';
+        let skillLevelsHTML = '<h4 class="text-center">Skill Levels</h4><ul class="list-group">';
+        for (const skill in playerState.levels) {
+            const level = playerState.levels[skill];
+            const skillName = skill.charAt(0).toUpperCase() + skill.slice(1);
+            skillLevelsHTML += `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    ${skillName}
+                    <span class="badge bg-primary rounded-pill">${level}</span>
+                </li>
+            `;
+        }
+        skillLevelsHTML += '</ul>';
+        skillLevelsDiv.innerHTML = skillLevelsHTML;
+        statsBody.insertBefore(skillLevelsDiv, accordion);
+        statsBody.insertBefore(document.createElement('hr'), accordion);
+
         wrongCharsTableBody.innerHTML = ''; // Clear previous content
         correctCharsTableBody.innerHTML = ''; // Clear previous content
+
+        // Add Achievements display
+        const oldAchievementsSection = statsBody.querySelector('#achievements-section');
+        if (oldAchievementsSection) {
+            oldAchievementsSection.remove();
+        }
+        const achievementsSection = document.createElement('div');
+        achievementsSection.id = 'achievements-section';
+        achievementsSection.innerHTML = `
+            <h4 class="text-center mt-4">Achievements</h4>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Achievement</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody id="achievements-table-body">
+                </tbody>
+            </table>
+        `;
+        statsBody.appendChild(achievementsSection);
+
+        const achievementsTableBody = document.getElementById('achievements-table-body');
+        const unlocked = playerState.unlockedAchievements || [];
+
+        if (unlocked.length === 0) {
+            achievementsTableBody.innerHTML = '<tr><td colspan="2">No achievements unlocked yet. Keep trying!</td></tr>';
+        } else {
+            unlocked.forEach(id => {
+                const achievement = achievements[id];
+                if (achievement) {
+                    const row = achievementsTableBody.insertRow();
+                    const nameCell = row.insertCell();
+                    const descCell = row.insertCell();
+                    nameCell.textContent = achievement.name;
+                    descCell.textContent = achievement.description;
+                }
+            });
+        }
 
         const wrongItems = [];
         const correctItems = [];
@@ -1046,18 +1458,40 @@ const grammarModal = document.getElementById('grammar-modal');
 if (grammarModal) {
     grammarModal.addEventListener('show.bs.modal', () => {
         const grammarBody = grammarModal.querySelector('.modal-body');
+        const playAudio = (text) => {
+            const filename = text.toLowerCase().replace(/\s/g, '_').replace('?', '');
+            const audio = new Audio(`audio/${filename}.mp3`);
+            audio.play().catch(e => console.error("Error playing audio:", e));
+        };
+
+        const createAudioButton = (text) => {
+            const button = document.createElement('button');
+            button.className = 'btn btn-secondary btn-sm ms-2';
+            button.innerHTML = '<i class="fas fa-volume-up"></i>';
+            button.onclick = () => playAudio(text);
+            return button;
+        };
+
+        const createPhraseItem = (text, romaji) => {
+            const li = document.createElement('li');
+            li.className = 'd-flex justify-content-between align-items-center mb-2';
+            li.textContent = text;
+            li.appendChild(createAudioButton(romaji));
+            return li;
+        };
+
         grammarBody.innerHTML = `
             <div class="accordion" id="grammarAccordion">
+                <!-- Basic Sentence Structure -->
                 <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingOne">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                            Basic Sentence Structure
-                        </button>
-                    </h2>
-                    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#grammarAccordion">
+                    <h2 class="accordion-header" id="headingOne"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">Basic Sentence Structure</button></h2>
+                    <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#grammarAccordion">
                         <div class="accordion-body" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
                             <p>The basic sentence structure in Japanese is Subject-Object-Verb (SOV).</p>
-                            <p>Example: 私はリンゴを食べます (Watashi wa ringo o tabemasu) - I eat an apple.</p>
+                            <p class="d-flex justify-content-between align-items-center">
+                                <span>Example: 私はリンゴを食べます (Watashi wa ringo o tabemasu) - I eat an apple.</span>
+                                <button id="play-sov" class="btn btn-secondary btn-sm"><i class="fas fa-volume-up"></i></button>
+                            </p>
                             <ul>
                                 <li>私 (Watashi) - I (Subject)</li>
                                 <li>リンゴ (ringo) - apple (Object)</li>
@@ -1066,205 +1500,36 @@ if (grammarModal) {
                         </div>
                     </div>
                 </div>
+                <!-- Particles -->
                 <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingTwo">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                            Particles
-                        </button>
-                    </h2>
-                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#grammarAccordion">
-                        <div class="accordion-body" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
-                            <p>Particles are used to mark the grammatical function of a word.</p>
-                            <ul>
-                                <li>は (wa) - topic marker</li>
-                                <li>が (ga) - subject marker</li>
-                                <li>を (o) - object marker</li>
-                                <li>に (ni) - place/time marker</li>
-                                <li>へ (e) - direction marker</li>
-                                <li>で (de) - place of action marker</li>
-                            </ul>
-                        </div>
-                    </div>
+                     <h2 class="accordion-header" id="headingTwo"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">Particles</button></h2>
+                     <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#grammarAccordion"><div class="accordion-body">...</div></div>
                 </div>
+                <!-- Verb Conjugation -->
                 <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingThree">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                            Verb Conjugation (Present Tense)
-                        </button>
-                    </h2>
-                    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#grammarAccordion">
-                        <div class="accordion-body" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
-                            <p>Verbs are conjugated based on their group and politeness level.</p>
-                            <p><strong>Group 1 (u-verbs):</strong></p>
-                            <ul>
-                                <li>Nomu (飲む - to drink) -> Nomimasu (飲みます - polite)</li>
-                                <li>Kaku (書く - to write) -> Kakimasu (書きます - polite)</li>
-                            </ul>
-                            <p><strong>Group 2 (ru-verbs):</strong></p>
-                            <ul>
-                                <li>Taberu (食べる - to eat) -> Tabemasu (食べます - polite)</li>
-                                <li>Miru (見る - to see) -> Mimasu (見ます - polite)</li>
-                            </ul>
-                            <p><strong>Group 3 (irregular verbs):</strong></p>
-                            <ul>
-                                <li>Suru (する - to do) -> Shimasu (します - polite)</li>
-                                <li>Kuru (来る - to come) -> Kimasu (来ます - polite)</li>
-                            </ul>
-                        </div>
-                    </div>
+                    <h2 class="accordion-header" id="headingThree"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">Verb Conjugation</button></h2>
+                    <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#grammarAccordion"><div class="accordion-body">...</div></div>
                 </div>
+                <!-- Common Phrases -->
                 <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingFour">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
-                            Common Phrases
-                        </button>
-                    </h2>
-                    <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#grammarAccordion">
+                    <h2 class="accordion-header" id="headingFour"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">Common Phrases</button></h2>
+                    <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#grammarAccordion">
                         <div class="accordion-body" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
                             <div class="accordion" id="phrasesAccordion">
+                                <!-- Greetings -->
                                 <div class="accordion-item">
-                                    <h2 class="accordion-header" id="phrasesHeadingOne">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseOne" aria-expanded="false" aria-controls="phrasesCollapseOne">
-                                            Greetings
-                                        </button>
-                                    </h2>
-                                    <div id="phrasesCollapseOne" class="accordion-collapse collapse" aria-labelledby="phrasesHeadingOne" data-bs-parent="#phrasesAccordion">
-                                        <div class="accordion-body">
-                                            <ul>
-                                                <li>おはようございます (Ohayou gozaimasu) - Good morning</li>
-                                                <li>こんにちは (Konnichiwa) - Hello/Good afternoon</li>
-                                                <li>こんばんは (Konbanwa) - Good evening</li>
-                                                <li>さようなら (Sayounara) - Goodbye</li>
-                                                <li>おやすみなさい (Oyasuminasai) - Good night</li>
-                                                <li>はじめまして (Hajimemashite) - Nice to meet you</li>
-                                                <li>どうぞよろしく (Douzo yoroshiku) - Pleased to make your acquaintance</li>
-                                            </ul>
-                                        </div>
-                                    </div>
+                                    <h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseOne">Greetings</button></h2>
+                                    <div id="phrasesCollapseOne" class="accordion-collapse collapse" data-bs-parent="#phrasesAccordion"><div class="accordion-body"><ul id="greetings-list"></ul></div></div>
                                 </div>
+                                <!-- Time -->
                                 <div class="accordion-item">
-                                    <h2 class="accordion-header" id="phrasesHeadingTwo">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseTwo" aria-expanded="false" aria-controls="phrasesCollapseTwo">
-                                            Time-related Expressions
-                                        </button>
-                                    </h2>
-                                    <div id="phrasesCollapseTwo" class="accordion-collapse collapse" aria-labelledby="phrasesHeadingTwo" data-bs-parent="#phrasesAccordion">
-                                        <div class="accordion-body">
-                                            <ul>
-                                                <li>今何時ですか (Ima nanji desu ka?) - What time is it now?</li>
-                                                <li>今日は何日ですか (Kyou wa nannichi desu ka?) - What is the date today?</li>
-                                                <li>明日は何曜日ですか (Ashita wa nanyoubi desu ka?) - What day of the week is it tomorrow?</li>
-                                                <li>きのう (Kinou) - Yesterday</li>
-                                                <li>あした (Ashita) - Tomorrow</li>
-                                            </ul>
-                                        </div>
-                                    </div>
+                                    <h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseTwo">Time-related</button></h2>
+                                    <div id="phrasesCollapseTwo" class="accordion-collapse collapse" data-bs-parent="#phrasesAccordion"><div class="accordion-body"><ul id="time-list"></ul></div></div>
                                 </div>
+                                <!-- General -->
                                 <div class="accordion-item">
-                                    <h2 class="accordion-header" id="phrasesHeadingThree">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseThree" aria-expanded="false" aria-controls="phrasesCollapseThree">
-                                            General
-                                        </button>
-                                    </h2>
-                                    <div id="phrasesCollapseThree" class="accordion-collapse collapse" aria-labelledby="phrasesHeadingThree" data-bs-parent="#phrasesAccordion">
-                                        <div class="accordion-body">
-                                            <ul>
-                                                <li>はい (Hai) - Yes</li>
-                                                <li>いいえ (Iie) - No</li>
-                                                <li>お願いします (Onegaishimasu) - Please</li>
-                                                <li>ありがとうございます (Arigatou gozaimasu) - Thank you</li>
-                                                <li>すみません (Sumimasen) - Excuse me/I'm sorry</li>
-                                                <li>ごめんなさい (Gomennasai) - I'm sorry</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header" id="phrasesHeadingFour">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseFour" aria-expanded="false" aria-controls="phrasesCollapseFour">
-                                            Food/Restaurant
-                                        </button>
-                                    </h2>
-                                    <div id="phrasesCollapseFour" class="accordion-collapse collapse" aria-labelledby="phrasesHeadingFour" data-bs-parent="#phrasesAccordion">
-                                        <div class="accordion-body">
-                                            <ul>
-                                                <li>メニューをください (Menyuu o kudasai) - Please give me the menu.</li>
-                                                <li>これをください (Kore o kudasai) - I'll have this one, please.</li>
-                                                <li>お勘定をお願いします (Okanjou o onegaishimasu) - Check, please.</li>
-                                                <li>いただきます (Itadakimasu) - Said before eating.</li>
-                                                <li>ごちそうさまでした (Gochisousama deshita) - Said after eating.</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header" id="phrasesHeadingFive">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseFive" aria-expanded="false" aria-controls="phrasesCollapseFive">
-                                            Shopping
-                                        </button>
-                                    </h2>
-                                    <div id="phrasesCollapseFive" class="accordion-collapse collapse" aria-labelledby="phrasesHeadingFive" data-bs-parent="#phrasesAccordion">
-                                        <div class="accordion-body">
-                                            <ul>
-                                                <li>これはいくらですか (Kore wa ikura desu ka?) - How much is this?</li>
-                                                <li>これをください (Kore o kudasai) - I'll take this, please.</li>
-                                                <li>クレジットカードは使えますか (Kurejitto kaado wa tsukaemasu ka?) - Can I use a credit card?</li>
-                                                <li>袋をください (Fukuro o kudasai) - Can I have a bag, please?</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header" id="phrasesHeadingSix">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseSix" aria-expanded="false" aria-controls="phrasesCollapseSix">
-                                            Directions
-                                        </button>
-                                    </h2>
-                                    <div id="phrasesCollapseSix" class="accordion-collapse collapse" aria-labelledby="phrasesHeadingSix" data-bs-parent="#phrasesAccordion">
-                                        <div class="accordion-body">
-                                            <ul>
-                                                <li>駅はどこですか (Eki wa doko desu ka?) - Where is the station?</li>
-                                                <li>まっすぐ行ってください (Massugu itte kudasai) - Please go straight.</li>
-                                                <li>右に曲がってください (Migi ni magatte kudasai) - Please turn right.</li>
-                                                <li>左に曲がってください (Hidari ni magatte kudasai) - Please turn left.</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header" id="phrasesHeadingSeven">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseSeven" aria-expanded="false" aria-controls="phrasesCollapseSeven">
-                                            Weather
-                                        </button>
-                                    </h2>
-                                    <div id="phrasesCollapseSeven" class="accordion-collapse collapse" aria-labelledby="phrasesHeadingSeven" data-bs-parent="#phrasesAccordion">
-                                        <div class="accordion-body">
-                                            <ul>
-                                                <li>今日の天気はどうですか (Kyou no tenki wa dou desu ka?) - How is the weather today?</li>
-                                                <li>晴れです (Hare desu) - It's sunny.</li>
-                                                <li>曇りです (Kumori desu) - It's cloudy.</li>
-                                                <li>雨です (Ame desu) - It's raining.</li>
-                                                <li>雪です (Yuki desu) - It's snowing.</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header" id="phrasesHeadingEight">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseEight" aria-expanded="false" aria-controls="phrasesCollapseEight">
-                                            Health/Emergencies
-                                        </button>
-                                    </h2>
-                                    <div id="phrasesCollapseEight" class="accordion-collapse collapse" aria-labelledby="phrasesHeadingEight" data-bs-parent="#phrasesAccordion">
-                                        <div class="accordion-body">
-                                            <ul>
-                                                <li>助けて (Tasukete) - Help!</li>
-                                                <li>救急車を呼んでください (Kyuukyuusha o yonde kudasai) - Please call an ambulance.</li>
-                                                <li>病院はどこですか (Byouin wa doko desu ka?) - Where is the hospital?</li>
-                                                <li>気分が悪いです (Kibun ga warui desu) - I feel sick.</li>
-                                            </ul>
-                                        </div>
-                                    </div>
+                                    <h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseThree">General</button></h2>
+                                    <div id="phrasesCollapseThree" class="accordion-collapse collapse" data-bs-parent="#phrasesAccordion"><div class="accordion-body"><ul id="general-list"></ul></div></div>
                                 </div>
                             </div>
                         </div>
@@ -1272,8 +1537,31 @@ if (grammarModal) {
                 </div>
             </div>
         `;
+
+        // Populate lists
+        document.getElementById('play-sov').onclick = () => playAudio("Watashi wa ringo o tabemasu");
+
+        const greetings = [
+            { text: "おはようございます (Ohayou gozaimasu) - Good morning", audio: "Ohayou gozaimasu" },
+            { text: "こんにちは (Konnichiwa) - Hello/Good afternoon", audio: "Konnichiwa" },
+            { text: "こんばんは (Konbanwa) - Good evening", audio: "Konbanwa" }
+        ];
+        const time = [
+            { text: "今何時ですか (Ima nanji desu ka?) - What time is it now?", audio: "Ima nanji desu ka?" },
+            { text: "昨日 (Kinou) - Yesterday", audio: "Kinou" }
+        ];
+        const general = [
+            { text: "はい (Hai) - Yes", audio: "Hai" },
+            { text: "いいえ (Iie) - No", audio: "Iie" },
+            { text: "お願いします (Onegaishimasu) - Please", audio: "Onegaishimasu" }
+        ];
+
+        greetings.forEach(item => document.getElementById('greetings-list').appendChild(createPhraseItem(item.text, item.audio)));
+        time.forEach(item => document.getElementById('time-list').appendChild(createPhraseItem(item.text, item.audio)));
+        general.forEach(item => document.getElementById('general-list').appendChild(createPhraseItem(item.text, item.audio)));
     });
 }
+
 
 // --- References Modal Logic ---
 const referencesModal = document.getElementById('references-modal');
@@ -1316,9 +1604,10 @@ function generateCharacterCards(characterSet) {
             displayRomaji = characterSet[char].romaji; // Romaji
         }
 
+        const filename = getAudioFilenameForReference(char);
         html += `
             <div class="col">
-                <div class="card text-center h-100">
+                <div class="card text-center h-100" onclick="playReferenceAudio('${filename}')" style="cursor: pointer;">
                     <div class="card-body d-flex flex-column justify-content-center align-items-center">
                         <h3 class="card-title" style="font-family: 'Noto Sans JP Embedded', sans-serif;">${displayChar}</h3>
                         <p class="card-text">${displayRomaji}${latinNumber ? ` (${latinNumber})` : ''}</p>
@@ -1392,4 +1681,3 @@ function updateHomeButton(isSection) {
         isSectionActive = false;
     }
 }
-

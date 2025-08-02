@@ -315,13 +315,13 @@ function katakana()
 
 
 /* Function that replaces the roman letters for their corresponding kana */
-function replacekana() {
+function replacekana(charset) {
     const answerInput = document.getElementById("answer-input");
     if (!answerInput) return;
     let str = answerInput.value;
 
     // Kanji suggestions
-    const suggestions = getKanjiSuggestions(str);
+    const suggestions = getKanjiSuggestions(str, charset);
     let suggestionsContainer = document.getElementById('kanji-suggestions-card');
 
     if (suggestions.length > 0) {
@@ -350,9 +350,15 @@ function replacekana() {
             button.style.fontFamily = "'Noto Sans JP Embedded', sans-serif";
             button.textContent = suggestion;
             button.onclick = () => {
-                answerInput.value += suggestion;
+                // Replace the typed text with the selected suggestion
+                answerInput.value = answerInput.value.slice(0, -str.length) + suggestion;
                 if (suggestionsContainer) {
                     suggestionsContainer.remove();
+                }
+                // After inserting, hide the suggestions
+                const stillExists = document.getElementById('kanji-suggestions-card');
+                if (stillExists) {
+                    stillExists.remove();
                 }
             };
             buttonGroup.appendChild(button);
@@ -669,131 +675,30 @@ function replacekana() {
 	}
 }
 
-function getKanjiSuggestions(input) {
+function getKanjiSuggestions(input, charset) {
     const suggestions = [];
-    if (input.length === 0) {
+    if (input.length === 0 || !charset) {
         return suggestions;
     }
 
-    const quizState = typeof getQuizState === 'function' ? getQuizState() : '';
-    if (quizState === 'hiragana' || quizState === 'hiraganaSpecial') {
-        return [];
-    }
-
     const lowerCaseInput = input.toLowerCase();
-    const exactMatches = [];
-    const partialMatches = [];
 
-    const hiraganaMap = {
-        'a': 'あ', 'i': 'い', 'u': 'う', 'e': 'え', 'o': 'お',
-        'ka': 'か', 'ki': 'き', 'ku': 'く', 'ke': 'け', 'ko': 'こ',
-        'sa': 'さ', 'shi': 'し', 'su': 'す', 'se': 'せ', 'so': 'そ',
-        'ta': 'た', 'chi': 'ち', 'tsu': 'つ', 'te': 'て', 'to': 'と',
-        'na': 'な', 'ni': 'に', 'nu': 'ぬ', 'ne': 'ね', 'no': 'の',
-        'ha': 'は', 'hi': 'ひ', 'fu': 'ふ', 'he': 'へ', 'ho': 'ほ',
-        'ma': 'ま', 'mi': 'み', 'mu': 'む', 'me': 'め', 'mo': 'も',
-        'ya': 'や', 'yu': 'ゆ', 'yo': 'よ',
-        'ra': 'ら', 'ri': 'り', 'ru': 'る', 're': 'れ', 'ro': 'ろ',
-        'wa': 'わ', 'wo': 'を',
-        'n': 'ん',
-        'ga': 'が', 'gi': 'ぎ', 'gu': 'ぐ', 'ge': 'げ', 'go': 'ご',
-        'za': 'ざ', 'ji': 'じ', 'zu': 'ず', 'ze': 'ぜ', 'zo': 'ぞ',
-        'da': 'だ', 'dji': 'ぢ', 'dzu': 'づ', 'de': 'で', 'do': 'ど',
-        'ba': 'ば', 'bi': 'び', 'bu': 'ぶ', 'be': 'べ', 'bo': 'ぼ',
-        'pa': 'ぱ', 'pi': 'ぴ', 'pu': 'ぷ', 'pe': 'ぺ', 'po': 'ぽ'
-    };
+    for (const char in charset) {
+        const reading = charset[char];
+        let romaji = '';
 
-    const katakanaMap = {
-        'a': 'ア', 'i': 'イ', 'u': 'ウ', 'e': 'エ', 'o': 'オ',
-        'ka': 'カ', 'ki': 'キ', 'ku': 'ク', 'ke': 'ケ', 'ko': 'コ',
-        'sa': 'サ', 'shi': 'シ', 'su': 'ス', 'se': 'セ', 'so': 'ソ',
-        'ta': 'タ', 'chi': 'チ', 'tsu': 'ツ', 'te': 'テ', 'to': 'ト',
-        'na': 'ナ', 'ni': 'ニ', 'nu': 'ヌ', 'ne': 'ネ', 'no': 'ノ',
-        'ha': 'ハ', 'hi': 'ヒ', 'fu': 'フ', 'he': 'ヘ', 'ho': 'ホ',
-        'ma': 'マ', 'mi': 'ミ', 'mu': 'ム', 'me': 'メ', 'mo': 'モ',
-        'ya': 'ヤ', 'yu': 'ユ', 'yo': 'ヨ',
-        'ra': 'ラ', 'ri': 'リ', 'ru': 'ル', 're': 'レ', 'ro': 'ロ',
-        'wa': 'ワ', 'wo': 'ヲ',
-        'n': 'ン',
-        'ga': 'ガ', 'gi': 'ギ', 'gu': 'グ', 'ge': 'ゲ', 'go': 'ゴ',
-        'za': 'ザ', 'ji': 'ジ', 'zu': 'ズ', 'ze': 'ゼ', 'zo': 'ゾ',
-        'da': 'ダ', 'dji': 'ヂ', 'dzu': 'ヅ', 'de': 'デ', 'do': 'ド',
-        'ba': 'バ', 'bi': 'ビ', 'bu': 'ブ', 'be': 'ベ', 'bo': 'ボ',
-        'pa': 'パ', 'pi': 'ピ', 'pu': 'プ', 'pe': 'ペ', 'po': 'ポ'
-    };
+        if (typeof reading === 'object' && reading.romaji) {
+            // For numbers like { latin: '1', romaji: 'ichi' }
+            romaji = reading.romaji;
+        } else {
+            // For simple key-value pairs like { 'あ': 'a' }
+            romaji = reading;
+        }
 
-    const dakutenSuggestions = {
-        'ka': 'ga', 'ki': 'gi', 'ku': 'gu', 'ke': 'ge', 'ko': 'go',
-        'sa': 'za', 'shi': 'ji', 'su': 'zu', 'se': 'ze', 'so': 'zo',
-        'ta': 'da', 'chi': 'ji', 'tsu': 'dzu', 'te': 'de', 'to': 'do',
-        'ha': 'ba', 'hi': 'bi', 'fu': 'bu', 'he': 'be', 'ho': 'bo'
-    };
-
-    const handakutenSuggestions = {
-        'ha': 'pa', 'hi': 'pi', 'fu': 'pu', 'he': 'pe', 'ho': 'po'
-    };
-
-    function addSuggestions(characterSet, map) {
-        for (const char in characterSet) {
-            const romaji = characterSet[char];
-            if (romaji.startsWith(lowerCaseInput)) {
-                partialMatches.push(char);
-            }
+        if (romaji && romaji.startsWith(lowerCaseInput)) {
+            suggestions.push(char);
         }
     }
 
-    function addDakutenHandakutenSuggestions(map) {
-        if (dakutenSuggestions[lowerCaseInput]) {
-            partialMatches.push(map[dakutenSuggestions[lowerCaseInput]]);
-        }
-        if (handakutenSuggestions[lowerCaseInput]) {
-            partialMatches.push(map[handakutenSuggestions[lowerCaseInput]]);
-        }
-    }
-
-    if (quizState === 'katakana' || quizState === 'kanji' || quizState === 'numbers' || quizState === 'listening') {
-        addSuggestions(characterSets.hiragana, hiraganaMap);
-        addDakutenHandakutenSuggestions(hiraganaMap);
-        addSuggestions(characterSets.dakuten, hiraganaMap);
-        addSuggestions(characterSets.handakuten, hiraganaMap);
-        addSuggestions(characterSets.katakana, katakanaMap);
-        addDakutenHandakutenSuggestions(katakanaMap);
-    }
-    if (quizState === 'kanji' || quizState === 'numbers' || quizState === 'listening') {
-        for (let level = 1; level <= 7; level++) {
-            const kanjiList = kanji(level);
-            for (let i = 0; i < kanjiList.length; i++) {
-                const kanjiInfo = kanjiList[i];
-                const kunReadings = kanjiInfo.kun.split(',');
-                const onReadings = kanjiInfo.on.split(',');
-
-                let isExactMatch = false;
-                for (const reading of kunReadings) {
-                    if (reading.trim() === lowerCaseInput) {
-                        exactMatches.push(kanjiInfo.char);
-                        isExactMatch = true;
-                        break;
-                    }
-                }
-
-                if (!isExactMatch) {
-                    for (const reading of onReadings) {
-                        if (reading.trim() === lowerCaseInput) {
-                            exactMatches.push(kanjiInfo.char);
-                            isExactMatch = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (!isExactMatch) {
-                    if (kanjiInfo.kun.indexOf(lowerCaseInput) !== -1 || kanjiInfo.on.indexOf(lowerCaseInput) !== -1) {
-                        partialMatches.push(kanjiInfo.char);
-                    }
-                }
-            }
-        }
-    }
-
-    return [...new Set([...exactMatches, ...partialMatches])];
+    return [...new Set(suggestions)];
 }
