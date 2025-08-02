@@ -337,6 +337,31 @@ const achievements = {
             characterLevels.listening.forEach(level => Object.assign(sets, level.set));
             return sets;
         }
+    },
+    // Advanced Listening Achievements
+    'word_smith': {
+        name: 'Word Smith',
+        description: 'Master all word-based listening levels.',
+        requires: ['sharp_ears'],
+        characters: () => {
+            let sets = {};
+            for (let i = 4; i < 8; i++) { // Levels for words
+                Object.assign(sets, characterLevels.listening[i].set);
+            }
+            return sets;
+        }
+    },
+    'sentence_scholar': {
+        name: 'Sentence Scholar',
+        description: 'Master all sentence-based listening levels.',
+        requires: ['word_smith'],
+        characters: () => {
+            let sets = {};
+            for (let i = 8; i < characterLevels.listening.length; i++) { // Levels for sentences
+                Object.assign(sets, characterLevels.listening[i].set);
+            }
+            return sets;
+        }
     }
 };
 
@@ -410,12 +435,19 @@ const characterLevels = {
         { name: "Numbers 91-100", set: { '九十一': { latin: '91', romaji: 'kyuujuuichi' }, '九十二': { latin: '92', romaji: 'kyuujuuni' }, '九十三': { latin: '93', romaji: 'kyuujuusan' }, '九十四': { latin: '94', romaji: 'kyuujuushi' }, '九十五': { latin: '95', romaji: 'kyuujuugo' }, '九十六': { latin: '96', romaji: 'kyuujuuroku' }, '九十七': { latin: '97', romaji: 'kyuujuushichi' }, '九十八': { latin: '98', romaji: 'kyuujuuhachi' }, '九十九': { latin: '99', romaji: 'kyuujuukyuu' }, '百': { latin: '100', romaji: 'hyaku' } } }
     ],
     listening: [
+        // Characters
         { name: "Hiragana Vowels", set: { 'a': 'a', 'i': 'i', 'u': 'u', 'e': 'e', 'o': 'o' } },
         { name: "Hiragana K-Group", set: { 'ka': 'ka', 'ki': 'ki', 'ku': 'ku', 'ke': 'ke', 'ko': 'ko' } },
         { name: "Hiragana S-Group", set: { 'sa': 'sa', 'shi': 'shi', 'su': 'su', 'se': 'se', 'so': 'so' } },
-        { name: "Katakana Vowels", set: { 'a': 'a', 'i': 'i', 'u': 'u', 'e': 'e', 'o': 'o' } },
-        { name: "Common Nouns", set: { 'neko': 'neko', 'inu': 'inu', 'sushi': 'sushi', 'sensei': 'sensei', 'gakkou': 'gakkou' } },
-        { name: "Common Greetings", set: { 'ohayou': 'ohayou', 'konnichiwa': 'konnichiwa', 'sayounara': 'sayounara' } }
+        { name: "Katakana Vowels", set: { 'A': 'A', 'I': 'I', 'U': 'U', 'E': 'E', 'O': 'O' } },
+        // Words
+        { name: "Common Nouns 1", set: { 'neko': 'neko', 'inu': 'inu', 'sushi': 'sushi', 'sensei': 'sensei', 'gakkou': 'gakkou' } },
+        { name: "Common Nouns 2", set: { 'pen': 'pen', 'hon': 'hon', 'tsukue': 'tsukue', 'isu': 'isu', 'kuruma': 'kuruma' } },
+        { name: "Common Verbs", set: { 'tabemasu': 'tabemasu', 'nomimasu': 'nomimasu', 'ikimasu': 'ikimasu', 'mimasu': 'mimasu' } },
+        { name: "Common Adjectives", set: { 'oishii': 'oishii', 'ookii': 'ookii', 'chiisai': 'chiisai', 'hayai': 'hayai' } },
+        // Sentences
+        { name: "Basic Sentences 1", set: { 'kore wa pen desu': 'kore wa pen desu', 'sore wa hon desu': 'sore wa hon desu' } },
+        { name: "Basic Sentences 2", set: { 'eki wa doko desu ka': 'eki wa doko desu ka', 'watashi wa gakusei desu': 'watashi wa gakusei desu' } }
     ]
 };
 

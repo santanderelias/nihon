@@ -33,7 +33,16 @@ if (workbox) {
         { url: '/nihon/audio/i.mp3', revision: null },
         { url: '/nihon/audio/u.mp3', revision: null },
         { url: '/nihon/audio/e.mp3', revision: null },
-        { url: '/nihon/audio/o.mp3', revision: null }
+        { url: '/nihon/audio/o.mp3', revision: null },
+        // New words
+        { url: '/nihon/audio/neko.mp3', revision: null },
+        { url: '/nihon/audio/inu.mp3', revision: null },
+        { url: '/nihon/audio/sushi.mp3', revision: null },
+        { url: '/nihon/audio/sensei.mp3', revision: null },
+        { url: '/nihon/audio/gakkou.mp3', revision: null },
+        // New sentences (placeholders)
+        { url: '/nihon/audio/kore wa pen desu.mp3', revision: null },
+        { url: '/nihon/audio/eki wa doko desu ka.mp3', revision: null }
     ]);
 
     // Runtime caching for SQLite database files
