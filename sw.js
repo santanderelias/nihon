@@ -27,7 +27,13 @@ if (workbox) {
         { url: '/nihon/icons/history.png', revision: null },
         { url: '/nihon/icons/reference.png', revision: null },
         { url: '/nihon/icons/theme_dark.png', revision: null },
-        { url: '/nihon/icons/theme_light.png', revision: null }
+        { url: '/nihon/icons/theme_light.png', revision: null },
+        // Cache audio files
+        { url: '/nihon/audio/a.mp3', revision: null },
+        { url: '/nihon/audio/i.mp3', revision: null },
+        { url: '/nihon/audio/u.mp3', revision: null },
+        { url: '/nihon/audio/e.mp3', revision: null },
+        { url: '/nihon/audio/o.mp3', revision: null }
     ]);
 
     // Runtime caching for SQLite database files

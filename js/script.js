@@ -302,6 +302,41 @@ const achievements = {
         name: 'Nihon Pro',
         description: 'Achieve Master level in all categories.',
         requires: ['hiragana_master', 'katakana_master', 'kanji_master', 'comptroller']
+    },
+    // Listening Achievements
+    'listening_apprentice': {
+        name: 'Listening Apprentice',
+        description: 'Master the first 3 listening levels.',
+        requires: [],
+        characters: () => {
+            let sets = {};
+            for (let i = 0; i < 3; i++) {
+                Object.assign(sets, characterLevels.listening[i].set);
+            }
+            return sets;
+        }
+    },
+    'sharp_ears': {
+        name: 'Sharp Ears',
+        description: 'Master all single-character listening levels.',
+        requires: ['listening_apprentice'],
+        characters: () => {
+            let sets = {};
+            for (let i = 0; i < 4; i++) { // First 4 levels are single characters
+                Object.assign(sets, characterLevels.listening[i].set);
+            }
+            return sets;
+        }
+    },
+    'fluent_speaker': {
+        name: 'Fluent Speaker',
+        description: 'Master all listening levels.',
+        requires: ['sharp_ears'],
+        characters: () => {
+            let sets = {};
+            characterLevels.listening.forEach(level => Object.assign(sets, level.set));
+            return sets;
+        }
     }
 };
 
@@ -354,7 +389,7 @@ const characterLevels = {
         { name: "Kanji Adjectives (State)", set: { '元': 'gen', '気': 'ki', '病': 'byou', '院': 'in', '薬': 'kusuri', '速': 'haya', '遅': 'oso', '近': 'chika', '遠': 'too', '広': 'hiro' } },
         { name: "Kanji Adjectives (Qualities)", set: { '狭': 'sema', '明': 'aka', '暗': 'kura', '暑': 'atsu', '寒': 'samu', '暖': 'atata', '涼': 'suzu', '静': 'shizu', '賑': 'nigi', '有名': 'yuumei' } },
         { name: "Kanji Adjectives (People/Things)", set: { '親切': 'shinsetsu', '便利': 'benri', '不便': 'fuben', '元気': 'genki', '綺麗': 'kirei', '汚': 'kitana', '可愛': 'kawaii', '赤': 'aka', '青': 'ao', '白': 'shiro' } },
-        { name: "Kanji Colors & Seasons", set: { '黒': 'kuro', '色': 'iro', '春': 'haru', '夏': 'natsu', '秋': 'aki', '冬': 'fuyu', '雨': 'ame', '雪': 'yuki', '風': 'kaze', '晴': 'ha' } },
+        { name:g: "Kanji Colors & Seasons", set: { '黒': 'kuro', '色': 'iro', '春': 'haru', '夏': 'natsu', '秋': 'aki', '冬': 'fuyu', '雨': 'ame', '雪': 'yuki', '風': 'kaze', '晴': 'ha' } },
         { name: "Kanji Nature & Places", set: { '曇': 'kumo', '空': 'sora', '海': 'umi', '山': 'yama', '川': 'kawa', '池': 'ike', '庭': 'niwa', '店': 'mise', '駅': 'eki', '道': 'michi' } },
         { name: "Kanji Places & Things", set: { '部屋': 'heya', '家': 'ie', '会社': 'kaisha', '電話': 'denwa', '番号': 'bangou', '机': 'tsukue', '椅子': 'isu', '鞄': 'kaban', '靴': 'kutsu', '鉛筆': 'enpitsu' } },
         { name: "Kanji Things & Transport", set: { '時計': 'tokei', '写真': 'shashin', '車': 'kuruma', '自転車': 'jitensha', '飛行機': 'hikouki', '船': 'fune', '電車': 'densha', '地下鉄': 'chikatetsu', '新幹線': 'shinkansen', '切符': 'kippu' } },
@@ -373,6 +408,14 @@ const characterLevels = {
         { name: "Numbers 71-80", set: { '七十一': { latin: '71', romaji: 'nanajuuichi' }, '七十二': { latin: '72', romaji: 'nanajuuni' }, '七十三': { latin: '73', romaji: 'nanajuusan' }, '七十四': { latin: '74', romaji: 'nanajuushi' }, '七十五': { latin: '75', romaji: 'nanajuugo' }, '七十六': { latin: '76', romaji: 'nanajuuroku' }, '七十七': { latin: '77', romaji: 'nanajuushichi' }, '七十八': { latin: '78', romaji: 'nanajuuhachi' }, '七十九': { latin: '79', romaji: 'nanajuukyuu' }, '八十': { latin: '80', romaji: 'hachijuu' } } },
         { name: "Numbers 81-90", set: { '八十一': { latin: '81', romaji: 'hachijuuichi' }, '八十二': { latin: '82', romaji: 'hachijuuni' }, '八十三': { latin: '83', romaji: 'hachijuusan' }, '八十四': { latin: '84', romaji: 'hachijuushi' }, '八十五': { latin: '85', romaji: 'hachijuugo' }, '八十六': { latin: '86', romaji: 'hachijuuroku' }, '八十七': { latin: '87', romaji: 'hachijuushichi' }, '八十八': { latin: '88', romaji: 'hachijuuhachi' }, '八十九': { latin: '89', romaji: 'hachijuukyuu' }, '九十': { latin: '90', romaji: 'kyuujuu' } } },
         { name: "Numbers 91-100", set: { '九十一': { latin: '91', romaji: 'kyuujuuichi' }, '九十二': { latin: '92', romaji: 'kyuujuuni' }, '九十三': { latin: '93', romaji: 'kyuujuusan' }, '九十四': { latin: '94', romaji: 'kyuujuushi' }, '九十五': { latin: '95', romaji: 'kyuujuugo' }, '九十六': { latin: '96', romaji: 'kyuujuuroku' }, '九十七': { latin: '97', romaji: 'kyuujuushichi' }, '九十八': { latin: '98', romaji: 'kyuujuuhachi' }, '九十九': { latin: '99', romaji: 'kyuujuukyuu' }, '百': { latin: '100', romaji: 'hyaku' } } }
+    ],
+    listening: [
+        { name: "Hiragana Vowels", set: { 'a': 'a', 'i': 'i', 'u': 'u', 'e': 'e', 'o': 'o' } },
+        { name: "Hiragana K-Group", set: { 'ka': 'ka', 'ki': 'ki', 'ku': 'ku', 'ke': 'ke', 'ko': 'ko' } },
+        { name: "Hiragana S-Group", set: { 'sa': 'sa', 'shi': 'shi', 'su': 'su', 'se': 'se', 'so': 'so' } },
+        { name: "Katakana Vowels", set: { 'a': 'a', 'i': 'i', 'u': 'u', 'e': 'e', 'o': 'o' } },
+        { name: "Common Nouns", set: { 'neko': 'neko', 'inu': 'inu', 'sushi': 'sushi', 'sensei': 'sensei', 'gakkou': 'gakkou' } },
+        { name: "Common Greetings", set: { 'ohayou': 'ohayou', 'konnichiwa': 'konnichiwa', 'sayounara': 'sayounara' } }
     ]
 };
 
@@ -851,7 +894,16 @@ function markFlashcardProgress(char, isCorrect, type) {
 
 function startListeningQuiz() {
     isSectionActive = true;
-    currentCharset = { ...characterSets.hiragana, ...characterSets.dakuten, ...characterSets.handakuten, ...characterSets.katakana, ...characterSets.kanji, ...characterSets.numbers };
+    currentQuizType = 'listening';
+
+    const userLevel = playerState.levels.listening || 0;
+    const levelsForType = characterLevels.listening;
+    let charsForQuiz = {};
+    for (let i = 0; i <= userLevel && i < levelsForType.length; i++) {
+        Object.assign(charsForQuiz, levelsForType[i].set);
+    }
+    currentCharset = charsForQuiz;
+
     initializeProgress(currentCharset);
     updateHomeButton(true);
 
@@ -911,9 +963,8 @@ function loadListeningQuestion() {
 
     const playAudioButton = document.getElementById('play-audio-button');
     playAudioButton.onclick = () => {
-        const utterance = new SpeechSynthesisUtterance(charToTest);
-        utterance.lang = 'ja-JP';
-        speechSynthesis.speak(utterance);
+        const audio = new Audio(`audio/${charToTest}.mp3`);
+        audio.play().catch(e => console.error("Error playing audio:", e));
     };
 
     answerInput.focus();
