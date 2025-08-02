@@ -351,7 +351,7 @@ function replacekana(charset) {
             button.textContent = suggestion;
             button.onclick = () => {
                 // Replace the typed text with the selected suggestion
-                answerInput.value = answerInput.value.slice(0, -lowerCaseInput.length) + suggestion;
+                answerInput.value = answerInput.value.slice(0, -str.length) + suggestion;
                 if (suggestionsContainer) {
                     suggestionsContainer.remove();
                 }
