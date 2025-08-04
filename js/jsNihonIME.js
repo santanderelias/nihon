@@ -346,8 +346,8 @@ function replacekana(charset, quizType) {
     const suggestions = getKanjiSuggestions(inputText, charset);
     let suggestionsContainer = document.getElementById('kanji-suggestions-card');
 
-    // Hide suggestions if the only suggestion is the same as the input
-    if (suggestions.length === 1 && suggestions[0] === inputText) {
+    // Hide suggestions if the only suggestion is the same as the converted input
+    if (suggestions.length === 1 && suggestions[0] === convertedText) {
         if (suggestionsContainer) {
             suggestionsContainer.remove();
         }
@@ -408,62 +408,43 @@ function replacekana(charset, quizType) {
 }
 
 function getKanjiSuggestions(input, charset) {
-    const suggestions = [];
-    if (input.length === 0 || !charset) {
-        return suggestions;
+    if (!input || input.length === 0 || !charset) {
+        return [];
     }
 
-    const lowerCaseInput = input.toLowerCase();
+    // Use the segment after the last space as the query
+    const lastSpaceIndex = input.lastIndexOf(' ');
+    const query = input.substring(lastSpaceIndex + 1).toLowerCase();
+
+    if (query.length === 0) {
+        return [];
+    }
+
+    const perfectMatches = [];
+    const partialMatches = [];
 
     for (const char in charset) {
-        const reading = charset[char];
-        let romaji = '';
+        const readingEntry = charset[char];
+        let romajiReading = '';
 
-        if (typeof reading === 'object' && reading.romaji) {
-            // For numbers like { latin: '1', romaji: 'ichi' }
-            romaji = reading.romaji;
-        } else {
-            // For simple key-value pairs like { 'あ': 'a' }
-            romaji = reading;
+        if (typeof readingEntry === 'object' && readingEntry.romaji) {
+            // For numbers quiz
+            romajiReading = readingEntry.romaji;
+        } else if (typeof readingEntry === 'string') {
+            // For other quizzes (kanji, words, etc.)
+            romajiReading = readingEntry;
         }
 
-        if (romaji && romaji.startsWith(lowerCaseInput)) {
-            suggestions.push(char);
-        }
-    }
-
-    // Add dakuten and handakuten suggestions
-    if (lowerCaseInput.length > 0) {
-        const lastChar = lowerCaseInput.slice(-1);
-        const base = lowerCaseInput.slice(0, -1);
-
-        const dakutenMap = {
-            'k': 'g', 's': 'z', 't': 'd', 'h': 'b'
-        };
-        const handakutenMap = {
-            'h': 'p'
-        };
-
-        if (dakutenMap[lastChar]) {
-            const dakutenReading = base + dakutenMap[lastChar];
-            for (const char in charset) {
-                const reading = charset[char];
-                if (reading === dakutenReading) {
-                    suggestions.push(char);
-                }
-            }
-        }
-
-        if (handakutenMap[lastChar]) {
-            const handakutenReading = base + handakutenMap[lastChar];
-            for (const char in charset) {
-                const reading = charset[char];
-                if (reading === handakutenReading) {
-                    suggestions.push(char);
-                }
+        if (romajiReading) {
+            if (romajiReading === query) {
+                perfectMatches.push(char);
+            } else if (romajiReading.startsWith(query)) {
+                partialMatches.push(char);
             }
         }
     }
 
-    return [...new Set(suggestions)];
+    // Combine perfect matches and partial matches, ensuring no duplicates
+    const allSuggestions = [...new Set([...perfectMatches, ...partialMatches])];
+    return allSuggestions;
 }

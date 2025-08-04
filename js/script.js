@@ -362,6 +362,61 @@ const achievements = {
             }
             return sets;
         }
+    },
+
+    // Words Achievements
+    'word_novice': {
+        name: 'Word Novice',
+        description: 'Master the first two levels of words.',
+        requires: [],
+        characters: () => {
+            let sets = {};
+            for (let i = 0; i < 2; i++) {
+                Object.assign(sets, characterLevels.words[i].set);
+            }
+            return sets;
+        }
+    },
+    'word_scholar': {
+        name: 'Word Scholar',
+        description: 'Master all word levels.',
+        requires: ['word_novice'],
+        characters: () => {
+            let sets = {};
+            characterLevels.words.forEach(level => Object.assign(sets, level.set));
+            return sets;
+        }
+    },
+
+    // Sentences Achievements
+    'sentence_starter': {
+        name: 'Sentence Starter',
+        description: 'Master the first two levels of sentences.',
+        requires: [],
+        characters: () => {
+            let sets = {};
+            for (let i = 0; i < 2; i++) {
+                Object.assign(sets, characterLevels.sentences[i].set);
+            }
+            return sets;
+        }
+    },
+    'sentence_virtuoso': {
+        name: 'Sentence Virtuoso',
+        description: 'Master all sentence levels.',
+        requires: ['sentence_starter'],
+        characters: () => {
+            let sets = {};
+            characterLevels.sentences.forEach(level => Object.assign(sets, level.set));
+            return sets;
+        }
+    },
+
+    // Combined Achievements
+    'polyglot': {
+        name: 'Polyglot',
+        description: 'Achieve master level in both words and sentences.',
+        requires: ['word_scholar', 'sentence_virtuoso']
     }
 };
 
@@ -450,17 +505,45 @@ const characterLevels = {
         { name: "Basic Sentences 2", set: { 'eki wa doko desu ka': 'eki wa doko desu ka', 'watashi wa gakusei desu': 'watashi wa gakusei desu' } }
     ],
     words: [
-        { name: "Common Nouns 1", set: { 'neko': 'neko', 'inu': 'inu', 'sushi': 'sushi', 'sensei': 'sensei', 'gakkou': 'gakkou' } },
-        { name: "Common Nouns 2", set: { 'pen': 'pen', 'hon': 'hon', 'tsukue': 'tsukue', 'isu': 'isu', 'kuruma': 'kuruma' } },
-        { name: "Common Verbs", set: { 'tabemasu': 'tabemasu', 'nomimasu': 'nomimasu', 'ikimasu': 'ikimasu', 'mimasu': 'mimasu' } },
-        { name: "Common Adjectives", set: { 'oishii': 'oishii', 'ookii': 'ookii', 'chiisai': 'chiisai', 'hayai': 'hayai' } },
-        { name: "Colors", set: { 'aka': 'aka', 'ao': 'ao', 'shiro': 'shiro', 'kuro': 'kuro' } }
+        // Basic Nouns
+        { name: "People & Places", set: { '人': 'hito', '男': 'otoko', '女': 'onna', '家族': 'kazoku', '日本': 'nihon', '東京': 'tokyo', '店': 'mise' } },
+        { name: "Food & Drink", set: { '食べ物': 'tabemono', '飲み物': 'nomimono', 'ご飯': 'gohan', 'パン': 'pan', '水': 'mizu', 'お茶': 'ocha', '牛乳': 'gyuunyuu' } },
+        { name: "Everyday Objects", set: { '家': 'ie', '部屋': 'heya', '椅子': 'isu', '机': 'tsukue', '本': 'hon', '鉛筆': 'enpitsu', '時計': 'tokei' } },
+        { name: "Time & Weather", set: { '今日': 'kyou', '明日': 'ashita', '昨日': 'kinou', '時間': 'jikan', '天気': 'tenki', '雨': 'ame', '晴れ': 'hare' } },
+        
+        // Basic Verbs
+        { name: "Action Verbs 1", set: { '見ます': 'mimasu', '食べます': 'tabemasu', '飲みます': 'nomimasu', '買います': 'kaimasu', '行きます': 'ikimasu', '帰ります': 'kaerimasu' } },
+        { name: "Action Verbs 2", set: { '読みます': 'yomimasu', '書きます': 'kakimasu', '聞きます': 'kikimasu', '話します': 'hanashimasu', '寝ます': 'nemasu', '起きます': 'okimasu' } },
+
+        // Basic Adjectives
+        { name: "I-Adjectives 1", set: { '新しい': 'atarashii', '古い': 'furui', '良い': 'ii', '悪い': 'warui', '大きい': 'ookii', '小さい': 'chiisai' } },
+        { name: "I-Adjectives 2", set: { '高い': 'takai', '安い': 'yasui', '面白い': 'omoshiroi', '美味しい': 'oishii', '忙しい': 'isogashii', '楽しい': 'tanoshii' } },
+        { name: "Na-Adjectives", set: { '元気': 'genki', '綺麗': 'kirei', '親切': 'shinsetsu', '有名': 'yuumei', '便利': 'benri', '好き': 'suki' } },
+
+        // Intermediate Vocabulary
+        { name: "Body Parts", set: { '頭': 'atama', '顔': 'kao', '目': 'me', '耳': 'mimi', '鼻': 'hana', '口': 'kuchi', '手': 'te', '足': 'ashi' } },
+        { name: "Transportation", set: { '電車': 'densha', '車': 'kuruma', '飛行機': 'hikouki', '地下鉄': 'chikatetsu', '駅': 'eki', '空港': 'kuukou' } },
+        { name: "Advanced Nouns", set: { '仕事': 'shigoto', '電話': 'denwa', '映画': 'eiga', '音楽': 'ongaku', '写真': 'shashin', '友達': 'tomodachi' } }
     ],
     sentences: [
-        { name: "Basic Sentences 1", set: { 'kore wa pen desu': 'kore wa pen desu', 'sore wa hon desu': 'sore wa hon desu' } },
-        { name: "Basic Sentences 2", set: { 'eki wa doko desu ka': 'eki wa doko desu ka', 'watashi wa gakusei desu': 'watashi wa gakusei desu' } },
-        { name: "Asking Prices", set: { 'kore wa ikura desu ka': 'kore wa ikura desu ka' } },
-        { name: "At a Restaurant", set: { 'menyuu o kudasai': 'menyuu o kudasai', 'itadakimasu': 'itadakimasu' } }
+        // Basic Greetings & Phrases
+        { name: "Greetings", set: { 'おはようございます': 'ohayou gozaimasu', 'こんにちは': 'konnichiwa', 'こんばんは': 'konbanwa', 'さようなら': 'sayounara', 'おやすみなさい': 'oyasuminasai' } },
+        { name: "Common Phrases 1", set: { 'ありがとうございます': 'arigatou gozaimasu', 'すみません': 'sumimasen', 'ごめんなさい': 'gomennasai', 'お願いします': 'onegaishimasu' } },
+        { name: "Self Introduction", set: { 'はじめまして': 'hajimemashite', '私の名前は...です': 'watashi no namae wa ... desu', 'どうぞよろしく': 'douzo yoroshiku' } },
+
+        // Simple Questions
+        { name: "Asking Questions 1", set: { 'お元気ですか': 'ogenki desu ka', 'これは何ですか': 'kore wa nan desu ka', '今何時ですか': 'ima nanji desu ka' } },
+        { name: "Asking Questions 2", set: { 'どこですか': 'doko desu ka', 'いくらですか': 'ikura desu ka', 'どうしてですか': 'doushite desu ka' } },
+
+        // Everyday Scenarios
+        { name: "At a Restaurant", set: { 'メニューをください': 'menyuu o kudasai', 'お勘定をお願いします': 'okanjou o onegaishimasu', '美味しかったです': 'oishikatta desu' } },
+        { name: "Shopping", set: { 'これをください': 'kore o kudasai', '試着してもいいですか': 'shichaku shite mo ii desu ka', 'クレジットカードは使えますか': 'kurejittokaado wa tsukaemasu ka' } },
+        { name: "Getting Directions", set: { '駅はどこですか': 'eki wa doko desu ka', 'まっすぐ行ってください': 'massugu itte kudasai', '右に曲がってください': 'migi ni magatte kudasai' } },
+
+        // Intermediate Sentences
+        { name: "Expressing Likes & Dislikes", set: { '私は猫が好きです': 'watashi wa neko ga suki desu', '私はブロッコリーが嫌いです': 'watashi wa burokkorii ga kirai desu' } },
+        { name: "Describing Things", set: { 'この本は面白いです': 'kono hon wa omoshiroi desu', 'その車は高いです': 'sono kuruma wa takai desu' } },
+        { name: "Making Plans", set: { '明日映画を見に行きます': 'ashita eiga o mi ni ikimasu', '週末に何をしますか': 'shuumatsu ni nani o shimasu ka' } }
     ]
 };
 
@@ -1277,6 +1360,13 @@ document.addEventListener('click', function(event) {
     if (suggestionsContainer && !isClickInsideSuggestions && !isClickInsideInput) {
         suggestionsContainer.remove();
     }
+});
+
+// --- Modal Focus Fix ---
+document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('hidden.bs.modal', () => {
+        document.body.focus();
+    });
 });
 
 // --- Toast Notification Helper ---
