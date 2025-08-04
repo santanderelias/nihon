@@ -358,7 +358,7 @@ function replacekana(charset, quizType) {
         if (!suggestionsContainer) {
             suggestionsContainer = document.createElement('div');
             suggestionsContainer.id = 'kanji-suggestions-card';
-            suggestionsContainer.className = 'card shadow border-primary';
+            suggestionsContainer.className = 'card'; // Removed shadow and border-primary
             suggestionsContainer.style.position = 'fixed';
             suggestionsContainer.style.bottom = '10px';
             suggestionsContainer.style.right = '10px';

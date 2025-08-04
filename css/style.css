@@ -151,3 +151,9 @@ input, textarea, .form-control {
     z-index: 100;
     font-family: 'Noto Sans JP Embedded', sans-serif;
 }
+
+/* IME Suggestions Card */
+#kanji-suggestions-card {
+    border: 1px solid var(--bs-border-color);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
