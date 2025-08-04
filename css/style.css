@@ -122,6 +122,10 @@ input, textarea, .form-control {
     overflow-y: auto;
 }
 
+[data-bs-theme="light"] #help-icon {
+    filter: invert(0.8);
+}
+
 /* Help Icon */
 #help-button-container {
     position: relative;

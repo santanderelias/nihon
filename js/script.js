@@ -420,6 +420,60 @@ const achievements = {
     }
 };
 
+function getHelpContent(quizType) {
+    switch (quizType) {
+        case 'hiragana':
+        case 'katakana':
+            return `
+                <h5>Dakuten (゛)</h5>
+                <p>The dakuten diacritic is used to change the consonant sound of a syllable.</p>
+                <ul class="list-group">
+                    <li class="list-group-item">K (か) → G (が)</li>
+                    <li class="list-group-item">S (さ) → Z (ざ)</li>
+                    <li class="list-group-item">T (た) → D (だ)</li>
+                    <li class="list-group-item">H (は) → B (ば)</li>
+                </ul>
+                <h5 class="mt-3">Handakuten (゜)</h5>
+                <p>The handakuten diacritic is used to change the consonant sound of the H-syllables.</p>
+                <ul class="list-group">
+                    <li class="list-group-item">H (は) → P (ぱ)</li>
+                </ul>
+            `;
+        case 'kanji':
+            return `
+                <h5>Kanji Help</h5>
+                <p>Kanji are logographic characters, where each character represents a word or idea. They often have multiple readings:</p>
+                <ul>
+                    <li><strong>On'yomi (音読み):</strong> The Chinese reading, often used in compound words.</li>
+                    <li><strong>Kun'yomi (訓読み):</strong> The native Japanese reading, often used for single-character words.</li>
+                </ul>
+                <p>The IME at the bottom right will help you find the right Kanji by typing its reading.</p>
+            `;
+        case 'numbers':
+            return `
+                <h5>Numbers Help</h5>
+                <p>Japanese numbers follow a logical system. After 10, they are formed by combining the numbers.</p>
+                <p>For example:</p>
+                <ul>
+                    <li><strong>11</strong> is 十一 (juu-ichi) which is 10 + 1.</li>
+                    <li><strong>20</strong> is 二十 (ni-juu) which is 2 * 10.</li>
+                    <li><strong>21</strong> is 二十一 (ni-juu-ichi) which is 2 * 10 + 1.</li>
+                </ul>
+                <p>Use the IME to type the Romaji reading (e.g., "san") to get the Kanji (三).</p>
+            `;
+        case 'words':
+        case 'sentences':
+            return `
+                <h5>Vocabulary & Sentence Help</h5>
+                <p>For these quizzes, you need to provide the correct Romaji reading for the Japanese word or sentence shown.</p>
+                <p>The IME will help you find the correct Japanese characters if you get stuck, but the goal is to type the reading directly.</p>
+                <p>Pay attention to particles (は, を, が) and verb endings!</p>
+            `;
+        default:
+            return ''; // No help for this quiz type
+    }
+}
+
 const characterLevels = {
     hiragana: [
         { name: "Vowels (a, i, u, e, o)", set: { 'あ': 'a', 'い': 'i', 'う': 'u', 'え': 'e', 'お': 'o' } },
@@ -910,17 +964,25 @@ function startQuiz(type) {
 
     const helpIcon = document.getElementById('help-icon');
     const helpCard = document.getElementById('help-card');
+    const helpContent = getHelpContent(type);
 
-    helpIcon.addEventListener('click', (event) => {
-        event.stopPropagation(); // Prevent click from closing the card immediately
-        helpCard.style.display = helpCard.style.display === 'block' ? 'none' : 'block';
-    });
+    if (helpContent) {
+        helpCard.innerHTML = `<div class="card-body">${helpContent}</div>`;
+        helpIcon.style.display = 'block';
 
-    document.addEventListener('click', (event) => {
-        if (!helpCard.contains(event.target) && !helpIcon.contains(event.target)) {
-            helpCard.style.display = 'none';
-        }
-    });
+        helpIcon.addEventListener('click', (event) => {
+            event.stopPropagation();
+            helpCard.style.display = helpCard.style.display === 'block' ? 'none' : 'block';
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!helpCard.contains(event.target) && !helpIcon.contains(event.target)) {
+                helpCard.style.display = 'none';
+            }
+        });
+    } else {
+        helpIcon.style.display = 'none';
+    }
 
     loadQuestion(type);
 }
