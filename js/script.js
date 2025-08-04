@@ -1010,12 +1010,16 @@ function startFlashcardMode(type) {
 
     contentArea.innerHTML = `
         <div class="card text-center shadow-sm flashcard-container">
+            <div id="help-button-container">
+                <img src="/nihon/icons/help.png" alt="Help" id="help-icon">
+            </div>
             <div class="card-body">
                 <div id="feedback-area" class="mb-2" style="height: 24px;"></div>
                 <div class="flashcard" id="flashcard">
                     <div class="flashcard-inner">
                         <div class="flashcard-front d-flex align-items-center justify-content-center">
                             <h1 id="flashcard-char" class="display-1"></h1>
+                            <button id="play-flashcard-audio" class="btn btn-secondary btn-sm ms-2" style="display: none;"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button>
                         </div>
                         <div class="flashcard-back d-flex flex-column align-items-center justify-content-center">
                             <h2 id="flashcard-reading" class="mb-2"></h2>
@@ -1031,11 +1035,37 @@ function startFlashcardMode(type) {
                     </div>
                 </div>
             </div>
+            <div id="help-card" class="card shadow-sm">
+                <!-- Help content will be loaded here -->
+            </div>
         </div>
     `;
 
     updateHomeButton(true);
     currentFlashcardType = type;
+
+    const helpIcon = document.getElementById('help-icon');
+    const helpCard = document.getElementById('help-card');
+    const helpContent = getHelpContent(type);
+
+    if (helpContent) {
+        helpCard.innerHTML = `<div class="card-body">${helpContent}</div>`;
+        helpIcon.style.display = 'block';
+
+        helpIcon.addEventListener('click', (event) => {
+            event.stopPropagation();
+            helpCard.style.display = helpCard.style.display === 'block' ? 'none' : 'block';
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!helpCard.contains(event.target) && !helpIcon.contains(event.target)) {
+                helpCard.style.display = 'none';
+            }
+        });
+    } else {
+        helpIcon.style.display = 'none';
+    }
+
     loadFlashcard(type);
 }
 
@@ -1063,10 +1093,23 @@ function loadFlashcard(type) {
     const flashcardReading = document.getElementById('flashcard-reading');
     const flashcardMeaning = document.getElementById('flashcard-meaning');
     const flashcard = document.getElementById('flashcard');
+    const playAudioButton = document.getElementById('play-flashcard-audio');
 
     flashcardChar.textContent = charToDisplay;
     flashcardReading.textContent = '';
     flashcardMeaning.textContent = '';
+
+    // Add audio button logic
+    const filename = getAudioFilename(charToDisplay, type);
+    if (filename) {
+        playAudioButton.style.display = 'inline-block';
+        playAudioButton.onclick = () => {
+            const audio = new Audio(`audio/${filename}.mp3`);
+            audio.play().catch(e => console.error("Error playing audio:", e));
+        };
+    } else {
+        playAudioButton.style.display = 'none';
+    }
 
     // Reset flip state
     flashcard.classList.remove('flipped');
