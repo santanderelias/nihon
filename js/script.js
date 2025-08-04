@@ -616,6 +616,10 @@ function getNextCharacter() {
 }
 
 function showHomePage() {
+    if (activeTooltip) {
+        activeTooltip.dispose();
+        activeTooltip = null;
+    }
     updateHomeButton(false); // No section is active
 
     // Remove IME if it exists
@@ -1097,10 +1101,6 @@ function getAudioFilename(char, type) {
 }
 
 async function loadQuestion(type) {
-    if (activeTooltip) {
-        activeTooltip.dispose();
-        activeTooltip = null;
-    }
     const charToTest = getNextCharacter();
 
     if (!charToTest) {
@@ -1177,9 +1177,11 @@ async function loadQuestion(type) {
     const skipButton = document.getElementById('skip-button');
     skipButton.onclick = () => {
         if (activeTooltip) {
-            activeTooltip.hide();
+            activeTooltip.dispose();
+            activeTooltip = null;
         }
-        loadQuestion(type);
+        // Use a short timeout to prevent potential race conditions
+        setTimeout(() => loadQuestion(type), 50);
     };
 
     answerInput.focus();
@@ -1204,7 +1206,8 @@ async function loadQuestion(type) {
 
 function checkAnswer(char, correctAnswer, type) {
     if (activeTooltip) {
-        activeTooltip.hide();
+        activeTooltip.dispose();
+        activeTooltip = null;
     }
     const answerInput = document.getElementById('answer-input');
     let userAnswer = answerInput.value.trim();
