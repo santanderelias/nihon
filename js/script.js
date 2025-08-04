@@ -645,6 +645,7 @@ function gainXP(amount) {
 let currentCharset = {};
 let currentQuizType = '';
 let activeTooltip = null;
+let skipQueue = [];
 
 function getQuizState() {
     return currentQuizType;
@@ -665,7 +666,7 @@ function initializeProgress(characterSet) {
 
 function getNextCharacter() {
     let now = new Date().getTime();
-    let items = Object.keys(currentCharset);
+    let items = Object.keys(currentCharset).filter(item => !skipQueue.includes(item));
     let weightedList = [];
 
     for (const item of items) {
@@ -1263,6 +1264,15 @@ async function loadQuestion(type) {
             activeTooltip.dispose();
             activeTooltip = null;
         }
+
+        // Add the character to the skip queue
+        if (!skipQueue.includes(charToTest)) {
+            skipQueue.push(charToTest);
+            if (skipQueue.length > 5) { // Keep the queue size manageable
+                skipQueue.shift();
+            }
+        }
+
         // Use a short timeout to prevent potential race conditions
         setTimeout(() => loadQuestion(type), 50);
     };
