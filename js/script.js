@@ -622,10 +622,20 @@ let playerState = JSON.parse(localStorage.getItem('nihon-player-state')) || {
         hiragana: 0,
         katakana: 0,
         kanji: 0,
-        numbers: 0
+        numbers: 0,
+        words: 0,
+        sentences: 0
     },
     unlockedAchievements: []
 };
+
+// Patch for existing users to add new level categories
+if (playerState.levels.words === undefined) {
+    playerState.levels.words = 0;
+}
+if (playerState.levels.sentences === undefined) {
+    playerState.levels.sentences = 0;
+}
 
 function getXpForLevel(level) {
     return Math.floor(100 * Math.pow(1.2, level - 1));
