@@ -561,6 +561,7 @@ function gainXP(amount) {
 
 let currentCharset = {};
 let currentQuizType = '';
+let activeTooltip = null;
 
 function getQuizState() {
     return currentQuizType;
@@ -1096,6 +1097,10 @@ function getAudioFilename(char, type) {
 }
 
 async function loadQuestion(type) {
+    if (activeTooltip) {
+        activeTooltip.dispose();
+        activeTooltip = null;
+    }
     const charToTest = getNextCharacter();
 
     if (!charToTest) {
@@ -1133,18 +1138,24 @@ async function loadQuestion(type) {
     document.getElementById('feedback-area').innerHTML = '';
 
     const p = progress[charToTest];
-    const isFirstTime = !p || (p.correct === 0 && p.incorrect === 0 && !p.seen);
+    const isFirstTime = !p || !p.seen;
     const answeredWrongLastTime = p && p.lastAnswer === 'incorrect';
 
     if (isFirstTime || answeredWrongLastTime) {
         const charDisplay = document.getElementById('char-display');
+        let tooltipTitle = '';
+        if (isFirstTime) {
+            tooltipTitle = `New character! Correct Answer: ${correctAnswer}`;
+        } else { // answeredWrongLastTime
+            tooltipTitle = `Let's try this one again! Correct Answer: ${correctAnswer}`;
+        }
         const tooltip = new bootstrap.Tooltip(charDisplay, {
-            title: correctAnswer,
-            placement: 'top',
+            title: tooltipTitle,
+            placement: 'left',
             trigger: 'manual'
         });
         tooltip.show();
-        setTimeout(() => tooltip.hide(), 2000);
+        activeTooltip = tooltip; // Store the active tooltip
 
         if (!p) {
             // Ensure progress object exists even if they just skip it
@@ -1187,6 +1198,9 @@ async function loadQuestion(type) {
 }
 
 function checkAnswer(char, correctAnswer, type) {
+    if (activeTooltip) {
+        activeTooltip.hide();
+    }
     const answerInput = document.getElementById('answer-input');
     let userAnswer = answerInput.value.trim();
     const feedbackArea = document.getElementById('feedback-area');
