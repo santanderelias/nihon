@@ -1041,25 +1041,7 @@ function playReferenceAudio(filename) {
     audio.play().catch(e => console.error("Error playing audio:", e));
 }
 
-function getAudioFilenameForReference(char) {
-    // Search all character levels to find the character and its audio filename
-    for (const type in characterLevels) {
-        for (const level of characterLevels[type]) {
-            if (level.set[char]) {
-                const reading = level.set[char];
-                if (typeof reading === 'object' && reading.romaji) {
-                    return reading.romaji; // For numbers
-                }
-                return reading; // For kana/kanji
-            }
-        }
-    }
-    // Fallback for words/sentences which might be passed directly
-    if (characterLevels.words.some(level => level.set[char]) || characterLevels.sentences.some(level => level.set[char])) {
-        return char;
-    }
-    return null;
-}
+
 
 function getAudioFilename(char, type) {
     if (!currentCharset[char]) return null;
@@ -1604,17 +1586,18 @@ function generateCharacterCards(characterSet) {
         let displayChar = char;
         let displayRomaji = characterSet[char];
         let latinNumber = '';
+        let filename = '';
 
         // Special handling for numbers
         if (characterSet === characterSets.numbers) {
-            // 'char' is the Japanese character
-            // characterSet[char] is now an object { latin: '...', romaji: '...' }
-            displayChar = char; // Japanese character
-            latinNumber = characterSet[char].latin; // Latin number
-            displayRomaji = characterSet[char].romaji; // Romaji
+            displayChar = char;
+            latinNumber = characterSet[char].latin;
+            displayRomaji = characterSet[char].romaji;
+            filename = displayRomaji;
+        } else {
+            filename = displayRomaji;
         }
 
-        const filename = getAudioFilenameForReference(char);
         html += `
             <div class="col">
                 <div class="card text-center h-100" onclick="playReferenceAudio('${filename}')" style="cursor: pointer;">

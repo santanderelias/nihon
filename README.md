@@ -1,33 +1,45 @@
 # Nihon - Japanese Language Learning App
 
-Nihon is a web application designed to help users learn and practice Japanese characters, including Hiragana, Katakana, Kanji, and numbers. The app features a personalized quiz system that adapts to the user's learning progress.
+Nihon is a comprehensive Progressive Web App (PWA) for learning the Japanese language. It offers a modern, gamified experience to help users master everything from basic characters to complex sentences.
 
-## Core Features
+## Features
 
-*   **Quizzes:** The application provides quizzes for learning Japanese characters. The quiz types include:
-    *   Hiragana
-    *   Katakana
-    *   Kanji
-    *   Dakuten and Handakuten (modified characters)
-    *   Numbers (1-100)
-*   **Personalized Learning:** The app uses a weighted system to prioritize characters that the user has answered incorrectly, providing more practice on difficult characters.
-*   **Example Words:** For each character in a quiz, an example word is shown with its reading and meaning, providing context.
-*   **Dictionary:** A built-in dictionary allows users to search for Japanese words.
-*   **Romaji to Japanese Conversion:** The app uses the `wanakana.js` library to automatically convert Romaji input to Hiragana or Katakana in the quiz and dictionary search.
-*   **Dark Mode:** The application has a dark mode option for user comfort.
-*   **Progress Tracking:** The app tracks correct and incorrect answers for each character and displays statistics.
-*   **PWA (Progressive Web App):** The application can be installed on a device for an app-like experience with offline access.
-*   **Settings:**
-    *   Enable/disable Developer Mode (loads `script.js` instead of `script.min.js`).
-    *   Enable/disable Wanakana for input conversion.
-    *   Check for updates.
-    *   Clear all progress data.
-    *   Reset the app completely (clears data, caches, and service workers).
-    *   Uninstall the app.
+- **Multiple Learning Modes:**
+    - **Quiz Mode:** Test your knowledge with interactive quizzes.
+    - **Flashcard Mode:** Reinforce your memory with classic flashcards.
+
+- **Comprehensive Learning Sections:**
+    - **Hiragana & Katakana:** Master the fundamental Japanese syllabaries.
+    - **Kanji:** Learn essential logographic characters, starting from Grade 1.
+    - **Numbers:** Practice counting and reading Japanese numerals.
+    - **Vocabulary:** Build your lexicon with common words.
+    - **Sentences:** Understand basic sentence structure and common phrases.
+    - **Listening Comprehension:** Train your ear to recognize Japanese sounds, words, and sentences.
+
+- **Intelligent Learning System:**
+    - **Spaced Repetition System (SRS):** The app uses a weighted algorithm to prioritize items you find difficult, optimizing your study time.
+    - **Tooltip Hints:** For new characters or items you've struggled with, a helpful tooltip provides the answer to guide your learning.
+
+- **Gamification & Progress Tracking:**
+    - **XP & Leveling System:** Gain experience points (XP) for correct answers and level up your profile.
+    - **Achievements:** Unlock achievements for mastering different learning categories.
+    - **Detailed Statistics:** Track your performance with detailed stats on correct/incorrect answers, allowing you to identify areas for improvement.
+
+- **Integrated Tools:**
+    - **Built-in Dictionary:** A powerful, offline-first dictionary to look up words on the fly.
+    - **Japanese IME:** An integrated Input Method Editor that converts Romaji to Hiragana or Katakana, making it easy to type answers.
+    - **Audio Pronunciation:** Listen to native audio pronunciations for characters, words, and example sentences.
+
+- **Modern App Experience:**
+    - **Progressive Web App (PWA):** Installable on any device for a native app-like experience with full offline capabilities.
+    - **Dark Mode:** Switch between light and dark themes for comfortable viewing.
+    - **Reference Guides:** Quick access to Hiragana, Katakana, and Kanji charts, as well as a grammar reference section.
 
 ## Technical Details
 
-*   **Frontend:** The application is built with HTML, CSS, and JavaScript. It uses the Bootstrap framework for styling.
-*   **Service Worker:** A service worker is used for caching application files for offline use and to manage updates.
-*   **Dictionary Data:** The dictionary data is stored in multiple JavaScript files (`dict-*.js`) and is loaded into an IndexedDB for efficient searching.
-*   **Wanakana.js:** This library is used for converting Romaji to Kana.
+- **Frontend:** Built with vanilla HTML, CSS, and JavaScript, using the Bootstrap framework for a responsive UI.
+- **Offline Support:** A Service Worker caches all essential assets, including the dictionary and audio files, for a seamless offline experience.
+- **Libraries:**
+    - **Wanakana.js:** For robust Romaji-to-Kana conversion.
+    - **Popper.js:** For interactive tooltips.
+    - **Bootstrap:** For UI components and styling.
