@@ -763,6 +763,9 @@ function startQuiz(type) {
 
     contentArea.innerHTML = `
         <div class="card text-center shadow-sm">
+            <div id="help-button-container">
+                <img src="/nihon/icons/help.png" alt="Help" id="help-icon">
+            </div>
             <div class="card-body">
                 <div id="feedback-area" class="mb-2" style="height: 24px;"></div>
                 <div id="char-display-container">
@@ -776,6 +779,26 @@ function startQuiz(type) {
                 <button class="btn btn-success" id="check-button">Check</button>
                 <button class="btn btn-secondary" id="skip-button">Skip</button>
             </div>
+            <div id="help-card" class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Dakuten and Handakuten Rules</h5>
+                    <h6>Dakuten (゛)</h6>
+                    <table class="table">
+                        <tbody>
+                            <tr><td>K (ka)</td><td>+ ゛</td><td>G (ga)</td></tr>
+                            <tr><td>S (sa)</td><td>+ ゛</td><td>Z (za)</td></tr>
+                            <tr><td>T (ta)</td><td>+ ゛</td><td>D (da)</td></tr>
+                            <tr><td>H (ha)</td><td>+ ゛</td><td>B (ba)</td></tr>
+                        </tbody>
+                    </table>
+                    <h6>Handakuten (゜)</h6>
+                    <table class="table">
+                        <tbody>
+                            <tr><td>H (ha)</td><td>+ ゜</td><td>P (pa)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     `;
     
@@ -785,6 +808,20 @@ function startQuiz(type) {
     answerInput.oninput = () => {
         replacekana(currentCharset, type);
     };
+
+    const helpIcon = document.getElementById('help-icon');
+    const helpCard = document.getElementById('help-card');
+
+    helpIcon.addEventListener('click', (event) => {
+        event.stopPropagation(); // Prevent click from closing the card immediately
+        helpCard.style.display = helpCard.style.display === 'block' ? 'none' : 'block';
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!helpCard.contains(event.target) && !helpIcon.contains(event.target)) {
+            helpCard.style.display = 'none';
+        }
+    });
 
     loadQuestion(type);
 }
