@@ -1175,7 +1175,12 @@ async function loadQuestion(type) {
     checkButton.onclick = () => checkAnswer(charToTest, correctAnswer, type);
 
     const skipButton = document.getElementById('skip-button');
-    skipButton.onclick = () => loadQuestion(type);
+    skipButton.onclick = () => {
+        if (activeTooltip) {
+            activeTooltip.hide();
+        }
+        loadQuestion(type);
+    };
 
     answerInput.focus();
 

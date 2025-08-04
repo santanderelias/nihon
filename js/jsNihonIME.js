@@ -346,6 +346,14 @@ function replacekana(charset, quizType) {
     const suggestions = getKanjiSuggestions(inputText, charset);
     let suggestionsContainer = document.getElementById('kanji-suggestions-card');
 
+    // Hide suggestions if the only suggestion is the same as the input
+    if (suggestions.length === 1 && suggestions[0] === inputText) {
+        if (suggestionsContainer) {
+            suggestionsContainer.remove();
+        }
+        return;
+    }
+
     if (suggestions.length > 0) {
         if (!suggestionsContainer) {
             suggestionsContainer = document.createElement('div');
