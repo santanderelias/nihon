@@ -414,11 +414,14 @@ function getKanjiSuggestions(input, charset) {
 
     // Use the segment after the last space as the query
     const lastSpaceIndex = input.lastIndexOf(' ');
-    const query = input.substring(lastSpaceIndex + 1).toLowerCase();
+    const query = input.substring(lastSpaceIndex + 1);
 
     if (query.length === 0) {
         return [];
     }
+
+    // Convert the Kana query back to Romaji for comparison
+    const romajiQuery = wanakana.toRomaji(query);
 
     const perfectMatches = [];
     const partialMatches = [];
@@ -436,9 +439,9 @@ function getKanjiSuggestions(input, charset) {
         }
 
         if (romajiReading) {
-            if (romajiReading === query) {
+            if (romajiReading === romajiQuery) {
                 perfectMatches.push(char);
-            } else if (romajiReading.startsWith(query)) {
+            } else if (romajiReading.startsWith(romajiQuery)) {
                 partialMatches.push(char);
             }
         }
