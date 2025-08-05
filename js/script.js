@@ -506,8 +506,6 @@ const characterLevels = {
     ],
     kanji: [
         // Grade 1
-        { name: "Kanji Basics 1", set: { '一': 'ichi', '二': 'ni', '三': 'san', '四': 'shi', '五': 'go', '六': 'roku', '七': 'shichi', '八': 'hachi', '九': 'kyuu', '十': 'juu' } },
-        { name: "Kanji Basics 2", set: { '百': 'hyaku', '千': 'sen', '万': 'man', '円': 'en', '時': 'ji', '日': 'nichi', '月': 'getsu', '火': 'ka', '水': 'sui', '木': 'moku' } },
         { name: "Kanji Nature", set: { '金': 'kin', '土': 'do', '曜': 'you', '上': 'ue', '下': 'shita', '中': 'naka', '半': 'han', '山': 'yama', '川': 'kawa', '元': 'gen' } },
         { name: "Kanji People & Body", set: { '気': 'ki', '天': 'ten', '私': 'watashi', '今': 'ima', '田': 'ta', '女': 'onna', '男': 'otoko', '見': 'mi', '行': 'i', '食': 'ta', '飲': 'no' } },
         // Grade 2
@@ -529,8 +527,7 @@ const characterLevels = {
         { name: "Kanji Places & Things", set: { '部屋': 'heya', '家': 'ie', '会社': 'kaisha', '電話': 'denwa', '番号': 'bangou', '机': 'tsukue', '椅子': 'isu', '鞄': 'kaban', '靴': 'kutsu', '鉛筆': 'enpitsu' } },
         { name: "Kanji Things & Transport", set: { '時計': 'tokei', '写真': 'shashin', '車': 'kuruma', '自転車': 'jitensha', '飛行機': 'hikouki', '船': 'fune', '電車': 'densha', '地下鉄': 'chikatetsu', '新幹線': 'shinkansen', '切符': 'kippu' } },
         { name: "Kanji Time & Money", set: { 'お金': 'okane', '時間': 'jikan', '今日': 'kyou', '明日': 'ashita', '昨日': 'kinou', '今週': 'konshuu', '来週': 'raishuu', '先週': 'senshuu', '今年': 'kotoshi', '来年': 'rainen' } },
-        { name: "Kanji Time & Question Words", set: { '去年': 'kyonen', '毎': 'mai', '何': 'nani', '誰': 'dare', '何処': 'doko', '何時': 'itsu', '何故': 'naze', '如何': 'dou', '一': 'hito' } },
-        { name: "Kanji Numbers (Native)", set: { '二': 'futa', '三': 'mi', '四': 'yon', '五': 'itsu', '六': 'mu', '七': 'nana', '八': 'ya', '九': 'kokono', '十': 'too', '百': 'hyaku', '千': 'chi', '万': 'yorozu' } }
+        { name: "Kanji Time & Question Words", set: { '去年': 'kyonen', '毎': 'mai', '何': 'nani', '誰': 'dare', '何処': 'doko', '何時': 'itsu', '何故': 'naze', '如何': 'dou', '一': 'hito' } }
     ],
     numbers: [
         { name: "Numbers 1-10", set: { '一': { latin: '1', romaji: 'ichi' }, '二': { latin: '2', romaji: 'ni' }, '三': { latin: '3', romaji: 'san' }, '四': { latin: '4', romaji: 'shi' }, '五': { latin: '5', romaji: 'go' }, '六': { latin: '6', romaji: 'roku' }, '七': { latin: '7', romaji: 'shichi' }, '八': { latin: '8', romaji: 'hachi' }, '九': { latin: '9', romaji: 'kyuu' }, '十': { latin: '10', romaji: 'juu' } } },
@@ -1511,6 +1508,71 @@ function checkAnswer(char, correctAnswer, type) {
     const answerInput = document.getElementById('answer-input');
     let userAnswer = answerInput.value.trim();
     const feedbackArea = document.getElementById('feedback-area');
+
+    // --- Secret Developer Codes ---
+    if (type === 'hiragana') {
+        if (userAnswer === 'いいいいいいいいいい') { // 10 'i's
+            if (confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
+                localStorage.removeItem('nihon-progress');
+                localStorage.removeItem('nihon-player-state');
+                showToast('Success', 'App has been reset. Reloading...');
+                setTimeout(() => window.location.reload(), 2000);
+            }
+            return; // Stop further execution
+        }
+        if (userAnswer === 'ええええええええええ') { // 10 'e's
+            const dataStr = JSON.stringify({
+                progress: progress,
+                playerState: playerState
+            }, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'nihon-progress-backup.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Success', 'Backup file is being downloaded.');
+            answerInput.value = '';
+            return; // Stop further execution
+        }
+        if (userAnswer === 'おおおおおおおおおお') { // 10 'o's
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.json';
+            fileInput.onchange = e => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = readerEvent => {
+                        try {
+                            const content = readerEvent.target.result;
+                            const data = JSON.parse(content);
+                            if (data.progress && data.playerState) {
+                                localStorage.setItem('nihon-progress', JSON.stringify(data.progress));
+                                localStorage.setItem('nihon-player-state', JSON.stringify(data.playerState));
+                                showToast('Success', 'Progress restored. Reloading...');
+                                setTimeout(() => window.location.reload(), 2000);
+                            } else {
+                                showToast('Error', 'Invalid backup file format.');
+                            }
+                        } catch (err) {
+                            showToast('Error', 'Could not parse backup file.');
+                            console.error("Error parsing backup file:", err);
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            fileInput.click();
+            answerInput.value = '';
+            return; // Stop further execution
+        }
+    }
+
+
     let now = new Date().getTime();
     let p = progress[char];
 
