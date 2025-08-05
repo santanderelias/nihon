@@ -56,6 +56,153 @@ function updateHomeButton(isSection) {
     }
 }
 
+async function main() {
+    // --- Event Listeners and Initializations ---
+
+    // Global click listener to close suggestions
+    document.addEventListener('click', function(event) {
+        const suggestionsContainer = document.getElementById('kanji-suggestions-card');
+        const answerInput = document.getElementById('answer-input');
+
+        const isClickInsideSuggestions = suggestionsContainer && suggestionsContainer.contains(event.target);
+        const isClickInsideInput = answerInput && answerInput.contains(event.target);
+
+        if (suggestionsContainer && !isClickInsideSuggestions && !isClickInsideInput) {
+            suggestionsContainer.remove();
+        }
+    });
+
+    // Fix for modal focus
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('hidden.bs.modal', () => {
+            document.body.focus();
+        });
+    });
+
+    // Initial page load
+    showHomePage();
+    setupDictionaryPromise();
+    loadDictionary();
+    checkDevMode(); // Check and enable dev mode if previously set
+
+    // Attach all other event listeners
+    // (This centralizes all event listener attachments)
+    const devResetButton = document.getElementById('dev-reset-button');
+    if (devResetButton) {
+        devResetButton.addEventListener('click', () => {
+            if (confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
+                localStorage.removeItem('nihon-progress');
+                localStorage.removeItem('nihon-player-state');
+                localStorage.removeItem('nihon-dev-mode');
+
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                        for(let registration of registrations) {
+                            registration.unregister();
+                        }
+                    }).then(() => {
+                        showToast('Success', 'App has been reset. Reloading...');
+                        setTimeout(() => window.location.reload(), 2000);
+                    }).catch(err => {
+                        console.error('Service Worker unregistration failed: ', err);
+                        showToast('Error', 'Could not unregister service worker. Please clear cache manually.');
+                    });
+                } else {
+                    showToast('Success', 'App has been reset. Reloading...');
+                    setTimeout(() => window.location.reload(), 2000);
+                }
+            }
+        });
+    }
+
+    const devBackupButton = document.getElementById('dev-backup-button');
+    if (devBackupButton) {
+        devBackupButton.addEventListener('click', () => {
+            const dataStr = JSON.stringify({ progress: progress, playerState: playerState }, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'nihon-progress-backup.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Success', 'Backup file is being downloaded.');
+        });
+    }
+
+    const devRestoreButton = document.getElementById('dev-restore-button');
+    if (devRestoreButton) {
+        devRestoreButton.addEventListener('click', () => {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.json';
+            fileInput.onchange = e => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = readerEvent => {
+                        try {
+                            const content = readerEvent.target.result;
+                            const data = JSON.parse(content);
+                            if (data.progress && data.playerState) {
+                                localStorage.setItem('nihon-progress', JSON.stringify(data.progress));
+                                localStorage.setItem('nihon-player-state', JSON.stringify(data.playerState));
+                                showToast('Success', 'Progress restored. Reloading...');
+                                setTimeout(() => window.location.reload(), 2000);
+                            } else {
+                                showToast('Error', 'Invalid backup file format.');
+                            }
+                        } catch (err) {
+                            showToast('Error', 'Could not parse backup file.');
+                            console.error("Error parsing backup file:", err);
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            fileInput.click();
+        });
+    }
+
+    const devDisableButton = document.getElementById('dev-disable-button');
+    if (devDisableButton) {
+        devDisableButton.addEventListener('click', () => {
+            localStorage.removeItem('nihon-dev-mode');
+            const devToolsButton = document.getElementById('dev-tools-button');
+            if (devToolsButton) {
+                devToolsButton.style.display = 'none';
+            }
+            showToast('Success', 'Developer mode disabled.');
+            // Close the modal
+            const devToolsModal = bootstrap.Modal.getInstance(document.getElementById('dev-tools-modal'));
+            if (devToolsModal) {
+                devToolsModal.hide();
+            }
+        });
+    }
+
+    const statsModalHeader = document.getElementById('stats-modal-header');
+    if (statsModalHeader) {
+        let clickCount = 0;
+        let clickTimer = null;
+        statsModalHeader.addEventListener('click', (event) => {
+            event.stopPropagation();
+            clickCount++;
+            if (clickTimer) clearTimeout(clickTimer);
+            clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
+            if (clickCount >= 10) {
+                localStorage.setItem('nihon-dev-mode', 'true');
+                checkDevMode();
+                showToast('Success', 'Developer mode unlocked!');
+                clickCount = 0;
+                clearTimeout(clickTimer);
+            }
+        });
+    }
+}
+
 window.addEventListener('beforeinstallprompt', (e) => {
     // Prevent the mini-infobar from appearing on mobile
     e.preventDefault();
