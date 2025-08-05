@@ -623,26 +623,26 @@ const characterSets = {
         'ぱ': 'pa', 'ぴ': 'pi', 'ぷ': 'pu', 'ぺ': 'pe', 'ぽ': 'po'
     },
     katakana: {
-        'ア': 'a', 'イ': 'i', 'ウ': 'u', 'エ': 'e', 'オ': 'o',
-        'カ': 'ka', 'キ': 'ki', 'ク': 'ku', 'ケ': 'ke', 'コ': 'ko',
-        'サ': 'sa', 'シ': 'shi', 'ス': 'su', 'セ': 'se', 'ソ': 'so',
-        'タ': 'ta', 'チ': 'chi', 'ツ': 'tsu', 'テ': 'te', 'ト': 'to',
-        'ナ': 'na', 'ニ': 'ni', 'ヌ': 'nu', 'ネ': 'ne', 'ノ': 'no',
-        'ハ': 'ha', 'ヒ': 'hi', 'フ': 'fu', 'ヘ': 'he', 'ホ': 'ho',
-        'マ': 'ma', 'ミ': 'mi', 'ム': 'mu', 'メ': 'me', 'モ': 'mo',
-        'ヤ': 'ya', 'ユ': 'yu', 'ヨ': 'yo',
-        'ラ': 'ra', 'リ': 'ri', 'ル': 'ru', 'レ': 're', 'ロ': 'ro',
-        'ワ': 'wa', 'ヲ': 'wo',
-        'ン': 'n'
+        'ア': 'A', 'イ': 'I', 'ウ': 'U', 'エ': 'E', 'オ': 'O',
+        'カ': 'KA', 'キ': 'KI', 'ク': 'KU', 'ケ': 'KE', 'コ': 'KO',
+        'サ': 'SA', 'シ': 'SHI', 'ス': 'SU', 'セ': 'SE', 'ソ': 'SO',
+        'タ': 'TA', 'チ': 'CHI', 'ツ': 'TSU', 'テ': 'TE', 'ト': 'TO',
+        'ナ': 'NA', 'ニ': 'NI', 'ヌ': 'NU', 'ネ': 'NE', 'ノ': 'NO',
+        'ハ': 'HA', 'ヒ': 'HI', 'フ': 'FU', 'ヘ': 'HE', 'ホ': 'HO',
+        'マ': 'MA', 'ミ': 'MI', 'ム': 'MU', 'メ': 'ME', 'モ': 'MO',
+        'ヤ': 'YA', 'ユ': 'YU', 'ヨ': 'YO',
+        'ラ': 'RA', 'リ': 'RI', 'ル': 'RU', 'レ': 'RE', 'ロ': 'RO',
+        'ワ': 'WA', 'ヲ': 'WO',
+        'ン': 'N_k'
     },
     katakana_dakuten: {
-        'ガ': 'ga', 'ギ': 'gi', 'グ': 'gu', 'ゲ': 'ge', 'ゴ': 'go',
-        'ザ': 'za', 'ジ': 'ji', 'ズ': 'zu', 'ゼ': 'ze', 'ゾ': 'zo',
-        'ダ': 'da', 'ヂ': 'ji', 'ヅ': 'zu', 'デ': 'de', 'ド': 'do',
-        'バ': 'ba', 'ビ': 'bi', 'ブ': 'bu', 'ベ': 'be', 'ボ': 'bo'
+        'ガ': 'GA', 'ギ': 'GI', 'グ': 'GU', 'ゲ': 'GE', 'ゴ': 'GO',
+        'ザ': 'ZA', 'ジ': 'JI', 'ズ': 'ZU', 'ゼ': 'ZE', 'ゾ': 'ZO',
+        'ダ': 'DA', 'ヂ': 'DJI', 'ヅ': 'DZU', 'デ': 'DE', 'ド': 'DO',
+        'バ': 'BA', 'ビ': 'BI', 'ブ': 'BU', 'ベ': 'BE', 'ボ': 'BO'
     },
     katakana_handakuten: {
-        'パ': 'pa', 'ピ': 'pi', 'プ': 'pu', 'ペ': 'pe', 'ポ': 'po'
+        'パ': 'PA', 'ピ': 'PI', 'プ': 'PU', 'ペ': 'PE', 'ポ': 'PO'
     },
     kanji: {
         // Jouyou Kanji - Grade 1
@@ -1929,13 +1929,13 @@ function populateReferencesModal() {
     const combinedHiragana = { ...characterSets.hiragana, ...characterSets.dakuten, ...characterSets.handakuten };
     const combinedKatakana = { ...characterSets.katakana, ...characterSets.katakana_dakuten, ...characterSets.katakana_handakuten };
 
-    hiraganaTabPane.innerHTML = generateCharacterCards(combinedHiragana);
-    katakanaTabPane.innerHTML = generateCharacterCards(combinedKatakana);
-    kanjiTabPane.innerHTML = generateCharacterCards(characterSets.kanji);
-    numbersTabPane.innerHTML = generateCharacterCards(characterSets.numbers);
+    hiraganaTabPane.innerHTML = generateCharacterCards(combinedHiragana, 'h_');
+    katakanaTabPane.innerHTML = generateCharacterCards(combinedKatakana, 'k_');
+    kanjiTabPane.innerHTML = generateCharacterCards(characterSets.kanji, 'kanji_');
+    numbersTabPane.innerHTML = generateCharacterCards(characterSets.numbers, ''); // Numbers already have num_ in key
 }
 
-function generateCharacterCards(characterSet) {
+function generateCharacterCards(characterSet, prefix) {
     let html = '<div class="row row-cols-3 row-cols-md-4 row-cols-lg-5 g-2">';
     for (const char in characterSet) {
         let displayChar = char;
@@ -1943,14 +1943,13 @@ function generateCharacterCards(characterSet) {
         let latinNumber = '';
         let filename = '';
 
-        // Special handling for numbers
         if (characterSet === characterSets.numbers) {
             displayChar = char;
             latinNumber = characterSet[char].latin;
             displayRomaji = characterSet[char].romaji;
             filename = `num_${displayRomaji}`;
         } else {
-            filename = displayRomaji;
+            filename = `${prefix}${displayRomaji}`;
         }
 
         html += `
