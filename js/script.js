@@ -1031,7 +1031,7 @@ function startFlashcardMode(type) {
                         </div>
                     </div>
                 </div>
-                <button id="play-flashcard-audio" class="btn btn-secondary btn-sm" style="position: absolute; top: 10px; left: 10px; display: none;"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button>
+                <button id="play-flashcard-audio" class="btn btn-secondary btn-sm" style="position: absolute; top: 10px; right: 10px; display: none;"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button>
                         </div>
                         <div class="flashcard-back d-flex flex-column align-items-center justify-content-center">
                             <h2 id="flashcard-reading" class="mb-2"></h2>
@@ -1335,7 +1335,7 @@ async function loadQuestion(type) {
     let audioButtonHTML = '';
     const filename = getAudioFilename(charToTest, type);
     if (filename) {
-        audioButtonHTML = `<button id="play-char-audio" class="btn btn-secondary btn-sm ms-2"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button>`;
+        audioButtonHTML = `<button id="play-char-audio" class="btn btn-secondary btn-sm" style="position: absolute; top: 10px; right: 10px;"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button>`;
     }
     charDisplayContainer.innerHTML = `<h1 id="char-display" class="display-1 d-inline-block">${charToTest}</h1>${audioButtonHTML}`;
 
