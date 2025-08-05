@@ -57,6 +57,16 @@ function updateHomeButton(isSection) {
 }
 
 async function main() {
+    // --- Developer Tools ---
+    function checkDevMode() {
+        if (localStorage.getItem('nihon-dev-mode') === 'true') {
+            const devToolsButton = document.getElementById('dev-tools-button');
+            if (devToolsButton) {
+                devToolsButton.style.display = 'block';
+            }
+        }
+    }
+
     // --- Event Listeners and Initializations ---
 
     // Global click listener to close suggestions
