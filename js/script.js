@@ -42,8 +42,11 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
 if (installButton) {
     installButton.addEventListener('click', async () => {
-        // Hide the app install button
+        // Hide the app install button, and do nothing if the prompt isn't available.
         installButton.style.display = 'none';
+        if (!deferredPrompt) {
+            return;
+        }
         // Show the install prompt
         deferredPrompt.prompt();
         // Wait for the user to respond to the prompt
