@@ -30,7 +30,6 @@ if (themeToggleIcon) {
 // --- PWA Install Button ---
 let deferredPrompt;
 const installButton = document.getElementById('install-button');
-let isSectionActive = false; // Flag to track if a section is active
 
 function updateHomeButton(isSection) {
     const appTitle = document.getElementById('home-button');
@@ -908,13 +907,6 @@ function checkAchievements() {
     }
 }
 
-// --- Back to Home Logic ---
-homeButton.addEventListener('click', (event) => {
-    event.preventDefault();
-    if (isSectionActive) {
-        showHomePage();
-    }
-});
 
 function checkLevelUp(type) {
     // No level up for listening quiz as it's a mix of everything
