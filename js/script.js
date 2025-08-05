@@ -737,10 +737,25 @@ function initializeProgress(characterSet) {
 
 function getNextCharacter() {
     let now = new Date().getTime();
-    let items = Object.keys(currentCharset).filter(item => !skipQueue.includes(item));
-    let weightedList = [];
+    let allItems = Object.keys(currentCharset).filter(item => !skipQueue.includes(item));
 
-    for (const item of items) {
+    // Separate new items (never answered) from reviewed items
+    const newItems = allItems.filter(item => {
+        const p = progress[item];
+        return !p || (p.correct === 0 && p.incorrect === 0);
+    });
+
+    // With a 75% probability, prioritize a new item if available
+    if (newItems.length > 0 && Math.random() < 0.75) {
+        const randomIndex = Math.floor(Math.random() * newItems.length);
+        return newItems[randomIndex];
+    }
+
+    // Fallback to the original weighted SRS logic for reviewed items
+    let weightedList = [];
+    const reviewedItems = allItems.filter(item => !newItems.includes(item));
+
+    for (const item of reviewedItems) {
         let p = progress[item];
         if (!p.nextReview) p.nextReview = now;
 
@@ -752,22 +767,27 @@ function getNextCharacter() {
         }
     }
 
-    if (weightedList.length === 0) {
-        // If no items are due for review, find the one with the soonest review time
+    if (weightedList.length > 0) {
+        const randomIndex = Math.floor(Math.random() * weightedList.length);
+        return weightedList[randomIndex];
+    }
+
+    // If no reviewed items are due, pick any item that is not new (or a new one if that's all left)
+    const fallbackItems = reviewedItems.length > 0 ? reviewedItems : newItems;
+    if (fallbackItems.length > 0) {
         let soonestItem = null;
         let soonestTime = Infinity;
-        for (const item of items) {
+        for (const item of fallbackItems) {
             let p = progress[item];
-            if (p.nextReview < soonestTime) {
+            if (p && p.nextReview < soonestTime) {
                 soonestTime = p.nextReview;
                 soonestItem = item;
             }
         }
-        return soonestItem;
+        return soonestItem || fallbackItems[Math.floor(Math.random() * fallbackItems.length)];
     }
 
-    const randomIndex = Math.floor(Math.random() * weightedList.length);
-    return weightedList[randomIndex];
+    return null; // Should not happen if charset is not empty
 }
 
 function showHomePage() {
@@ -2103,7 +2123,7 @@ function updateHomeButton(isSection) {
     // Control install button visibility
     const installButton = document.getElementById('install-button');
     if (installButton) {
-        if (deferredPrompt && !isSectionActive) {
+        if (deferredPrompt) {
             installButton.style.display = 'flex';
         } else {
             installButton.style.display = 'none';
@@ -2151,7 +2171,10 @@ const statsModalHeader = document.getElementById('stats-modal-header');
 if (statsModalHeader) {
     let clickCount = 0;
     let clickTimer = null;
-    statsModalHeader.addEventListener('click', () => {
+    statsModalHeader.addEventListener('click', (event) => {
+        // Stop event propagation to prevent the modal from closing
+        event.stopPropagation();
+
         clickCount++;
         if (clickTimer) {
             clearTimeout(clickTimer);
@@ -2174,11 +2197,28 @@ const devResetButton = document.getElementById('dev-reset-button');
 if (devResetButton) {
     devResetButton.addEventListener('click', () => {
         if (confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
+            // Clear local storage
             localStorage.removeItem('nihon-progress');
             localStorage.removeItem('nihon-player-state');
-            localStorage.removeItem('nihon-dev-mode'); // Also disable dev mode on reset
-            showToast('Success', 'App has been reset. Reloading...');
-            setTimeout(() => window.location.reload(), 2000);
+            localStorage.removeItem('nihon-dev-mode');
+
+            // Unregister service worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    for(let registration of registrations) {
+                        registration.unregister();
+                    }
+                }).then(() => {
+                    showToast('Success', 'App has been reset. Reloading...');
+                    setTimeout(() => window.location.reload(), 2000);
+                }).catch(err => {
+                    console.error('Service Worker unregistration failed: ', err);
+                    showToast('Error', 'Could not unregister service worker. Please clear cache manually.');
+                });
+            } else {
+                showToast('Success', 'App has been reset. Reloading...');
+                setTimeout(() => window.location.reload(), 2000);
+            }
         }
     });
 }
