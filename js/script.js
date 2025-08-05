@@ -31,6 +31,31 @@ if (themeToggleIcon) {
 let deferredPrompt;
 const installButton = document.getElementById('install-button');
 
+function updateHomeButton(isSection) {
+    const appTitle = document.getElementById('home-button');
+    isSectionActive = isSection; // Set the global flag
+
+    if (isSection) {
+        appTitle.innerHTML = '<img src="/nihon/icons/back.png" alt="Back" style="height: 1.5rem; vertical-align: middle;"> Back';
+        appTitle.classList.add('back-button');
+        appTitle.style.fontSize = ''; // Reset font size as image handles size
+    } else {
+        appTitle.textContent = 'Nihon';
+        appTitle.classList.remove('back-button');
+        appTitle.style.fontSize = '';
+    }
+
+    // Control install button visibility
+    const installButton = document.getElementById('install-button');
+    if (installButton) {
+        if (deferredPrompt) {
+            installButton.style.display = 'flex';
+        } else {
+            installButton.style.display = 'none';
+        }
+    }
+}
+
 window.addEventListener('beforeinstallprompt', (e) => {
     // Prevent the mini-infobar from appearing on mobile
     e.preventDefault();
@@ -881,6 +906,7 @@ function checkAchievements() {
         }
     }
 }
+
 
 function checkLevelUp(type) {
     // No level up for listening quiz as it's a mix of everything
