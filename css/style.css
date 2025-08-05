@@ -164,7 +164,7 @@ input, textarea, .form-control {
     border: 1px solid var(--bs-border-color); /* Ensure a border is present */
     box-shadow:
         inset -2px 2px hsl(0 0 100% / 0.5),
-        -10px 10px 20px hsl(0 0 0 / 0.15);
+        -20px 20px 40px hsl(0 0 0 / 0.35); /* More prominent shadow */
 }
 
 [data-bs-theme="light"] .card {
@@ -173,4 +173,23 @@ input, textarea, .form-control {
 
 [data-bs-theme="dark"] .card {
     background-image: linear-gradient(to bottom left, #343a40, #212529); /* Darker gradient for dark mode */
+}
+
+/* FAB styles */
+.fab-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.fab-button {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

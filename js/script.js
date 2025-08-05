@@ -37,8 +37,8 @@ window.addEventListener('beforeinstallprompt', (e) => {
     // Stash the event so it can be triggered later.
     deferredPrompt = e;
     // Update UI notify the user they can install the PWA
-    if (installButton) {
-        installButton.style.display = 'block';
+    if (installButton && !isSectionActive) { // Only show if on home page
+        installButton.style.display = 'flex'; // Use flex to center icon
     }
 });
 
@@ -770,6 +770,11 @@ function showHomePage() {
     }
     updateHomeButton(false); // No section is active
 
+    // Show install button if available and not installed
+    if (deferredPrompt && installButton) {
+        installButton.style.display = 'block';
+    }
+
     // Remove IME if it exists
     const suggestionsContainer = document.getElementById('kanji-suggestions-card');
     if (suggestionsContainer) {
@@ -1019,7 +1024,14 @@ function startFlashcardMode(type) {
                     <div class="flashcard-inner">
                         <div class="flashcard-front d-flex align-items-center justify-content-center">
                             <h1 id="flashcard-char" class="display-1"></h1>
-                            <button id="play-flashcard-audio" class="btn btn-secondary btn-sm ms-2" style="display: none;"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button>
+                        </div>
+                        <div class="flashcard-back d-flex flex-column align-items-center justify-content-center">
+                            <h2 id="flashcard-reading" class="mb-2"></h2>
+                            <p id="flashcard-meaning" class="lead"></p>
+                        </div>
+                    </div>
+                </div>
+                <button id="play-flashcard-audio" class="btn btn-secondary btn-sm" style="display: none; position: absolute; bottom: 10px; right: 10px;"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button>
                         </div>
                         <div class="flashcard-back d-flex flex-column align-items-center justify-content-center">
                             <h2 id="flashcard-reading" class="mb-2"></h2>
