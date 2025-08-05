@@ -6,7 +6,7 @@ if (workbox) {
     // Set the cache name prefix for Workbox
     workbox.core.setCacheNameDetails({
         prefix: 'nihon',
-        suffix: 'v1.4.1' // New version for Workbox cache
+        suffix: 'v1.4.2' // New version for Workbox cache
     });
 
     // --- Asset Lists ---
