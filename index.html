@@ -39,6 +39,9 @@
                 <button class="btn btn-outline-secondary me-2" id="references-button" data-bs-toggle="modal" data-bs-target="#references-modal">
                     <img src="/nihon/icons/reference.png" alt="References" style="height: 1.5rem;">
                 </button>
+                <button class="btn btn-outline-danger me-2" id="dev-tools-button" data-bs-toggle="modal" data-bs-target="#dev-tools-modal" style="display: none;">
+                    <img src="/nihon/icons/errors.png" alt="Dev Tools" style="height: 1.5rem;">
+                </button>
                 <img src="/nihon/icons/theme_dark.png" alt="Theme Toggle" id="theme-toggle-icon" style="height: 1.5rem; cursor: pointer; margin-left: 0.5rem; vertical-align: middle;">
             </div>
         </div>
@@ -132,7 +135,7 @@
     <div class="modal fade" id="stats-modal" tabindex="-1" aria-labelledby="statsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header" id="stats-modal-header">
                     <h5 class="modal-title" id="statsModalLabel">Statistics</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -213,6 +216,43 @@
         <button class="btn btn-primary fab-button" id="install-button" style="display: none;">
             <img src="/nihon/icons/install.png" alt="Install" style="height: 1.5rem;">
         </button>
+    </div>
+
+    <!-- Dev Tools Modal -->
+    <div class="modal fade" id="dev-tools-modal" tabindex="-1" aria-labelledby="devToolsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="devToolsModalLabel">Developer Tools</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>These tools are for development and testing purposes. Use with caution.</p>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Tool</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Full App Reset</td>
+                                <td><button class="btn btn-danger" id="dev-reset-button">Reset</button></td>
+                            </tr>
+                            <tr>
+                                <td>Backup Progress</td>
+                                <td><button class="btn btn-primary" id="dev-backup-button">Backup</button></td>
+                            </tr>
+                            <tr>
+                                <td>Restore Progress</td>
+                                <td><button class="btn btn-secondary" id="dev-restore-button">Restore</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
     
 </body>

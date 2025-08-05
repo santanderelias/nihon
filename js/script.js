@@ -1468,6 +1468,19 @@ async function loadQuestion(type) {
             activeTooltip = null;
         }
 
+        // Mark the question as incorrect when skipped
+        let p = progress[charToTest];
+        if (!p) {
+            p = { correct: 0, incorrect: 0, streak: 0, nextReview: new Date().getTime() };
+            progress[charToTest] = p;
+        }
+        p.incorrect++;
+        p.streak = 0;
+        p.lastAnswer = 'incorrect';
+        p.nextReview = new Date().getTime() + 60 * 60 * 1000; // Review in 1 hour
+        localStorage.setItem('nihon-progress', JSON.stringify(progress));
+        showToast('Skipped', `Marked as incorrect. You'll see it again soon!`);
+
         // Add the character to the skip queue
         if (!skipQueue.includes(charToTest)) {
             skipQueue.push(charToTest);
@@ -1477,7 +1490,7 @@ async function loadQuestion(type) {
         }
 
         // Use a short timeout to prevent potential race conditions
-        setTimeout(() => loadQuestion(type), 50);
+        setTimeout(() => loadQuestion(type), 1200); // Increased timeout to let user read toast
     };
 
     answerInput.focus();
@@ -1508,71 +1521,6 @@ function checkAnswer(char, correctAnswer, type) {
     const answerInput = document.getElementById('answer-input');
     let userAnswer = answerInput.value.trim();
     const feedbackArea = document.getElementById('feedback-area');
-
-    // --- Secret Developer Codes ---
-    if (type === 'hiragana') {
-        if (userAnswer === 'いいいいいいいいいい') { // 10 'i's
-            if (confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
-                localStorage.removeItem('nihon-progress');
-                localStorage.removeItem('nihon-player-state');
-                showToast('Success', 'App has been reset. Reloading...');
-                setTimeout(() => window.location.reload(), 2000);
-            }
-            return; // Stop further execution
-        }
-        if (userAnswer === 'ええええええええええ') { // 10 'e's
-            const dataStr = JSON.stringify({
-                progress: progress,
-                playerState: playerState
-            }, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'nihon-progress-backup.json';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showToast('Success', 'Backup file is being downloaded.');
-            answerInput.value = '';
-            return; // Stop further execution
-        }
-        if (userAnswer === 'おおおおおおおおおお') { // 10 'o's
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.accept = '.json';
-            fileInput.onchange = e => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = readerEvent => {
-                        try {
-                            const content = readerEvent.target.result;
-                            const data = JSON.parse(content);
-                            if (data.progress && data.playerState) {
-                                localStorage.setItem('nihon-progress', JSON.stringify(data.progress));
-                                localStorage.setItem('nihon-player-state', JSON.stringify(data.playerState));
-                                showToast('Success', 'Progress restored. Reloading...');
-                                setTimeout(() => window.location.reload(), 2000);
-                            } else {
-                                showToast('Error', 'Invalid backup file format.');
-                            }
-                        } catch (err) {
-                            showToast('Error', 'Could not parse backup file.');
-                            console.error("Error parsing backup file:", err);
-                        }
-                    };
-                    reader.readAsText(file);
-                }
-            };
-            fileInput.click();
-            answerInput.value = '';
-            return; // Stop further execution
-        }
-    }
-
-
     let now = new Date().getTime();
     let p = progress[char];
 
@@ -2180,5 +2128,105 @@ if ('serviceWorker' in navigator) {
                 };
             })
             .catch(err => console.error('Service Worker registration failed:', err));
+    });
+}
+
+// --- Developer Tools ---
+function checkDevMode() {
+    if (localStorage.getItem('nihon-dev-mode') === 'true') {
+        const devToolsButton = document.getElementById('dev-tools-button');
+        if (devToolsButton) {
+            devToolsButton.style.display = 'block';
+        }
+    }
+}
+
+const statsModalHeader = document.getElementById('stats-modal-header');
+if (statsModalHeader) {
+    let clickCount = 0;
+    let clickTimer = null;
+    statsModalHeader.addEventListener('click', () => {
+        clickCount++;
+        if (clickTimer) {
+            clearTimeout(clickTimer);
+        }
+        clickTimer = setTimeout(() => {
+            clickCount = 0;
+        }, 2000); // Reset after 2 seconds
+
+        if (clickCount >= 10) {
+            localStorage.setItem('nihon-dev-mode', 'true');
+            checkDevMode();
+            showToast('Success', 'Developer mode unlocked!');
+            clickCount = 0;
+            clearTimeout(clickTimer);
+        }
+    });
+}
+
+const devResetButton = document.getElementById('dev-reset-button');
+if (devResetButton) {
+    devResetButton.addEventListener('click', () => {
+        if (confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
+            localStorage.removeItem('nihon-progress');
+            localStorage.removeItem('nihon-player-state');
+            localStorage.removeItem('nihon-dev-mode'); // Also disable dev mode on reset
+            showToast('Success', 'App has been reset. Reloading...');
+            setTimeout(() => window.location.reload(), 2000);
+        }
+    });
+}
+
+const devBackupButton = document.getElementById('dev-backup-button');
+if (devBackupButton) {
+    devBackupButton.addEventListener('click', () => {
+        const dataStr = JSON.stringify({
+            progress: progress,
+            playerState: playerState
+        }, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(dataBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'nihon-progress-backup.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Success', 'Backup file is being downloaded.');
+    });
+}
+
+const devRestoreButton = document.getElementById('dev-restore-button');
+if (devRestoreButton) {
+    devRestoreButton.addEventListener('click', () => {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = '.json';
+        fileInput.onchange = e => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = readerEvent => {
+                    try {
+                        const content = readerEvent.target.result;
+                        const data = JSON.parse(content);
+                        if (data.progress && data.playerState) {
+                            localStorage.setItem('nihon-progress', JSON.stringify(data.progress));
+                            localStorage.setItem('nihon-player-state', JSON.stringify(data.playerState));
+                            showToast('Success', 'Progress restored. Reloading...');
+                            setTimeout(() => window.location.reload(), 2000);
+                        } else {
+                            showToast('Error', 'Invalid backup file format.');
+                        }
+                    } catch (err) {
+                        showToast('Error', 'Could not parse backup file.');
+                        console.error("Error parsing backup file:", err);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        };
+        fileInput.click();
     });
 }
