@@ -89,12 +89,30 @@ input, textarea, .form-control {
     font-family: 'Noto Sans JP Embedded', sans-serif;
 }
 
+.quiz-word {
+    font-size: 3rem;
+    white-space: nowrap;
+    font-family: 'Noto Sans JP Embedded', sans-serif;
+}
+
+.quiz-sentence {
+    font-size: 2rem;
+    white-space: normal;
+    font-family: 'Noto Sans JP Embedded', sans-serif;
+}
+
 @media (max-width: 768px) {
     h1#char-display {
         font-size: 5rem; /* Smaller font for mobile */
     }
     #flashcard-char {
         font-size: 4rem;
+    }
+    .quiz-word {
+        font-size: 2.5rem;
+    }
+    .quiz-sentence {
+        font-size: 1.5rem;
     }
 }
 
