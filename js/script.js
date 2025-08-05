@@ -635,6 +635,15 @@ const characterSets = {
         'ワ': 'wa', 'ヲ': 'wo',
         'ン': 'n'
     },
+    katakana_dakuten: {
+        'ガ': 'ga', 'ギ': 'gi', 'グ': 'gu', 'ゲ': 'ge', 'ゴ': 'go',
+        'ザ': 'za', 'ジ': 'ji', 'ズ': 'zu', 'ゼ': 'ze', 'ゾ': 'zo',
+        'ダ': 'da', 'ヂ': 'ji', 'ヅ': 'zu', 'デ': 'de', 'ド': 'do',
+        'バ': 'ba', 'ビ': 'bi', 'ブ': 'bu', 'ベ': 'be', 'ボ': 'bo'
+    },
+    katakana_handakuten: {
+        'パ': 'pa', 'ピ': 'pi', 'プ': 'pu', 'ペ': 'pe', 'ポ': 'po'
+    },
     kanji: {
         // Jouyou Kanji - Grade 1
         '一': 'ichi', '二': 'ni', '三': 'san', '四': 'shi', '五': 'go', '六': 'roku', '七': 'shichi', '八': 'hachi', '九': 'kyuu', '十': 'juu', '百': 'hyaku', '千': 'sen', '万': 'man', '円': 'en', '時': 'ji', '日': 'nichi', '月': 'getsu', '火': 'ka', '水': 'sui', '木': 'moku', '金': 'kin', '土': 'do', '曜': 'you', '上': 'ue', '下': 'shita', '中': 'naka', '半': 'han', '山': 'yama', '川': 'kawa', '元': 'gen', '気': 'ki', '天': 'ten', '私': 'watashi', '今': 'ima', '田': 'ta', '女': 'onna', '男': 'otoko', '見': 'mi', '行': 'i', '食': 'ta', '飲': 'no',
@@ -938,6 +947,9 @@ function startQuiz(type) {
             <div id="help-card" class="card shadow-sm" style="display: none; position: absolute; top: 40px; right: 10px; width: 350px; z-index: 100; font-family: 'Noto Sans JP Embedded', sans-serif;">
                 <!-- Help content will be loaded here -->
             </div>
+            <div id="hint-card" class="card shadow-sm bg-info text-white" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 200; padding: 1rem;">
+                <!-- Hint content will be loaded here -->
+            </div>
         </div>
     `;
 
@@ -999,6 +1011,9 @@ function startFlashcardMode(type) {
             <div id="help-card" class="card shadow-sm" style="display: none; position: absolute; top: 40px; right: 10px; width: 350px; z-index: 100; font-family: 'Noto Sans JP Embedded', sans-serif;">
                 <!-- Help content will be loaded here -->
             </div>
+            <div id="hint-card" class="card shadow-sm bg-info text-white" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 200; padding: 1rem;">
+                <!-- Hint content will be loaded here -->
+            </div>
         </div>
     `;
 
@@ -1044,6 +1059,7 @@ function loadFlashcard(type) {
     if (filename) {
         buttonsHTML += `<button id="play-flashcard-audio" class="btn btn-secondary"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button>`;
     }
+    buttonsHTML += `<button id="hint-button" class="btn btn-secondary"><img src="/nihon/icons/answer.png" alt="Hint" style="height: 1.5rem;"></button>`;
     const helpContent = getHelpContent(type);
     if (helpContent) {
         buttonsHTML += `<button id="help-icon" class="btn btn-secondary"><img src="/nihon/icons/help.png" alt="Help" style="height: 1.5rem;"></button>`;
@@ -1056,6 +1072,21 @@ function loadFlashcard(type) {
             audio.play().catch(e => console.error("Error playing audio:", e));
         };
     }
+
+    document.getElementById('hint-button').onclick = () => {
+        const hintCard = document.getElementById('hint-card');
+        let correctAnswerText = '';
+        if (type === 'numbers') {
+            correctAnswerText = `${currentCharset[currentFlashcardChar].romaji} (${currentCharset[currentFlashcardChar].latin})`;
+        } else {
+            correctAnswerText = currentCharset[currentFlashcardChar];
+        }
+        hintCard.innerHTML = `<h5>${correctAnswerText}</h5>`;
+        hintCard.style.display = 'block';
+        setTimeout(() => {
+            hintCard.style.display = 'none';
+        }, 1500);
+    };
 
     if (helpContent) {
         const helpIcon = document.getElementById('help-icon');
@@ -1278,6 +1309,7 @@ async function loadQuestion(type) {
     }
 
     const correctAnswer = (type === 'numbers') ? currentCharset[charToTest].romaji : currentCharset[charToTest];
+    const answerInput = document.getElementById('answer-input');
     
     document.getElementById('char-display').textContent = charToTest;
 
@@ -1288,28 +1320,43 @@ async function loadQuestion(type) {
     if (filename) {
         buttonsHTML += `<button id="play-char-audio" class="btn btn-secondary"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button>`;
     }
+    buttonsHTML += `<button id="hint-button" class="btn btn-secondary"><img src="/nihon/icons/answer.png" alt="Hint" style="height: 1.5rem;"></button>`;
     const helpContent = getHelpContent(type);
     if (helpContent) {
         buttonsHTML += `<button id="help-icon" class="btn btn-secondary"><img src="/nihon/icons/help.png" alt="Help" style="height: 1.5rem;"></button>`;
     }
     buttonContainer.innerHTML = buttonsHTML;
 
+    const handleButtonClick = (event, action) => {
+        event.preventDefault();
+        action();
+        answerInput.focus();
+    };
+
     if (filename) {
-        document.getElementById('play-char-audio').onclick = () => {
+        document.getElementById('play-char-audio').addEventListener('click', (e) => handleButtonClick(e, () => {
             const audio = new Audio(`audio/${filename}.mp3`);
             audio.play().catch(e => console.error("Error playing audio:", e));
-        };
+        }));
     }
+
+    document.getElementById('hint-button').addEventListener('click', (e) => handleButtonClick(e, () => {
+        const hintCard = document.getElementById('hint-card');
+        hintCard.innerHTML = `<h5>${correctAnswer}</h5>`;
+        hintCard.style.display = 'block';
+        setTimeout(() => {
+            hintCard.style.display = 'none';
+        }, 1500);
+    }));
 
     if (helpContent) {
         const helpIcon = document.getElementById('help-icon');
         const helpCard = document.getElementById('help-card');
         helpCard.innerHTML = `<div class="card-body">${helpContent}</div>`;
 
-        helpIcon.addEventListener('click', (event) => {
-            event.stopPropagation();
+        helpIcon.addEventListener('click', (e) => handleButtonClick(e, () => {
             helpCard.style.display = helpCard.style.display === 'block' ? 'none' : 'block';
-        });
+        }));
 
         document.addEventListener('click', (event) => {
             if (!helpCard.contains(event.target) && !helpIcon.contains(event.target)) {
@@ -1350,7 +1397,6 @@ async function loadQuestion(type) {
     }
     document.getElementById('kanji-suggestions').innerHTML = '';
     
-    const answerInput = document.getElementById('answer-input');
     answerInput.value = '';
     answerInput.readOnly = false;
     
@@ -1827,16 +1873,15 @@ if (referencesModal) {
 
 function populateReferencesModal() {
     const hiraganaTabPane = document.getElementById('hiragana');
-    const dakutenHandakutenTabPane = document.getElementById('dakuten-handakuten');
     const katakanaTabPane = document.getElementById('katakana');
     const kanjiTabPane = document.getElementById('kanji');
     const numbersTabPane = document.getElementById('numbers');
 
-    const combinedDakuten = { ...characterSets.dakuten, ...characterSets.handakuten };
+    const combinedHiragana = { ...characterSets.hiragana, ...characterSets.dakuten, ...characterSets.handakuten };
+    const combinedKatakana = { ...characterSets.katakana, ...characterSets.katakana_dakuten, ...characterSets.katakana_handakuten };
 
-    hiraganaTabPane.innerHTML = generateCharacterCards(characterSets.hiragana);
-    dakutenHandakutenTabPane.innerHTML = generateCharacterCards(combinedDakuten);
-    katakanaTabPane.innerHTML = generateCharacterCards(characterSets.katakana);
+    hiraganaTabPane.innerHTML = generateCharacterCards(combinedHiragana);
+    katakanaTabPane.innerHTML = generateCharacterCards(combinedKatakana);
     kanjiTabPane.innerHTML = generateCharacterCards(characterSets.kanji);
     numbersTabPane.innerHTML = generateCharacterCards(characterSets.numbers);
 }
@@ -1854,7 +1899,7 @@ function generateCharacterCards(characterSet) {
             displayChar = char;
             latinNumber = characterSet[char].latin;
             displayRomaji = characterSet[char].romaji;
-            filename = displayRomaji;
+            filename = `num_${displayRomaji}`;
         } else {
             filename = displayRomaji;
         }
