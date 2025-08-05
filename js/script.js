@@ -30,6 +30,32 @@ if (themeToggleIcon) {
 // --- PWA Install Button ---
 let deferredPrompt;
 const installButton = document.getElementById('install-button');
+let isSectionActive = false; // Flag to track if a section is active
+
+function updateHomeButton(isSection) {
+    const appTitle = document.getElementById('home-button');
+    isSectionActive = isSection; // Set the global flag
+
+    if (isSection) {
+        appTitle.innerHTML = '<img src="/nihon/icons/back.png" alt="Back" style="height: 1.5rem; vertical-align: middle;"> Back';
+        appTitle.classList.add('back-button');
+        appTitle.style.fontSize = ''; // Reset font size as image handles size
+    } else {
+        appTitle.textContent = 'Nihon';
+        appTitle.classList.remove('back-button');
+        appTitle.style.fontSize = '';
+    }
+
+    // Control install button visibility
+    const installButton = document.getElementById('install-button');
+    if (installButton) {
+        if (deferredPrompt) {
+            installButton.style.display = 'flex';
+        } else {
+            installButton.style.display = 'none';
+        }
+    }
+}
 
 window.addEventListener('beforeinstallprompt', (e) => {
     // Prevent the mini-infobar from appearing on mobile
@@ -881,6 +907,14 @@ function checkAchievements() {
         }
     }
 }
+
+// --- Back to Home Logic ---
+homeButton.addEventListener('click', (event) => {
+    event.preventDefault();
+    if (isSectionActive) {
+        showHomePage();
+    }
+});
 
 function checkLevelUp(type) {
     // No level up for listening quiz as it's a mix of everything
