@@ -927,29 +927,31 @@ function startQuiz(type) {
     updateHomeButton(true); // A section is now active
 
     contentArea.innerHTML = `
-        <div class="card text-center shadow-sm">
-            <div id="button-container" class="btn-group" style="position: absolute; top: 10px; right: 10px; z-index: 101;">
-                <!-- Buttons will be injected here -->
-            </div>
-            <div class="card-body">
-                <div id="feedback-area" class="mb-2" style="height: 24px;"></div>
-                <div id="char-display-container">
-                    <h1 id="char-display" class="display-1"></h1>
+        <div>
+            <div class="card text-center shadow-sm">
+                <div id="button-container" class="btn-group" style="position: absolute; top: 10px; right: 10px; z-index: 101;">
+                    <!-- Buttons will be injected here -->
                 </div>
-                <div id="example-word-area" class="mt-3"></div>
-                <div class="mb-3">
-                    <input type="text" class="form-control text-center" id="answer-input" autocomplete="off" onkeypress="if(event.key === 'Enter') document.getElementById('check-button').click()">
+                <div class="card-body">
+                    <div id="feedback-area" class="mb-2" style="height: 24px;"></div>
+                    <div id="char-display-container">
+                        <h1 id="char-display" class="display-1"></h1>
+                    </div>
+                    <div id="example-word-area" class="mt-3"></div>
+                    <div class="mb-3">
+                        <input type="text" class="form-control text-center" id="answer-input" autocomplete="off" onkeypress="if(event.key === 'Enter') document.getElementById('check-button').click()">
+                    </div>
+                    <button class="btn btn-success" id="check-button">Check</button>
+                    <button class="btn btn-secondary" id="skip-button">Skip</button>
                 </div>
-                <div id="kanji-suggestions" class="mt-3"></div>
-                <button class="btn btn-success" id="check-button">Check</button>
-                <button class="btn btn-secondary" id="skip-button">Skip</button>
+                <div id="help-card" class="card shadow-sm" style="display: none; position: absolute; top: 40px; right: 10px; width: 350px; z-index: 100; font-family: 'Noto Sans JP Embedded', sans-serif;">
+                    <!-- Help content will be loaded here -->
+                </div>
+                <div id="hint-card" class="card shadow-sm bg-info text-white" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 200; padding: 1rem;">
+                    <!-- Hint content will be loaded here -->
+                </div>
             </div>
-            <div id="help-card" class="card shadow-sm" style="display: none; position: absolute; top: 40px; right: 10px; width: 350px; z-index: 100; font-family: 'Noto Sans JP Embedded', sans-serif;">
-                <!-- Help content will be loaded here -->
-            </div>
-            <div id="hint-card" class="card shadow-sm bg-info text-white" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 200; padding: 1rem;">
-                <!-- Hint content will be loaded here -->
-            </div>
+            <div id="kanji-suggestions" class="mt-2"></div>
         </div>
     `;
 

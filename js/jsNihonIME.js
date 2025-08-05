@@ -344,36 +344,29 @@ function replacekana(charset, quizType) {
 
     // Kanji suggestions
     const suggestions = getKanjiSuggestions(inputText, charset);
-    let suggestionsContainer = document.getElementById('kanji-suggestions-card');
+    const suggestionsContainer = document.getElementById('kanji-suggestions');
 
     // Hide suggestions if the only suggestion is the same as the converted input
     if (suggestions.length === 1 && suggestions[0] === convertedText) {
         if (suggestionsContainer) {
-            suggestionsContainer.remove();
+            suggestionsContainer.innerHTML = '';
+            suggestionsContainer.style.display = 'none';
         }
         return;
     }
 
-    if (suggestions.length > 0) {
-        if (!suggestionsContainer) {
-            suggestionsContainer = document.createElement('div');
-            suggestionsContainer.id = 'kanji-suggestions-card';
-            suggestionsContainer.className = 'card'; // Removed shadow and border-primary
-            suggestionsContainer.style.position = 'fixed';
-            suggestionsContainer.style.bottom = '10px';
-            suggestionsContainer.style.right = '10px';
-            suggestionsContainer.style.width = '300px';
-            suggestionsContainer.style.zIndex = '1050';
-            suggestionsContainer.style.maxHeight = '33vh';
-            suggestionsContainer.style.overflowY = 'auto';
-            document.body.appendChild(suggestionsContainer);
-        }
+    if (suggestions.length > 0 && suggestionsContainer) {
+        suggestionsContainer.style.display = 'block';
+        suggestionsContainer.innerHTML = ''; // Clear previous content
 
+        const card = document.createElement('div');
+        card.className = 'card';
+        
         const cardBody = document.createElement('div');
         cardBody.className = 'card-body';
 
         const buttonGroup = document.createElement('div');
-        buttonGroup.className = 'd-flex flex-wrap gap-2';
+        buttonGroup.className = 'd-flex flex-wrap gap-2 justify-content-center';
         suggestions.forEach(suggestion => {
             const button = document.createElement('button');
             button.className = 'btn btn-secondary';
@@ -383,27 +376,20 @@ function replacekana(charset, quizType) {
                 e.preventDefault();
             });
             button.onclick = () => {
-                // Replace the typed text with the selected suggestion
                 answerInput.value = answerInput.value.slice(0, -inputText.length) + suggestion;
-                if (suggestionsContainer) {
-                    suggestionsContainer.remove();
-                }
-                // After inserting, hide the suggestions
-                const stillExists = document.getElementById('kanji-suggestions-card');
-                if (stillExists) {
-                    stillExists.remove();
-                }
+                suggestionsContainer.innerHTML = '';
+                suggestionsContainer.style.display = 'none';
+                answerInput.focus();
             };
             buttonGroup.appendChild(button);
         });
 
         cardBody.appendChild(buttonGroup);
-        suggestionsContainer.innerHTML = ''; // Clear previous content
-        suggestionsContainer.appendChild(cardBody);
-    } else {
-        if (suggestionsContainer) {
-            suggestionsContainer.remove();
-        }
+        card.appendChild(cardBody);
+        suggestionsContainer.appendChild(card);
+    } else if (suggestionsContainer) {
+        suggestionsContainer.innerHTML = '';
+        suggestionsContainer.style.display = 'none';
     }
 }
 
