@@ -1280,19 +1280,57 @@ function playReferenceAudio(filename) {
 
 
 
-function getAudioFilename(char, type) {
-    if (!currentCharset[char]) return null;
+function getAudioFilename(char, type, charset) {
+    const characterSet = charset || currentCharset; // Use provided charset or global
+    if (!characterSet || !characterSet[char]) return null;
 
-    if (type === 'words' || type === 'sentences' || type === 'listening') {
-        return char;
+    let romajiString;
+
+    // Step 1: Get the base romaji string based on the data structure for that type
+    switch (type) {
+        case 'words':
+        case 'sentences':
+            romajiString = characterSet[char];
+            break;
+        case 'listening':
+            romajiString = char; // For listening quiz, the key itself is the romaji
+            break;
+        case 'numbers':
+            romajiString = characterSet[char].romaji;
+            break;
+        default: // hiragana, katakana, kanji
+            romajiString = characterSet[char];
+            break;
     }
 
-    const reading = currentCharset[char];
-    if (typeof reading === 'object' && reading.romaji) { // For numbers
-        return reading.romaji;
+    if (typeof romajiString !== 'string') {
+        return null;
     }
 
-    return reading; // For hiragana, katakana, kanji
+    // Step 2: Apply filename cleaning (lowercase, underscores, etc.)
+    // Note: Katakana uses uppercase keys in create_audio.py, so we don't lowercase it.
+    let filename = (type === 'katakana') ? romajiString : romajiString.toLowerCase();
+    filename = filename.replace(/ /g, '_')
+                       .replace(/\.\.\./g, 'desu')
+                       .replace(/\?/g, '');
+
+    // Step 3: Apply prefixes for single characters to avoid filename collisions
+    switch (type) {
+        case 'hiragana':
+            filename = `h_${filename}`;
+            break;
+        case 'katakana':
+            filename = `k_${filename}`;
+            break;
+        case 'kanji':
+            filename = `kanji_${filename}`;
+            break;
+        case 'numbers':
+            filename = `num_${filename}`;
+            break;
+    }
+
+    return filename;
 }
 
 async function loadQuestion(type) {
