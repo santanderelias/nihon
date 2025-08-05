@@ -1,277 +1,72 @@
-// --- Service Worker and PWA ---
-
-// --- Dark Mode ---
-const themeToggleIcon = document.getElementById('theme-toggle-icon');
-const htmlElement = document.documentElement;
-
-const setDarkMode = (isDark) => {
-    htmlElement.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
-    localStorage.setItem('darkMode', isDark);
-    if (themeToggleIcon) {
-        themeToggleIcon.src = isDark ? '/nihon/icons/theme_dark.png' : '/nihon/icons/theme_light.png';
-        themeToggleIcon.alt = isDark ? 'Dark Theme Icon' : 'Light Theme Icon';
-    }
-};
-
-if (themeToggleIcon) {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const savedTheme = localStorage.getItem('darkMode');
-
-    const initialTheme = savedTheme !== null ? savedTheme === 'true' : prefersDark;
-    setDarkMode(initialTheme); // Set initial state
-
-    themeToggleIcon.addEventListener('click', () => {
-        const isDark = htmlElement.getAttribute('data-bs-theme') === 'dark';
-        setDarkMode(!isDark);
-    });
-}
-
-
-// --- PWA Install Button ---
+// --- GLOBAL SCOPE ---
 let deferredPrompt;
-const installButton = document.getElementById('install-button');
-
-function updateHomeButton(isSection) {
-    const appTitle = document.getElementById('home-button');
-    isSectionActive = isSection; // Set the global flag
-
-    if (isSection) {
-        appTitle.innerHTML = '<img src="/nihon/icons/back.png" alt="Back" style="height: 1.5rem; vertical-align: middle;"> Back';
-        appTitle.classList.add('back-button');
-        appTitle.style.fontSize = ''; // Reset font size as image handles size
-    } else {
-        appTitle.textContent = 'Nihon';
-        appTitle.classList.remove('back-button');
-        appTitle.style.fontSize = '';
-    }
-
-    // Control install button visibility
-    const installButton = document.getElementById('install-button');
-    if (installButton) {
-        if (deferredPrompt) {
-            installButton.style.display = 'flex';
-        } else {
-            installButton.style.display = 'none';
-        }
-    }
-}
-
-function checkDevMode() {
-    if (localStorage.getItem('nihon-dev-mode') === 'true') {
-        const devToolsButton = document.getElementById('dev-tools-button');
-        if (devToolsButton) {
-            devToolsButton.style.display = 'block';
-        }
-    }
-}
-
-async function main() {
-    // --- Event Listeners and Initializations ---
-
-    // Global click listener to close suggestions
-    document.addEventListener('click', function(event) {
-        const suggestionsContainer = document.getElementById('kanji-suggestions-card');
-        const answerInput = document.getElementById('answer-input');
-
-        const isClickInsideSuggestions = suggestionsContainer && suggestionsContainer.contains(event.target);
-        const isClickInsideInput = answerInput && answerInput.contains(event.target);
-
-        if (suggestionsContainer && !isClickInsideSuggestions && !isClickInsideInput) {
-            suggestionsContainer.remove();
-        }
-    });
-
-    // Fix for modal focus
-    document.querySelectorAll('.modal').forEach(modal => {
-        modal.addEventListener('hidden.bs.modal', () => {
-            document.body.focus();
-        });
-    });
-
-    // Initial page load
-    showHomePage();
-    setupDictionaryPromise();
-    loadDictionary();
-    checkDevMode(); // Check and enable dev mode if previously set
-
-    // Attach all other event listeners
-    // (This centralizes all event listener attachments)
-    const devResetButton = document.getElementById('dev-reset-button');
-    if (devResetButton) {
-        devResetButton.addEventListener('click', () => {
-            if (confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
-                localStorage.removeItem('nihon-progress');
-                localStorage.removeItem('nihon-player-state');
-                localStorage.removeItem('nihon-dev-mode');
-
-                if ('serviceWorker' in navigator) {
-                    navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                        for(let registration of registrations) {
-                            registration.unregister();
-                        }
-                    }).then(() => {
-                        showToast('Success', 'App has been reset. Reloading...');
-                        setTimeout(() => window.location.reload(), 2000);
-                    }).catch(err => {
-                        console.error('Service Worker unregistration failed: ', err);
-                        showToast('Error', 'Could not unregister service worker. Please clear cache manually.');
-                    });
-                } else {
-                    showToast('Success', 'App has been reset. Reloading...');
-                    setTimeout(() => window.location.reload(), 2000);
-                }
-            }
-        });
-    }
-
-    const devBackupButton = document.getElementById('dev-backup-button');
-    if (devBackupButton) {
-        devBackupButton.addEventListener('click', () => {
-            const dataStr = JSON.stringify({ progress: progress, playerState: playerState }, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'nihon-progress-backup.json';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showToast('Success', 'Backup file is being downloaded.');
-        });
-    }
-
-    const devRestoreButton = document.getElementById('dev-restore-button');
-    if (devRestoreButton) {
-        devRestoreButton.addEventListener('click', () => {
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.accept = '.json';
-            fileInput.onchange = e => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = readerEvent => {
-                        try {
-                            const content = readerEvent.target.result;
-                            const data = JSON.parse(content);
-                            if (data.progress && data.playerState) {
-                                localStorage.setItem('nihon-progress', JSON.stringify(data.progress));
-                                localStorage.setItem('nihon-player-state', JSON.stringify(data.playerState));
-                                showToast('Success', 'Progress restored. Reloading...');
-                                setTimeout(() => window.location.reload(), 2000);
-                            } else {
-                                showToast('Error', 'Invalid backup file format.');
-                            }
-                        } catch (err) {
-                            showToast('Error', 'Could not parse backup file.');
-                            console.error("Error parsing backup file:", err);
-                        }
-                    };
-                    reader.readAsText(file);
-                }
-            };
-            fileInput.click();
-        });
-    }
-
-    const devDisableButton = document.getElementById('dev-disable-button');
-    if (devDisableButton) {
-        devDisableButton.addEventListener('click', () => {
-            localStorage.removeItem('nihon-dev-mode');
-            const devToolsButton = document.getElementById('dev-tools-button');
-            if (devToolsButton) {
-                devToolsButton.style.display = 'none';
-            }
-            showToast('Success', 'Developer mode disabled.');
-            // Close the modal
-            const devToolsModal = bootstrap.Modal.getInstance(document.getElementById('dev-tools-modal'));
-            if (devToolsModal) {
-                devToolsModal.hide();
-            }
-        });
-    }
-
-    const statsModalHeader = document.getElementById('stats-modal-header');
-    if (statsModalHeader) {
-        let clickCount = 0;
-        let clickTimer = null;
-        statsModalHeader.addEventListener('click', (event) => {
-            event.stopPropagation();
-            clickCount++;
-            if (clickTimer) clearTimeout(clickTimer);
-            clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
-            if (clickCount >= 10) {
-                localStorage.setItem('nihon-dev-mode', 'true');
-                checkDevMode();
-                showToast('Success', 'Developer mode unlocked!');
-                clickCount = 0;
-                clearTimeout(clickTimer);
-            }
-        });
-    }
-}
-
-window.addEventListener('beforeinstallprompt', (e) => {
-    // Prevent the mini-infobar from appearing on mobile
-    e.preventDefault();
-    // Stash the event so it can be triggered later.
-    deferredPrompt = e;
-    // Update UI notify the user they can install the PWA
-    updateHomeButton(isSectionActive);
-});
-
-if (installButton) {
-    installButton.addEventListener('click', async () => {
-        // Hide the app install button, and do nothing if the prompt isn't available.
-        installButton.style.display = 'none';
-        if (!deferredPrompt) {
-            return;
-        }
-        // Show the install prompt
-        deferredPrompt.prompt();
-        // Wait for the user to respond to the prompt
-        const { outcome } = await deferredPrompt.userChoice;
-        // Optionally, send analytics event with outcome of user choice
-        if (outcome === 'accepted') {
-            showToast('Installation', 'App installed successfully!');
-        } else {
-            showToast('Installation', 'App installation cancelled.');
-        }
-        // We've used the prompt, and can't use it again, clear it.
-        deferredPrompt = null;
-    });
-}
-
-
-// --- App Logic ---
+let isSectionActive = false;
 let dictionaryReadyPromise;
 let resolveDictionaryReady;
 let isDictionaryReady = false;
 let currentDictionaryStatusMessage = '';
+let currentCharset = {};
+let currentQuizType = '';
+let activeTooltip = null;
+let skipQueue = [];
+let progress = JSON.parse(localStorage.getItem('nihon-progress')) || {};
+let playerState = JSON.parse(localStorage.getItem('nihon-player-state')) || {
+    level: 1,
+    xp: 0,
+    xpToNextLevel: 100,
+    levels: {
+        hiragana: 0,
+        katakana: 0,
+        kanji: 0,
+        numbers: 0,
+        words: 0,
+        sentences: 0,
+        listening: 0 // Added listening
+    },
+    unlockedAchievements: []
+};
+let newWorker; // For service worker updates
 
+// --- Service Worker and PWA ---
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/nihon/sw.js')
+            .then(reg => {
+                reg.onupdatefound = () => {
+                    newWorker = reg.installing;
+                    newWorker.onstatechange = () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            showToast('Update Available', 'A new version is available.', true);
+                        }
+                    };
+                };
+            })
+            .catch(err => console.error('Service Worker registration failed:', err));
+    });
+}
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    updateHomeButton(isSectionActive);
+});
+
+
+// --- Dictionary Worker ---
 const dictionaryWorker = new Worker('/nihon/js/dictionary_worker.js');
-
-// Centralized message handler for the dictionary worker
 dictionaryWorker.onmessage = (event) => {
     const data = event.data;
 
     switch (data.action) {
         case 'completed':
             isDictionaryReady = true;
-            //currentDictionaryStatusMessage = 'Dictionary loaded.';
             if (resolveDictionaryReady) {
                 resolveDictionaryReady();
             }
-            // Show search container and hide loading status in the modal
             const dictionarySearchContainer = document.getElementById('dictionary-search-container');
-            if (dictionarySearchContainer) {
-                dictionarySearchContainer.style.display = 'block';
-            }
+            if (dictionarySearchContainer) dictionarySearchContainer.style.display = 'block';
             const dictionaryLoadingStatus = document.getElementById('dictionary-loading-status');
-            if (dictionaryLoadingStatus) {
-                dictionaryLoadingStatus.innerHTML = '';
-            }
+            if (dictionaryLoadingStatus) dictionaryLoadingStatus.innerHTML = '';
             const exampleWordArea = document.getElementById('example-word-area');
             if (exampleWordArea && exampleWordArea.innerHTML.includes('spinner-grow')) {
                 exampleWordArea.innerHTML = '';
@@ -280,7 +75,6 @@ dictionaryWorker.onmessage = (event) => {
 
         case 'progress':
             currentDictionaryStatusMessage = data.message;
-            // Update UI in dictionary modal and hints section
             const loadingElements = document.querySelectorAll('.dictionary-loading-message');
             loadingElements.forEach(el => el.textContent = currentDictionaryStatusMessage);
             break;
@@ -301,7 +95,7 @@ dictionaryWorker.onmessage = (event) => {
                         </p>
                     `;
                 } else {
-                    exampleArea.innerHTML = ''; // Clear if no example is found
+                    exampleArea.innerHTML = '';
                 }
             }
             break;
@@ -311,9 +105,9 @@ dictionaryWorker.onmessage = (event) => {
             const dictionaryResultArea = document.getElementById('dictionary-result-area');
             if (dictionaryResultArea) {
                 if (results.length > 0) {
-                    let html = '<div>'; // Use a simple div container
-                    results.forEach((entry, i) => {
-                        const romaji = wanakana.toRomaji(entry.reading); // Convert kana to romaji
+                    let html = '<div>';
+                    results.forEach((entry) => {
+                        const romaji = wanakana.toRomaji(entry.reading);
                         html += `
                             <div class="card mb-2 shadow-sm">
                                 <div class="card-body">
@@ -343,25 +137,19 @@ dictionaryWorker.onmessage = (event) => {
     }
 };
 
-
 function setupDictionaryPromise() {
     dictionaryReadyPromise = new Promise(resolve => {
         resolveDictionaryReady = resolve;
     });
 }
 
-var db;
-
-async function loadDictionary() {
+function loadDictionary() {
     dictionaryWorker.postMessage({ action: 'loadDictionary' });
     currentDictionaryStatusMessage = 'Loading dictionary...';
     return dictionaryReadyPromise;
 }
 
-
-const contentArea = document.getElementById('content-area');
-const homeButton = document.getElementById('home-button');
-
+// --- Constants ---
 const achievements = {
     // Hiragana Achievements
     'hiragana_apprentice': {
@@ -804,26 +592,26 @@ const characterSets = {
         'ぱ': 'pa', 'ぴ': 'pi', 'ぷ': 'pu', 'ぺ': 'pe', 'ぽ': 'po'
     },
     katakana: {
-        'ア': 'A', 'イ': 'I', 'ウ': 'U', 'エ': 'E', 'オ': 'O',
-        'カ': 'KA', 'キ': 'KI', 'ク': 'KU', 'ケ': 'KE', 'コ': 'KO',
-        'サ': 'SA', 'シ': 'SHI', 'ス': 'SU', 'セ': 'SE', 'ソ': 'SO',
-        'タ': 'TA', 'チ': 'CHI', 'ツ': 'TSU', 'テ': 'TE', 'ト': 'TO',
-        'ナ': 'NA', 'ニ': 'NI', 'ヌ': 'NU', 'ネ': 'NE', 'ノ': 'NO',
-        'ハ': 'HA', 'ヒ': 'HI', 'フ': 'FU', 'ヘ': 'HE', 'ホ': 'HO',
-        'マ': 'MA', 'ミ': 'MI', 'ム': 'MU', 'メ': 'ME', 'モ': 'MO',
-        'ヤ': 'YA', 'ユ': 'YU', 'ヨ': 'YO',
-        'ラ': 'RA', 'リ': 'RI', 'ル': 'RU', 'レ': 'RE', 'ロ': 'RO',
-        'ワ': 'WA', 'ヲ': 'WO',
-        'ン': 'N_k'
+        'ア': 'a', 'イ': 'i', 'ウ': 'u', 'エ': 'e', 'オ': 'o',
+        'カ': 'ka', 'キ': 'ki', 'ク': 'ku', 'ケ': 'ke', 'コ': 'ko',
+        'サ': 'sa', 'シ': 'shi', 'ス': 'su', 'セ': 'se', 'ソ': 'so',
+        'タ': 'ta', 'チ': 'chi', 'ツ': 'tsu', 'テ': 'te', 'ト': 'to',
+        'ナ': 'na', 'ニ': 'ni', 'ヌ': 'nu', 'ネ': 'ne', 'ノ': 'no',
+        'ハ': 'ha', 'ヒ': 'hi', 'フ': 'fu', 'ヘ': 'he', 'ホ': 'ho',
+        'マ': 'ma', 'ミ': 'mi', 'ム': 'mu', 'メ': 'me', 'モ': 'mo',
+        'ヤ': 'ya', 'ユ': 'yu', 'ヨ': 'yo',
+        'ラ': 'ra', 'リ': 'ri', 'ル': 'ru', 'レ': 're', 'ロ': 'ro',
+        'ワ': 'wa', 'ヲ': 'wo',
+        'ン': 'n'
     },
     katakana_dakuten: {
-        'ガ': 'GA', 'ギ': 'GI', 'グ': 'GU', 'ゲ': 'GE', 'ゴ': 'GO',
-        'ザ': 'ZA', 'ジ': 'JI', 'ズ': 'ZU', 'ゼ': 'ZE', 'ゾ': 'ZO',
-        'ダ': 'DA', 'ヂ': 'DJI', 'ヅ': 'DZU', 'デ': 'DE', 'ド': 'DO',
-        'バ': 'BA', 'ビ': 'BI', 'ブ': 'BU', 'ベ': 'BE', 'ボ': 'BO'
+        'ガ': 'ga', 'ギ': 'gi', 'グ': 'gu', 'ゲ': 'ge', 'ゴ': 'go',
+        'ザ': 'za', 'ジ': 'ji', 'ズ': 'zu', 'ゼ': 'ze', 'ゾ': 'zo',
+        'ダ': 'da', 'ヂ': 'ji', 'ヅ': 'zu', 'デ': 'de', 'ド': 'do',
+        'バ': 'ba', 'ビ': 'bi', 'ブ': 'bu', 'ベ': 'be', 'ボ': 'bo'
     },
     katakana_handakuten: {
-        'パ': 'PA', 'ピ': 'PI', 'プ': 'PU', 'ペ': 'PE', 'ポ': 'PO'
+        'パ': 'pa', 'ピ': 'pi', 'プ': 'pu', 'ペ': 'pe', 'ポ': 'po'
     },
     kanji: {
         // Jouyou Kanji - Grade 1
@@ -854,29 +642,36 @@ const characterSets = {
     }
 };
 
-let progress = JSON.parse(localStorage.getItem('nihon-progress')) || {};
+// --- App Logic ---
 
-let playerState = JSON.parse(localStorage.getItem('nihon-player-state')) || {
-    level: 1,
-    xp: 0,
-    xpToNextLevel: 100,
-    levels: {
+// Patch for existing users to add new level categories
+function patchPlayerState() {
+    let updated = false;
+    const defaultLevels = {
         hiragana: 0,
         katakana: 0,
         kanji: 0,
         numbers: 0,
         words: 0,
-        sentences: 0
-    },
-    unlockedAchievements: []
-};
+        sentences: 0,
+        listening: 0
+    };
 
-// Patch for existing users to add new level categories
-if (playerState.levels.words === undefined) {
-    playerState.levels.words = 0;
-}
-if (playerState.levels.sentences === undefined) {
-    playerState.levels.sentences = 0;
+    for (const key in defaultLevels) {
+        if (playerState.levels[key] === undefined) {
+            playerState.levels[key] = defaultLevels[key];
+            updated = true;
+        }
+    }
+
+    if (!playerState.unlockedAchievements) {
+        playerState.unlockedAchievements = [];
+        updated = true;
+    }
+
+    if (updated) {
+        localStorage.setItem('nihon-player-state', JSON.stringify(playerState));
+    }
 }
 
 function getXpForLevel(level) {
@@ -894,11 +689,6 @@ function gainXP(amount) {
     localStorage.setItem('nihon-player-state', JSON.stringify(playerState));
 }
 
-let currentCharset = {};
-let currentQuizType = '';
-let activeTooltip = null;
-let skipQueue = [];
-
 function getQuizState() {
     return currentQuizType;
 }
@@ -907,7 +697,7 @@ function initializeProgress(characterSet) {
     let updated = false;
     for (const char in characterSet) {
         if (!progress[char]) {
-            progress[char] = { correct: 0, incorrect: 0 };
+            progress[char] = { correct: 0, incorrect: 0, streak: 0, nextReview: 0, seen: false, lastAnswer: null };
             updated = true;
         }
     }
@@ -917,68 +707,55 @@ function initializeProgress(characterSet) {
 }
 
 function getNextCharacter() {
-    let now = new Date().getTime();
-    let allItems = Object.keys(currentCharset).filter(item => !skipQueue.includes(item));
+    const unlockedChars = Object.keys(currentCharset);
+    const unseenChars = unlockedChars.filter(char => !progress[char] || !progress[char].seen);
 
-    // Separate new items (never answered) from reviewed items
-    const newItems = allItems.filter(item => {
-        const p = progress[item];
-        return !p || (p.correct === 0 && p.incorrect === 0);
-    });
-
-    // With a 75% probability, prioritize a new item if available
-    if (newItems.length > 0 && Math.random() < 0.75) {
-        const randomIndex = Math.floor(Math.random() * newItems.length);
-        return newItems[randomIndex];
+    // 75% chance to pick an unseen character if available
+    if (unseenChars.length > 0 && Math.random() < 0.75) {
+        return unseenChars[Math.floor(Math.random() * unseenChars.length)];
     }
 
-    // Fallback to the original weighted SRS logic for reviewed items
+    // Fallback to weighted random selection from all unlocked characters
+    const now = Date.now();
     let weightedList = [];
-    const reviewedItems = allItems.filter(item => !newItems.includes(item));
+    let minReviewTime = Infinity;
+    let fallbackChar = null;
 
-    for (const item of reviewedItems) {
-        let p = progress[item];
-        if (!p.nextReview) p.nextReview = now;
+    for (const char of unlockedChars) {
+        const p = progress[char];
+        if (!p) continue; // Should not happen if initializeProgress is called
 
+        // Add character to weighted list if it's due for review
         if (p.nextReview <= now) {
-            const weight = Math.max(1, 1 + (p.incorrect * 5) - p.correct);
+            const weight = Math.max(1, 1 + (p.incorrect * 5) - (p.correct * 0.5) + (p.streak * 2));
             for (let i = 0; i < weight; i++) {
-                weightedList.push(item);
+                weightedList.push(char);
             }
+        }
+
+        // Keep track of the character with the soonest review time as a fallback
+        if (p.nextReview < minReviewTime) {
+            minReviewTime = p.nextReview;
+            fallbackChar = char;
         }
     }
 
     if (weightedList.length > 0) {
-        const randomIndex = Math.floor(Math.random() * weightedList.length);
-        return weightedList[randomIndex];
+        return weightedList[Math.floor(Math.random() * weightedList.length)];
     }
 
-    // If no reviewed items are due, pick any item that is not new (or a new one if that's all left)
-    const fallbackItems = reviewedItems.length > 0 ? reviewedItems : newItems;
-    if (fallbackItems.length > 0) {
-        let soonestItem = null;
-        let soonestTime = Infinity;
-        for (const item of fallbackItems) {
-            let p = progress[item];
-            if (p && p.nextReview < soonestTime) {
-                soonestTime = p.nextReview;
-                soonestItem = item;
-            }
-        }
-        return soonestItem || fallbackItems[Math.floor(Math.random() * fallbackItems.length)];
-    }
-
-    return null; // Should not happen if charset is not empty
+    // If no character is due, return the one with the closest review time or a random one
+    return fallbackChar || unlockedChars[Math.floor(Math.random() * unlockedChars.length)];
 }
 
 function showHomePage() {
+    const contentArea = document.getElementById('content-area');
     if (activeTooltip) {
         activeTooltip.dispose();
         activeTooltip = null;
     }
-    updateHomeButton(false); // No section is active
+    updateHomeButton(false);
 
-    // Remove IME if it exists
     const suggestionsContainer = document.getElementById('kanji-suggestions-card');
     if (suggestionsContainer) {
         suggestionsContainer.remove();
@@ -1027,11 +804,12 @@ function unlockAchievement(id) {
     if (!playerState.unlockedAchievements) {
         playerState.unlockedAchievements = [];
     }
-    playerState.unlockedAchievements.push(id);
-    localStorage.setItem('nihon-player-state', JSON.stringify(playerState));
-
-    const achievement = achievements[id];
-    showToast("Achievement Unlocked!", achievement.name);
+    if (!playerState.unlockedAchievements.includes(id)) {
+        playerState.unlockedAchievements.push(id);
+        localStorage.setItem('nihon-player-state', JSON.stringify(playerState));
+        const achievement = achievements[id];
+        showToast("Achievement Unlocked!", achievement.name);
+    }
 }
 
 function checkAchievements() {
@@ -1063,38 +841,35 @@ function checkAchievements() {
     }
 }
 
-
 function checkLevelUp(type) {
-    // No level up for listening quiz as it's a mix of everything
-    if (type === 'listening' || !characterLevels[type]) {
+    if (!characterLevels[type] || type === 'listening') {
         return;
     }
 
     const userLevel = playerState.levels[type];
     const levelsForType = characterLevels[type];
 
-    // Check if user is already at max level for this type
     if (userLevel >= levelsForType.length - 1) {
-        return;
+        return; // Max level reached
     }
 
     const currentLevelChars = Object.keys(levelsForType[userLevel].set);
     const allMastered = currentLevelChars.every(char => {
         const p = progress[char];
-        // Mastery is defined as a streak of 3 or more.
         return p && p.streak >= 3;
     });
 
     if (allMastered) {
         playerState.levels[type]++;
-        localStorage.setItem('nihon-player-state', JSON.stringify(playerState));
-        const newLevel = characterLevels[type][playerState.levels[type]];
+        const newLevelIndex = playerState.levels[type];
+        const newLevel = levelsForType[newLevelIndex];
+
         if (newLevel) {
-            // Add new characters to the current quiz session
+            // Unlock new characters and add them to the current session
             Object.assign(currentCharset, newLevel.set);
-            initializeProgress(currentCharset); // Ensure new chars are in progress object
-            const newLevelName = newLevel.name;
-            showToast("Topic Level Up!", `You've unlocked ${type}: ${newLevelName}!`);
+            initializeProgress(newLevel.set);
+            showToast("Topic Level Up!", `You've unlocked ${type}: ${newLevel.name}!`);
+            localStorage.setItem('nihon-player-state', JSON.stringify(playerState));
         }
     }
 }
@@ -1103,38 +878,22 @@ function startQuiz(type) {
     isSectionActive = true;
     currentQuizType = type;
 
-    if (type === 'listening') {
-        let allUnlockedChars = {};
-        for (const charType in characterLevels) {
-            const userLevel = playerState.levels[charType];
-            const levelsForType = characterLevels[charType];
-            for (let i = 0; i <= userLevel && i < levelsForType.length; i++) {
-                Object.assign(allUnlockedChars, levelsForType[i].set);
-            }
-        }
-        currentCharset = allUnlockedChars;
-    } else {
-        const userLevel = playerState.levels[type];
-        const levelsForType = characterLevels[type];
-        let charsForQuiz = {};
-        // Always include the first level
-        Object.assign(charsForQuiz, levelsForType[0].set);
-        // Include all levels up to the user's current level
-        for (let i = 1; i <= userLevel && i < levelsForType.length; i++) {
-            Object.assign(charsForQuiz, levelsForType[i].set);
-        }
-        currentCharset = charsForQuiz;
+    const userLevel = playerState.levels[type];
+    const levelsForType = characterLevels[type];
+    currentCharset = {};
+
+    for (let i = 0; i <= userLevel && i < levelsForType.length; i++) {
+        Object.assign(currentCharset, levelsForType[i].set);
     }
 
     initializeProgress(currentCharset);
-    updateHomeButton(true); // A section is now active
+    updateHomeButton(true);
 
+    const contentArea = document.getElementById('content-area');
     contentArea.innerHTML = `
         <div>
             <div class="card text-center shadow-sm">
-                <div id="button-container" class="btn-group" style="position: absolute; top: 10px; right: 10px; z-index: 101;">
-                    <!-- Buttons will be injected here -->
-                </div>
+                <div id="button-container" class="btn-group" style="position: absolute; top: 10px; right: 10px; z-index: 101;"></div>
                 <div class="card-body">
                     <div id="feedback-area" class="mb-2" style="height: 24px;"></div>
                     <div id="char-display-container">
@@ -1147,21 +906,15 @@ function startQuiz(type) {
                     <button class="btn btn-success" id="check-button">Check</button>
                     <button class="btn btn-secondary" id="skip-button">Skip</button>
                 </div>
-                <div id="help-card" class="card shadow-sm" style="display: none; position: absolute; top: 40px; right: 10px; width: 350px; z-index: 100; font-family: 'Noto Sans JP Embedded', sans-serif;">
-                    <!-- Help content will be loaded here -->
-                </div>
-                <div id="hint-card" class="card shadow-sm bg-info text-white" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 200; padding: 1rem;">
-                    <!-- Hint content will be loaded here -->
-                </div>
+                <div id="help-card" class="card shadow-sm" style="display: none; position: absolute; top: 40px; right: 10px; width: 350px; z-index: 100; font-family: 'Noto Sans JP Embedded', sans-serif;"></div>
+                <div id="hint-card" class="card shadow-sm bg-info text-white" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 200; padding: 1rem;"></div>
             </div>
             <div id="kanji-suggestions" class="mt-2"></div>
         </div>
     `;
 
     const answerInput = document.getElementById('answer-input');
-    answerInput.oninput = () => {
-        replacekana(currentCharset, type);
-    };
+    answerInput.oninput = () => replacekana(currentCharset, type);
 
     loadQuestion(type);
 }
@@ -1172,26 +925,23 @@ function startQuiz(type) {
 
 function startFlashcardMode(type) {
     isSectionActive = true;
+    currentQuizType = type; // Use currentQuizType for consistency
 
     const userLevel = playerState.levels[type];
     const levelsForType = characterLevels[type];
-    let charsForQuiz = {};
-    // Always include the first level
-    Object.assign(charsForQuiz, levelsForType[0].set);
-    // Include all levels up to the user's current level
-    for (let i = 1; i <= userLevel && i < levelsForType.length; i++) {
-        Object.assign(charsForQuiz, levelsForType[i].set);
+    currentCharset = {};
+
+    for (let i = 0; i <= userLevel && i < levelsForType.length; i++) {
+        Object.assign(currentCharset, levelsForType[i].set);
     }
-    currentCharset = charsForQuiz;
 
     initializeProgress(currentCharset);
-    updateHomeButton(true); // A section is now active
+    updateHomeButton(true);
 
+    const contentArea = document.getElementById('content-area');
     contentArea.innerHTML = `
         <div class="card text-center shadow-sm flashcard-container">
-            <div id="button-container" class="btn-group" style="position: absolute; top: 10px; right: 10px; z-index: 101;">
-                <!-- Buttons will be injected here -->
-            </div>
+            <div id="button-container" class="btn-group" style="position: absolute; top: 10px; right: 10px; z-index: 101;"></div>
             <div class="card-body">
                 <div id="feedback-area" class="mb-2" style="height: 24px;"></div>
                 <div class="flashcard" id="flashcard">
@@ -1213,17 +963,10 @@ function startFlashcardMode(type) {
                     </div>
                 </div>
             </div>
-            <div id="help-card" class="card shadow-sm" style="display: none; position: absolute; top: 40px; right: 10px; width: 350px; z-index: 100; font-family: 'Noto Sans JP Embedded', sans-serif;">
-                <!-- Help content will be loaded here -->
-            </div>
-            <div id="hint-card" class="card shadow-sm bg-info text-white" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 200; padding: 1rem;">
-                <!-- Hint content will be loaded here -->
-            </div>
+            <div id="help-card" class="card shadow-sm" style="display: none; position: absolute; top: 40px; right: 10px; width: 350px; z-index: 100; font-family: 'Noto Sans JP Embedded', sans-serif;"></div>
+            <div id="hint-card" class="card shadow-sm bg-info text-white" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 200; padding: 1rem;"></div>
         </div>
     `;
-
-    updateHomeButton(true);
-    currentFlashcardType = type;
 
     loadFlashcard(type);
 }
@@ -1233,6 +976,7 @@ let currentFlashcardType = '';
 let isCurrentCardCorrect = true;
 
 function loadFlashcard(type) {
+    const contentArea = document.getElementById('content-area');
     const charToDisplay = getNextCharacter();
 
     if (!charToDisplay) {
@@ -1255,20 +999,13 @@ function loadFlashcard(type) {
     
     flashcardChar.textContent = charToDisplay;
 
-    // Adjust styling based on type
-    flashcardChar.className = ''; // Reset classes
-    if (type === 'words') {
-        flashcardChar.classList.add('quiz-word');
-    } else if (type === 'sentences') {
-        flashcardChar.classList.add('quiz-sentence');
-    } else {
-        flashcardChar.classList.add('display-1');
-    }
+    flashcardChar.className = 'display-1';
+    if (type === 'words') flashcardChar.className = 'quiz-word';
+    if (type === 'sentences') flashcardChar.className = 'quiz-sentence';
 
     flashcardReading.textContent = '';
     flashcardMeaning.textContent = '';
 
-    // Add audio and help buttons
     const buttonContainer = document.getElementById('button-container');
     let buttonsHTML = '';
     const filename = getAudioFilename(charToDisplay, type);
@@ -1291,29 +1028,20 @@ function loadFlashcard(type) {
 
     document.getElementById('hint-button').onclick = () => {
         const hintCard = document.getElementById('hint-card');
-        let correctAnswerText = '';
-        if (type === 'numbers') {
-            correctAnswerText = `${currentCharset[currentFlashcardChar].romaji} (${currentCharset[currentFlashcardChar].latin})`;
-        } else {
-            correctAnswerText = currentCharset[currentFlashcardChar];
-        }
+        const correctAnswerText = (type === 'numbers') ? `${currentCharset[currentFlashcardChar].romaji} (${currentCharset[currentFlashcardChar].latin})` : currentCharset[currentFlashcardChar];
         hintCard.innerHTML = `<h5>${correctAnswerText}</h5>`;
         hintCard.style.display = 'block';
-        setTimeout(() => {
-            hintCard.style.display = 'none';
-        }, 1500);
+        setTimeout(() => { hintCard.style.display = 'none'; }, 1500);
     };
 
     if (helpContent) {
         const helpIcon = document.getElementById('help-icon');
         const helpCard = document.getElementById('help-card');
         helpCard.innerHTML = `<div class="card-body">${helpContent}</div>`;
-
         helpIcon.addEventListener('click', (event) => {
             event.stopPropagation();
             helpCard.style.display = helpCard.style.display === 'block' ? 'none' : 'block';
         });
-
         document.addEventListener('click', (event) => {
             if (!helpCard.contains(event.target) && !helpIcon.contains(event.target)) {
                 helpCard.style.display = 'none';
@@ -1321,13 +1049,9 @@ function loadFlashcard(type) {
         });
     }
 
-    // Reset flip state
     flashcard.classList.remove('flipped');
-
-    // Decide if the card should be correct or incorrect
     isCurrentCardCorrect = Math.random() < 0.5;
 
-    // Set up event listeners
     document.getElementById('flip-button').onclick = () => flipFlashcard();
     document.getElementById('flashcard').onclick = () => flipFlashcard();
     document.getElementById('true-button').onclick = () => checkFlashcardAnswer(true, type);
@@ -1342,10 +1066,9 @@ function loadFlashcard(type) {
             meaning = currentCharset[currentFlashcardChar].latin;
         } else {
             reading = currentCharset[currentFlashcardChar];
-            meaning = ''; // For hiragana/katakana/kanji, meaning is the reading
+            meaning = '';
         }
     } else {
-        // Get a random incorrect reading
         const allReadings = Object.values(currentCharset);
         const correctReading = (type === 'numbers') ? currentCharset[currentFlashcardChar].romaji : currentCharset[currentFlashcardChar];
         let incorrectReading;
@@ -1397,15 +1120,15 @@ function startListeningQuiz() {
 
     const userLevel = playerState.levels.listening || 0;
     const levelsForType = characterLevels.listening;
-    let charsForQuiz = {};
+    currentCharset = {};
     for (let i = 0; i <= userLevel && i < levelsForType.length; i++) {
-        Object.assign(charsForQuiz, levelsForType[i].set);
+        Object.assign(currentCharset, levelsForType[i].set);
     }
-    currentCharset = charsForQuiz;
 
     initializeProgress(currentCharset);
     updateHomeButton(true);
 
+    const contentArea = document.getElementById('content-area');
     contentArea.innerHTML = `
         <div class="card text-center shadow-sm">
             <div class="card-body">
@@ -1423,14 +1146,13 @@ function startListeningQuiz() {
     `;
 
     const answerInput = document.getElementById('answer-input');
-    answerInput.oninput = () => {
-        replacekana(currentCharset, 'listening');
-    };
+    answerInput.oninput = () => replacekana(currentCharset, 'listening');
 
     loadListeningQuestion();
 }
 
 function loadListeningQuestion() {
+    const contentArea = document.getElementById('content-area');
     const charToTest = getNextCharacter();
 
     if (!charToTest) {
@@ -1445,7 +1167,7 @@ function loadListeningQuestion() {
         return;
     }
 
-    const correctAnswer = currentCharset[charToTest].romaji || currentCharset[charToTest];
+    const correctAnswer = currentCharset[charToTest];
 
     document.getElementById('feedback-area').innerHTML = '';
 
@@ -1462,7 +1184,8 @@ function loadListeningQuestion() {
 
     const playAudioButton = document.getElementById('play-audio-button');
     playAudioButton.onclick = () => {
-        const audio = new Audio(`audio/${charToTest}.mp3`);
+        const filename = getAudioFilename(charToTest, 'listening');
+        const audio = new Audio(`audio/${filename}.mp3`);
         audio.play().catch(e => console.error("Error playing audio:", e));
     };
 
@@ -1482,6 +1205,7 @@ function setupHomePageListeners() {
     document.getElementById('flashcardKatakana').addEventListener('click', () => startFlashcardMode('katakana'));
     document.getElementById('flashcardKanji').addEventListener('click', () => startFlashcardMode('kanji'));
     document.getElementById('flashcardNumbers').addEventListener('click', () => startFlashcardMode('numbers'));
+    document.getElementById('flashcardListening').addEventListener('click', () => startFlashcardMode('listening'));
     document.getElementById('flashcardWords').addEventListener('click', () => startFlashcardMode('words'));
     document.getElementById('flashcardSentences').addEventListener('click', () => startFlashcardMode('sentences'));
 }
@@ -1494,60 +1218,40 @@ function playReferenceAudio(filename) {
 
 
 
-function getAudioFilename(char, type, charset) {
-    const characterSet = charset || currentCharset; // Use provided charset or global
-    if (!characterSet || !characterSet[char]) return null;
+function getAudioFilename(char, type) {
+    if (!currentCharset || !currentCharset[char]) return null;
 
     let romajiString;
-
-    // Step 1: Get the base romaji string based on the data structure for that type
     switch (type) {
-        case 'words':
-        case 'sentences':
-            romajiString = characterSet[char];
-            break;
         case 'listening':
-            romajiString = char; // For listening quiz, the key itself is the romaji
+            romajiString = char;
             break;
         case 'numbers':
-            romajiString = characterSet[char].romaji;
+            romajiString = currentCharset[char].romaji;
             break;
-        default: // hiragana, katakana, kanji
-            romajiString = characterSet[char];
+        default:
+            romajiString = currentCharset[char];
             break;
     }
 
-    if (typeof romajiString !== 'string') {
-        return null;
-    }
+    if (typeof romajiString !== 'string') return null;
 
-    // Step 2: Apply filename cleaning (lowercase, underscores, etc.)
-    // Note: Katakana uses uppercase keys in create_audio.py, so we don't lowercase it.
-    let filename = (type === 'katakana') ? romajiString : romajiString.toLowerCase();
-    filename = filename.replace(/ /g, '_')
-                       .replace(/\.\.\./g, 'desu')
-                       .replace(/\?/g, '');
+    let filename = romajiString.toLowerCase()
+        .replace(/ /g, '_')
+        .replace(/\.\.\./g, 'desu')
+        .replace(/[?!]/g, '');
 
-    // Step 3: Apply prefixes for single characters to avoid filename collisions
-    switch (type) {
-        case 'hiragana':
-            filename = `h_${filename}`;
-            break;
-        case 'katakana':
-            filename = `k_${filename}`;
-            break;
-        case 'kanji':
-            filename = `kanji_${filename}`;
-            break;
-        case 'numbers':
-            filename = `num_${filename}`;
-            break;
-    }
+    // Add prefixes to avoid collisions
+    if (type === 'hiragana') filename = `h_${filename}`;
+    else if (type === 'katakana') filename = `k_${filename}`;
+    else if (type === 'kanji') filename = `kanji_${filename}`;
+    else if (type === 'numbers') filename = `num_${filename}`;
 
     return filename;
 }
 
 async function loadQuestion(type) {
+    const contentArea = document.getElementById('content-area');
     const charToTest = getNextCharacter();
 
     if (!charToTest) {
@@ -1568,17 +1272,10 @@ async function loadQuestion(type) {
     
     charDisplay.textContent = charToTest;
 
-    // Adjust styling based on type
-    charDisplay.className = ''; // Reset classes
-    if (type === 'words') {
-        charDisplay.classList.add('quiz-word');
-    } else if (type === 'sentences') {
-        charDisplay.classList.add('quiz-sentence');
-    } else {
-        charDisplay.classList.add('display-1');
-    }
+    charDisplay.className = 'display-1';
+    if (type === 'words') charDisplay.className = 'quiz-word';
+    if (type === 'sentences') charDisplay.className = 'quiz-sentence';
 
-    // Add audio and help buttons
     const buttonContainer = document.getElementById('button-container');
     let buttonsHTML = '';
     const filename = getAudioFilename(charToTest, type);
@@ -1601,7 +1298,7 @@ async function loadQuestion(type) {
     if (filename) {
         document.getElementById('play-char-audio').addEventListener('click', (e) => handleButtonClick(e, () => {
             const audio = new Audio(`audio/${filename}.mp3`);
-            audio.play().catch(e => console.error("Error playing audio:", e));
+            audio.play().catch(err => console.error("Error playing audio:", err));
         }));
     }
 
@@ -1609,9 +1306,7 @@ async function loadQuestion(type) {
         const hintCard = document.getElementById('hint-card');
         hintCard.innerHTML = `<h5>${correctAnswer}</h5>`;
         hintCard.style.display = 'block';
-        setTimeout(() => {
-            hintCard.style.display = 'none';
-        }, 1500);
+        setTimeout(() => { hintCard.style.display = 'none'; }, 1500);
     }));
 
     if (helpContent) {
@@ -1619,7 +1314,8 @@ async function loadQuestion(type) {
         const helpCard = document.getElementById('help-card');
         helpCard.innerHTML = `<div class="card-body">${helpContent}</div>`;
 
-        helpIcon.addEventListener('click', (e) => handleButtonClick(e, () => {
+        helpIcon.addEventListener('click', (e) => handleButtonClick(e, (event) => {
+            event.stopPropagation();
             helpCard.style.display = helpCard.style.display === 'block' ? 'none' : 'block';
         }));
 
@@ -1630,90 +1326,46 @@ async function loadQuestion(type) {
         });
     }
 
-
     document.getElementById('feedback-area').innerHTML = '';
-
     const p = progress[charToTest];
-    const isFirstTime = !p || !p.seen;
-    const answeredWrongLastTime = p && p.lastAnswer === 'incorrect';
-
-    if (isFirstTime || answeredWrongLastTime) {
-        const charDisplay = document.getElementById('char-display');
-        let tooltipTitle = '';
-        if (isFirstTime) {
-            tooltipTitle = `New character! Correct Answer: ${correctAnswer}`;
-        } else { // answeredWrongLastTime
-            tooltipTitle = `Let's try this one again! Correct Answer: ${correctAnswer}`;
-        }
+    if (!p.seen || p.lastAnswer === 'incorrect') {
         const tooltip = new bootstrap.Tooltip(charDisplay, {
-            title: tooltipTitle,
-            placement: 'left',
+            title: `Correct Answer: ${correctAnswer}`,
+            placement: 'top',
             trigger: 'manual'
         });
         tooltip.show();
-        activeTooltip = tooltip; // Store the active tooltip
-
-        if (!p) {
-            // Ensure progress object exists even if they just skip it
-            progress[charToTest] = { correct: 0, incorrect: 0, streak: 0, nextReview: new Date().getTime() };
-        }
-        progress[charToTest].seen = true; // Mark as seen so hint doesn't show again
+        activeTooltip = tooltip;
+        p.seen = true;
         localStorage.setItem('nihon-progress', JSON.stringify(progress));
     }
+
     document.getElementById('kanji-suggestions').innerHTML = '';
-    
     answerInput.value = '';
     answerInput.readOnly = false;
     
-    const checkButton = document.getElementById('check-button');
-    checkButton.disabled = false;
-    checkButton.onclick = () => checkAnswer(charToTest, correctAnswer, type);
-
-    const skipButton = document.getElementById('skip-button');
-    skipButton.onclick = () => {
+    document.getElementById('check-button').disabled = false;
+    document.getElementById('check-button').onclick = () => checkAnswer(charToTest, correctAnswer, type);
+    document.getElementById('skip-button').onclick = () => {
         if (activeTooltip) {
             activeTooltip.dispose();
             activeTooltip = null;
         }
-
-        // Mark the question as incorrect when skipped
-        let p = progress[charToTest];
-        if (!p) {
-            p = { correct: 0, incorrect: 0, streak: 0, nextReview: new Date().getTime() };
-            progress[charToTest] = p;
-        }
         p.incorrect++;
         p.streak = 0;
         p.lastAnswer = 'incorrect';
-        p.nextReview = new Date().getTime() + 60 * 60 * 1000; // Review in 1 hour
+        p.nextReview = Date.now() + 60 * 60 * 1000;
         localStorage.setItem('nihon-progress', JSON.stringify(progress));
         showToast('Skipped', `Marked as incorrect. You'll see it again soon!`);
-
-        // Add the character to the skip queue
-        if (!skipQueue.includes(charToTest)) {
-            skipQueue.push(charToTest);
-            if (skipQueue.length > 5) { // Keep the queue size manageable
-                skipQueue.shift();
-            }
-        }
-
-        // Use a short timeout to prevent potential race conditions
-        setTimeout(() => loadQuestion(type), 1200); // Increased timeout to let user read toast
+        setTimeout(() => loadQuestion(type), 1200);
     };
 
     answerInput.focus();
 
-    // Fetch and display an example word
     const exampleWordArea = document.getElementById('example-word-area');
     if (exampleWordArea) {
         if (!isDictionaryReady) {
-            exampleWordArea.innerHTML = `
-                <div class="d-flex justify-content-center align-items-center mt-3">
-                    <div class="spinner-grow text-secondary me-2" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <span class="dictionary-loading-message">${currentDictionaryStatusMessage || 'Dictionary loading...'}</span>
-                </div>`;
+            exampleWordArea.innerHTML = `<div class="d-flex justify-content-center align-items-center mt-3"><div class="spinner-grow text-secondary me-2" role="status"><span class="visually-hidden">Loading...</span></div><span class="dictionary-loading-message">${currentDictionaryStatusMessage || 'Dictionary loading...'}</span></div>`;
         } else {
             await dictionaryReadyPromise;
             dictionaryWorker.postMessage({ action: 'getExampleWord', character: charToTest });
@@ -1729,17 +1381,10 @@ function checkAnswer(char, correctAnswer, type) {
     const answerInput = document.getElementById('answer-input');
     let userAnswer = answerInput.value.trim();
     const feedbackArea = document.getElementById('feedback-area');
-    let now = new Date().getTime();
+    const now = Date.now();
     let p = progress[char];
 
-    // Convert user input to Romaji if Wanakana is enabled
-    userAnswer = userAnswer;
-
-    if (userAnswer === correctAnswer || userAnswer === char) {
-        if (!p) {
-            p = { correct: 0, incorrect: 0, streak: 0, nextReview: now };
-            progress[char] = p;
-        }
+    if (userAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
         p.correct++;
         p.streak = (p.streak || 0) + 1;
         p.lastAnswer = 'correct';
@@ -1749,444 +1394,389 @@ function checkAnswer(char, correctAnswer, type) {
         checkLevelUp(type);
         checkAchievements();
     } else {
-        if (!p) {
-            p = { correct: 0, incorrect: 0, streak: 0, nextReview: now };
-            progress[char] = p;
-        }
         p.incorrect++;
         p.streak = 0;
         p.lastAnswer = 'incorrect';
-        p.nextReview = now + 60 * 60 * 1000; // Review in 1 hour
+        p.nextReview = now; // Review again soon
         feedbackArea.innerHTML = `<span class="text-danger">Incorrect. It's "${correctAnswer}".</span>`;
     }
     
     localStorage.setItem('nihon-progress', JSON.stringify(progress));
-
     document.getElementById('check-button').disabled = true;
 
+    const nextQuestionDelay = 1200;
     if (type === 'listening') {
-        setTimeout(() => loadListeningQuestion(), 1200);
+        setTimeout(loadListeningQuestion, nextQuestionDelay);
     } else {
-        setTimeout(() => loadQuestion(type), 1200);
+        setTimeout(() => loadQuestion(type), nextQuestionDelay);
     }
 }
 
-async function main() {
-    // --- Event Listeners and Initializations ---
+// --- UI AND EVENT LISTENERS ---
 
-    // Global click listener to close suggestions
-    document.addEventListener('click', function(event) {
-        const suggestionsContainer = document.getElementById('kanji-suggestions-card');
-        const answerInput = document.getElementById('answer-input');
+function setDarkMode(isDark) {
+    const htmlElement = document.documentElement;
+    const themeToggleIcon = document.getElementById('theme-toggle-icon');
+    htmlElement.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
+    localStorage.setItem('darkMode', isDark);
+    if (themeToggleIcon) {
+        themeToggleIcon.src = isDark ? '/nihon/icons/theme_dark.png' : '/nihon/icons/theme_light.png';
+        themeToggleIcon.alt = isDark ? 'Dark Theme Icon' : 'Light Theme Icon';
+    }
+}
 
-        const isClickInsideSuggestions = suggestionsContainer && suggestionsContainer.contains(event.target);
-        const isClickInsideInput = answerInput && answerInput.contains(event.target);
+function showToast(title, message, showRestartButton = false) {
+    const toastLiveExample = document.getElementById('liveToast');
+    const toastTitle = document.getElementById('toast-title');
+    const toastBody = document.getElementById('toast-body');
 
-        if (suggestionsContainer && !isClickInsideSuggestions && !isClickInsideInput) {
-            suggestionsContainer.remove();
+    if (!toastLiveExample || !toastTitle || !toastBody) return;
+
+    toastTitle.textContent = title;
+    toastBody.innerHTML = message; // Using innerHTML to allow for buttons
+
+    if (showRestartButton) {
+        const restartButton = document.createElement('button');
+        restartButton.className = 'btn btn-primary btn-sm mt-2';
+        restartButton.textContent = 'Restart';
+        restartButton.onclick = () => {
+            if (newWorker) {
+                newWorker.postMessage({ action: 'skipWaiting' });
+            }
+            window.location.reload();
+        };
+        toastBody.appendChild(document.createElement('br'));
+        toastBody.appendChild(restartButton);
+    }
+
+    const toast = new bootstrap.Toast(toastLiveExample, { autohide: !showRestartButton, delay: 5000 });
+    toast.show();
+}
+
+function updateHomeButton(isSection) {
+    const appTitle = document.getElementById('home-button');
+    const installButton = document.getElementById('install-button');
+    isSectionActive = isSection;
+
+    if (isSection) {
+        appTitle.innerHTML = '<img src="/nihon/icons/back.png" alt="Back" style="height: 1.5rem; vertical-align: middle;"> Back';
+        appTitle.classList.add('back-button');
+    } else {
+        appTitle.textContent = 'Nihon';
+        appTitle.classList.remove('back-button');
+    }
+
+    if (installButton) {
+        installButton.style.display = deferredPrompt && !isSectionActive ? 'flex' : 'none';
+    }
+}
+
+function checkDevMode() {
+    const devToolsButton = document.getElementById('dev-tools-button');
+    if (localStorage.getItem('nihon-dev-mode') === 'true') {
+        if (devToolsButton) devToolsButton.style.display = 'block';
+    } else {
+        if (devToolsButton) devToolsButton.style.display = 'none';
+    }
+}
+
+function populateStatsModal() {
+    const statsBody = document.querySelector('#stats-modal .modal-body');
+    const wrongCharsTableBody = document.getElementById('wrong-chars-table-body');
+    const correctCharsTableBody = document.getElementById('correct-chars-table-body');
+
+    // Player Stats
+    let playerStatsHTML = `
+        <div id="player-stats" class="text-center mb-4">
+            <h4>Player Level: ${playerState.level}</h4>
+            <div class="progress" style="height: 20px;">
+                <div class="progress-bar" role="progressbar" style="width: ${Math.round((playerState.xp / playerState.xpToNextLevel) * 100)}%;" aria-valuenow="${playerState.xp}" aria-valuemin="0" aria-valuemax="${playerState.xpToNextLevel}">
+                    ${playerState.xp} / ${playerState.xpToNextLevel} XP
+                </div>
+            </div>
+        </div>
+        <hr>`;
+
+    // Skill Levels
+    playerStatsHTML += '<div id="skill-levels" class="mb-4"><h4 class="text-center">Skill Levels</h4><ul class="list-group">';
+    for (const skill in playerState.levels) {
+        playerStatsHTML += `<li class="list-group-item d-flex justify-content-between align-items-center">${skill.charAt(0).toUpperCase() + skill.slice(1)}<span class="badge bg-primary rounded-pill">${playerState.levels[skill]}</span></li>`;
+    }
+    playerStatsHTML += '</ul></div><hr>';
+
+    // Remove old stats before inserting new
+    const oldPlayerStats = statsBody.querySelector('#player-stats');
+    if (oldPlayerStats) oldPlayerStats.remove();
+    const oldSkillLevels = statsBody.querySelector('#skill-levels');
+    if (oldSkillLevels) oldSkillLevels.remove();
+
+    statsBody.insertAdjacentHTML('afterbegin', playerStatsHTML);
+
+    // Character Stats
+    const wrongItems = [];
+    const correctItems = [];
+
+    for (const item in progress) {
+        const p = progress[item];
+        let reading = '';
+        // Find reading from any character set
+        for (const setKey in characterLevels) {
+            for (const level of characterLevels[setKey]) {
+                if (level.set[item]) {
+                    reading = (typeof level.set[item] === 'object') ? level.set[item].romaji : level.set[item];
+                    break;
+                }
+            }
+            if (reading) break;
         }
-    });
 
-    // Fix for modal focus
-    document.querySelectorAll('.modal').forEach(modal => {
-        modal.addEventListener('hidden.bs.modal', () => {
-            document.body.focus();
-        });
-    });
-
-    // Initial page load
-    showHomePage();
-    setupDictionaryPromise();
-    loadDictionary();
-    checkDevMode(); // Check and enable dev mode if previously set
-
-    // Attach all other event listeners
-    // (This centralizes all event listener attachments)
-    const devResetButton = document.getElementById('dev-reset-button');
-    if (devResetButton) {
-        devResetButton.addEventListener('click', () => {
-            if (confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
-                localStorage.removeItem('nihon-progress');
-                localStorage.removeItem('nihon-player-state');
-                localStorage.removeItem('nihon-dev-mode');
-
-                if ('serviceWorker' in navigator) {
-                    navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                        for(let registration of registrations) {
-                            registration.unregister();
-                        }
-                    }).then(() => {
-                        showToast('Success', 'App has been reset. Reloading...');
-                        setTimeout(() => window.location.reload(), 2000);
-                    }).catch(err => {
-                        console.error('Service Worker unregistration failed: ', err);
-                        showToast('Error', 'Could not unregister service worker. Please clear cache manually.');
-                    });
-                } else {
-                    showToast('Success', 'App has been reset. Reloading...');
-                    setTimeout(() => window.location.reload(), 2000);
-                }
-            }
-        });
+        if (p.incorrect > 0) wrongItems.push({ item, reading, count: p.incorrect });
+        if (p.correct > 0) correctItems.push({ item, reading, count: p.correct });
     }
 
-    const devBackupButton = document.getElementById('dev-backup-button');
-    if (devBackupButton) {
-        devBackupButton.addEventListener('click', () => {
-            const dataStr = JSON.stringify({ progress: progress, playerState: playerState }, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'nihon-progress-backup.json';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showToast('Success', 'Backup file is being downloaded.');
-        });
-    }
+    wrongItems.sort((a, b) => b.count - a.count);
+    correctItems.sort((a, b) => b.count - a.count);
 
-    const devRestoreButton = document.getElementById('dev-restore-button');
-    if (devRestoreButton) {
-        devRestoreButton.addEventListener('click', () => {
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.accept = '.json';
-            fileInput.onchange = e => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = readerEvent => {
-                        try {
-                            const content = readerEvent.target.result;
-                            const data = JSON.parse(content);
-                            if (data.progress && data.playerState) {
-                                localStorage.setItem('nihon-progress', JSON.stringify(data.progress));
-                                localStorage.setItem('nihon-player-state', JSON.stringify(data.playerState));
-                                showToast('Success', 'Progress restored. Reloading...');
-                                setTimeout(() => window.location.reload(), 2000);
-                            } else {
-                                showToast('Error', 'Invalid backup file format.');
-                            }
-                        } catch (err) {
-                            showToast('Error', 'Could not parse backup file.');
-                            console.error("Error parsing backup file:", err);
-                        }
-                    };
-                    reader.readAsText(file);
-                }
-            };
-            fileInput.click();
-        });
-    }
+    const populateTable = (tbody, items, noItemMessage) => {
+        tbody.innerHTML = '';
+        if (items.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="3">${noItemMessage}</td></tr>`;
+        } else {
+            items.forEach(item => {
+                tbody.innerHTML += `<tr><td style="font-family: 'Noto Sans JP Embedded', sans-serif;">${item.item}</td><td>${item.reading}</td><td>${item.count}</td></tr>`;
+            });
+        }
+    };
 
-    const devDisableButton = document.getElementById('dev-disable-button');
-    if (devDisableButton) {
-        devDisableButton.addEventListener('click', () => {
-            localStorage.removeItem('nihon-dev-mode');
-            const devToolsButton = document.getElementById('dev-tools-button');
-            if (devToolsButton) {
-                devToolsButton.style.display = 'none';
-            }
-            showToast('Success', 'Developer mode disabled.');
-            // Close the modal
-            const devToolsModal = bootstrap.Modal.getInstance(document.getElementById('dev-tools-modal'));
-            if (devToolsModal) {
-                devToolsModal.hide();
-            }
-        });
-    }
+    populateTable(wrongCharsTableBody, wrongItems, 'No items answered incorrectly yet!');
+    populateTable(correctCharsTableBody, correctItems, 'No items answered correctly yet!');
 
-    const statsModalHeader = document.getElementById('stats-modal-header');
-    if (statsModalHeader) {
-        let clickCount = 0;
-        let clickTimer = null;
-        statsModalHeader.addEventListener('click', (event) => {
-            event.stopPropagation();
-            clickCount++;
-            if (clickTimer) clearTimeout(clickTimer);
-            clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
-            if (clickCount >= 10) {
-                localStorage.setItem('nihon-dev-mode', 'true');
-                checkDevMode();
-                showToast('Success', 'Developer mode unlocked!');
-                clickCount = 0;
-                clearTimeout(clickTimer);
+    // Achievements
+    const achievementsTableBody = document.getElementById('achievements-table-body');
+    const unlocked = playerState.unlockedAchievements || [];
+    achievementsTableBody.innerHTML = '';
+    if (unlocked.length === 0) {
+        achievementsTableBody.innerHTML = '<tr><td colspan="2">No achievements unlocked yet. Keep trying!</td></tr>';
+    } else {
+        unlocked.forEach(id => {
+            const achievement = achievements[id];
+            if (achievement) {
+                achievementsTableBody.innerHTML += `<tr><td>${achievement.name}</td><td>${achievement.description}</td></tr>`;
             }
         });
     }
 }
 
-document.addEventListener('DOMContentLoaded', main);
 
-// All the code from the SEARCH block will be moved inside the main() function.
-// I will just show the new main function and the DOMContentLoaded listener.
+function populateReferencesModal() {
+    const hiraganaTabPane = document.getElementById('hiragana-ref');
+    const katakanaTabPane = document.getElementById('katakana-ref');
+    const kanjiTabPane = document.getElementById('kanji-ref');
+    const numbersTabPane = document.getElementById('numbers-ref');
 
-async function main() {
-    // --- Event Listeners and Initializations ---
-
-    // Global click listener to close suggestions
-    document.addEventListener('click', function(event) {
-        const suggestionsContainer = document.getElementById('kanji-suggestions-card');
-        const answerInput = document.getElementById('answer-input');
-
-        const isClickInsideSuggestions = suggestionsContainer && suggestionsContainer.contains(event.target);
-        const isClickInsideInput = answerInput && answerInput.contains(event.target);
-
-        if (suggestionsContainer && !isClickInsideSuggestions && !isClickInsideInput) {
-            suggestionsContainer.remove();
+    const generateCharacterCards = (characterSet, type) => {
+        let html = '<div class="row row-cols-3 row-cols-md-4 row-cols-lg-5 g-2">';
+        for (const char in characterSet) {
+            const entry = characterSet[char];
+            const displayRomaji = (typeof entry === 'object') ? entry.romaji : entry;
+            const latinNumber = (typeof entry === 'object') ? ` (${entry.latin})` : '';
+            const filename = getAudioFilename(char, type);
+            html += `
+                <div class="col">
+                    <div class="card text-center h-100" onclick="playReferenceAudio('${filename}')" style="cursor: pointer;">
+                        <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                            <h3 class="card-title" style="font-family: 'Noto Sans JP Embedded', sans-serif;">${char}</h3>
+                            <p class="card-text">${displayRomaji}${latinNumber}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
-    });
+        html += '</div>';
+        return html;
+    };
 
-    // Fix for modal focus
-    document.querySelectorAll('.modal').forEach(modal => {
-        modal.addEventListener('hidden.bs.modal', () => {
-            document.body.focus();
-        });
-    });
+    // Combine all levels for each type to pass to generateCharacterCards
+    const combinedHiragana = Object.assign({}, ...characterLevels.hiragana.map(l => l.set));
+    const combinedKatakana = Object.assign({}, ...characterLevels.katakana.map(l => l.set));
+    const combinedKanji = Object.assign({}, ...characterLevels.kanji.map(l => l.set));
+    const combinedNumbers = Object.assign({}, ...characterLevels.numbers.map(l => l.set));
 
-    // Initial page load
+    if(hiraganaTabPane) hiraganaTabPane.innerHTML = generateCharacterCards(combinedHiragana, 'hiragana');
+    if(katakanaTabPane) katakanaTabPane.innerHTML = generateCharacterCards(combinedKatakana, 'katakana');
+    if(kanjiTabPane) kanjiTabPane.innerHTML = generateCharacterCards(combinedKanji, 'kanji');
+    if(numbersTabPane) numbersTabPane.innerHTML = generateCharacterCards(combinedNumbers, 'numbers');
+}
+
+async function searchDictionary(word) {
+    const dictionaryResultArea = document.getElementById('dictionary-result-area');
+    if (!isDictionaryReady) {
+        dictionaryResultArea.innerHTML = `<div class="d-flex justify-content-center align-items-center mt-3"><div class="spinner-grow text-secondary me-2" role="status"></div><span>Waiting for dictionary...</span></div>`;
+        return;
+    }
+
+    dictionaryResultArea.innerHTML = `<div class="d-flex justify-content-center align-items-center mt-3"><div class="spinner-grow text-secondary me-2" role="status"></div><span>Searching...</span></div>`;
+    dictionaryWorker.postMessage({ action: 'searchDictionary', word: word });
+}
+
+// --- DOMContentLoaded ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Initial Setup
+    patchPlayerState();
+    checkDevMode();
     showHomePage();
     setupDictionaryPromise();
     loadDictionary();
-    checkDevMode(); // Check and enable dev mode if previously set
 
-    // Attach all other event listeners
-    const devResetButton = document.getElementById('dev-reset-button');
-    if (devResetButton) {
-        devResetButton.addEventListener('click', () => {
-            if (confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
-                localStorage.removeItem('nihon-progress');
-                localStorage.removeItem('nihon-player-state');
-                localStorage.removeItem('nihon-dev-mode');
+    // Dark Mode
+    const themeToggleIcon = document.getElementById('theme-toggle-icon');
+    if (themeToggleIcon) {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const savedTheme = localStorage.getItem('darkMode');
+        setDarkMode(savedTheme !== null ? savedTheme === 'true' : prefersDark);
+        themeToggleIcon.addEventListener('click', () => {
+            const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+            setDarkMode(!isDark);
+        });
+    }
 
-                if ('serviceWorker' in navigator) {
-                    navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                        for(let registration of registrations) {
-                            registration.unregister();
-                        }
-                    }).then(() => {
-                        showToast('Success', 'App has been reset. Reloading...');
-                        setTimeout(() => window.location.reload(), 2000);
-                    }).catch(err => {
-                        console.error('Service Worker unregistration failed: ', err);
-                        showToast('Error', 'Could not unregister service worker. Please clear cache manually.');
-                    });
-                } else {
-                    showToast('Success', 'App has been reset. Reloading...');
-                    setTimeout(() => window.location.reload(), 2000);
-                }
+    // PWA Install Button
+    const installButton = document.getElementById('install-button');
+    if (installButton) {
+        installButton.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            installButton.style.display = 'none';
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            showToast('Installation', outcome === 'accepted' ? 'App installed successfully!' : 'App installation cancelled.');
+            deferredPrompt = null;
+        });
+    }
+
+    // Home Button
+    const homeButton = document.getElementById('home-button');
+    if (homeButton) {
+        homeButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            if (isSectionActive) {
+                showHomePage();
             }
         });
     }
 
-    const devBackupButton = document.getElementById('dev-backup-button');
-    if (devBackupButton) {
-        devBackupButton.addEventListener('click', () => {
-            const dataStr = JSON.stringify({ progress: progress, playerState: playerState }, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'nihon-progress-backup.json';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showToast('Success', 'Backup file is being downloaded.');
-        });
-    }
-
-    const devRestoreButton = document.getElementById('dev-restore-button');
-    if (devRestoreButton) {
-        devRestoreButton.addEventListener('click', () => {
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.accept = '.json';
-            fileInput.onchange = e => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = readerEvent => {
-                        try {
-                            const content = readerEvent.target.result;
-                            const data = JSON.parse(content);
-                            if (data.progress && data.playerState) {
-                                localStorage.setItem('nihon-progress', JSON.stringify(data.progress));
-                                localStorage.setItem('nihon-player-state', JSON.stringify(data.playerState));
-                                showToast('Success', 'Progress restored. Reloading...');
-                                setTimeout(() => window.location.reload(), 2000);
-                            } else {
-                                showToast('Error', 'Invalid backup file format.');
-                            }
-                        } catch (err) {
-                            showToast('Error', 'Could not parse backup file.');
-                            console.error("Error parsing backup file:", err);
-                        }
-                    };
-                    reader.readAsText(file);
-                }
-            };
-            fileInput.click();
-        });
-    }
-
-    const statsModalHeader = document.getElementById('stats-modal-header');
-    if (statsModalHeader) {
-        let clickCount = 0;
-        let clickTimer = null;
-        statsModalHeader.addEventListener('click', (event) => {
-            event.stopPropagation();
-            clickCount++;
-            if (clickTimer) clearTimeout(clickTimer);
-            clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
-            if (clickCount >= 10) {
-                localStorage.setItem('nihon-dev-mode', 'true');
-                checkDevMode();
-                showToast('Success', 'Developer mode unlocked!');
-                clickCount = 0;
-                clearTimeout(clickTimer);
-            }
-        });
-    }
-
+    // Stats Modal
     const statsModal = document.getElementById('stats-modal');
     if (statsModal) {
-        statsModal.addEventListener('show.bs.modal', () => {
-            // ... (stats modal logic from above)
+        statsModal.addEventListener('show.bs.modal', populateStatsModal);
+    }
+    const statsModalHeader = document.getElementById('stats-modal-header');
+    if (statsModalHeader) {
+        let clickCount = 0;
+        let clickTimer = null;
+        statsModalHeader.addEventListener('click', (event) => {
+            event.stopPropagation();
+            clickCount++;
+            if (clickTimer) clearTimeout(clickTimer);
+            clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
+            if (clickCount >= 10) {
+                localStorage.setItem('nihon-dev-mode', 'true');
+                checkDevMode();
+                showToast('Success', 'Developer mode unlocked!');
+                clickCount = 0;
+                clearTimeout(clickTimer);
+            }
         });
     }
 
-    const dictionaryModal = document.getElementById('dictionary-modal');
-    if (dictionaryModal) {
-        dictionaryModal.addEventListener('show.bs.modal', () => {
-            // ... (dictionary modal logic from above)
-        });
-    }
-
-    const grammarModal = document.getElementById('grammar-modal');
-    if (grammarModal) {
-        grammarModal.addEventListener('show.bs.modal', () => {
-            // ... (grammar modal logic from above)
-        });
-    }
-
-    const referencesModal = document.getElementById('references-modal');
-    if (referencesModal) {
-        referencesModal.addEventListener('show.bs.modal', () => {
-            populateReferencesModal();
-        });
-    }
-
-    const homeButton = document.getElementById('home-button');
-    homeButton.addEventListener('click', (event) => {
-        event.preventDefault();
-        if (isSectionActive) {
-            showHomePage();
-        }
-    });
-
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/nihon/sw.js')
-                .then(reg => {
-                    reg.onupdatefound = () => {
-                        const newWorker = reg.installing;
-                        newWorker.onstatechange = () => {
-                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                showToast('Update Available', 'A new version is available.', true);
-                            }
-                        };
-                    };
-                })
-                .catch(err => console.error('Service Worker registration failed:', err));
-        });
-    }
-}
-
-document.addEventListener('DOMContentLoaded', main);
-
-const devResetButton = document.getElementById('dev-reset-button');
-if (devResetButton) {
-    devResetButton.addEventListener('click', () => {
-        if (confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
-            // Clear local storage
-            localStorage.removeItem('nihon-progress');
-            localStorage.removeItem('nihon-player-state');
-            localStorage.removeItem('nihon-dev-mode');
-
-            // Unregister service worker
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                    for(let registration of registrations) {
-                        registration.unregister();
-                    }
-                }).then(() => {
-                    showToast('Success', 'App has been reset. Reloading...');
-                    setTimeout(() => window.location.reload(), 2000);
-                }).catch(err => {
-                    console.error('Service Worker unregistration failed: ', err);
-                    showToast('Error', 'Could not unregister service worker. Please clear cache manually.');
-                });
-            } else {
+    // Dev Tools Modal
+    const devResetButton = document.getElementById('dev-reset-button');
+    if (devResetButton) {
+        devResetButton.addEventListener('click', () => {
+            if (confirm('Are you sure you want to reset all progress? This will also unregister the service worker and reload the page.')) {
+                localStorage.clear(); // Clear all local storage for the site
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                        for(let registration of registrations) {
+                            registration.unregister();
+                        }
+                    });
+                }
                 showToast('Success', 'App has been reset. Reloading...');
                 setTimeout(() => window.location.reload(), 2000);
             }
+        });
+    }
+
+    const disableDevModeButton = document.getElementById('dev-disable-button');
+    if (disableDevModeButton) {
+        disableDevModeButton.addEventListener('click', () => {
+            localStorage.removeItem('nihon-dev-mode');
+            checkDevMode();
+            showToast('Success', 'Developer mode disabled.');
+        });
+    }
+
+    const devModalCloseButton = document.querySelector('#dev-tools-modal .btn-close');
+    if(devModalCloseButton) {
+        devModalCloseButton.addEventListener('click', (e) => {
+             e.preventDefault();
+             const devModal = bootstrap.Modal.getInstance(document.getElementById('dev-tools-modal'));
+             if(devModal) {
+                devModal.hide();
+             }
+        });
+    }
+
+
+    // Dictionary Modal
+    const dictionaryModal = document.getElementById('dictionary-modal');
+    const dictionarySearchInput = document.getElementById('dictionary-search-input');
+    const dictionarySearchButton = document.getElementById('dictionary-search-button');
+    if (dictionaryModal) {
+        dictionaryModal.addEventListener('show.bs.modal', () => {
+            const dictionaryLoadingStatus = document.getElementById('dictionary-loading-status');
+            if (!isDictionaryReady) {
+                dictionaryLoadingStatus.innerHTML = `<div class="d-flex justify-content-center align-items-center mt-3"><div class="spinner-grow text-secondary me-2" role="status"></div><span class="dictionary-loading-message">${currentDictionaryStatusMessage || 'Dictionary loading...'}</span></div>`;
+            } else {
+                dictionaryLoadingStatus.innerHTML = '';
+            }
+            document.getElementById('dictionary-result-area').innerHTML = '';
+        });
+    }
+    if (dictionarySearchButton && dictionarySearchInput) {
+        const triggerSearch = () => {
+            const searchTerm = dictionarySearchInput.value.trim();
+            if (searchTerm) searchDictionary(searchTerm);
+        };
+        dictionarySearchButton.addEventListener('click', triggerSearch);
+        dictionarySearchInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') triggerSearch();
+        });
+    }
+
+    // References Modal
+    const referencesModal = document.getElementById('references-modal');
+    if (referencesModal) {
+        referencesModal.addEventListener('show.bs.modal', populateReferencesModal);
+    }
+
+    // Global click listener for dismissing popovers/cards
+    document.addEventListener('click', (event) => {
+        const suggestionsContainer = document.getElementById('kanji-suggestions-card');
+        if (suggestionsContainer && !suggestionsContainer.contains(event.target) && !document.getElementById('answer-input').contains(event.target)) {
+            suggestionsContainer.remove();
         }
     });
-}
 
-const devBackupButton = document.getElementById('dev-backup-button');
-if (devBackupButton) {
-    devBackupButton.addEventListener('click', () => {
-        const dataStr = JSON.stringify({
-            progress: progress,
-            playerState: playerState
-        }, null, 2);
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(dataBlob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'nihon-progress-backup.json';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        showToast('Success', 'Backup file is being downloaded.');
+    // Fix for modal focus issues
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('hidden.bs.modal', () => {
+            document.body.focus();
+        });
     });
-}
+});
 
-const devRestoreButton = document.getElementById('dev-restore-button');
-if (devRestoreButton) {
-    devRestoreButton.addEventListener('click', () => {
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = '.json';
-        fileInput.onchange = e => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = readerEvent => {
-                    try {
-                        const content = readerEvent.target.result;
-                        const data = JSON.parse(content);
-                        if (data.progress && data.playerState) {
-                            localStorage.setItem('nihon-progress', JSON.stringify(data.progress));
-                            localStorage.setItem('nihon-player-state', JSON.stringify(data.playerState));
-                            showToast('Success', 'Progress restored. Reloading...');
-                            setTimeout(() => window.location.reload(), 2000);
-                        } else {
-                            showToast('Error', 'Invalid backup file format.');
-                        }
-                    } catch (err) {
-                        showToast('Error', 'Could not parse backup file.');
-                        console.error("Error parsing backup file:", err);
-                    }
-                };
-                reader.readAsText(file);
-            }
-        };
-        fileInput.click();
-    });
-}
+// No additional code needed in this block after refactoring
+
+
+// No additional code needed in this block after refactoring

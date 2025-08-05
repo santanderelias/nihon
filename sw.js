@@ -6,7 +6,7 @@ if (workbox) {
     // Set the cache name prefix for Workbox
     workbox.core.setCacheNameDetails({
         prefix: 'nihon',
-        suffix: 'v1.4.3' // New version for Workbox cache
+        suffix: 'v1.4.2' // New version for Workbox cache
     });
 
     // --- Asset Lists ---
@@ -32,9 +32,9 @@ if (workbox) {
         { url: '/nihon/icons/theme_light.png', revision: null }
     ];
 
-    const hiragana_audio = "a i u e o ka ki ku ke ko sa shi su se so ta chi tsu te to na ni nu ne no ha hi fu he ho ma mi mu me mo ya yu yo ra ri ru re ro wa wo n ga gi gu ge go za ji zu ze zo da dji dzu de do ba bi bu be bo pa pi pu pe po".split(" ").map(key => `h_${key}`);
-    const katakana_audio = "A I U E O KA KI KU KE KO SA SHI SU SE SO TA CHI TSU TE TO NA NI NU NE NO HA HI FU HE HO MA MI MU ME MO YA YU YO RA RI RU RE RO WA WO N_k GA GI GU GE GO ZA JI ZU ZE ZO DA DJI DZU DE DO BA BI BU BE BO PA PI PU PE PO".split(" ").map(key => `k_${key}`);
-    const kanji_audio = "ichi ni san shi go roku shichi hachi kyuu juu hyaku sen man en ji nichi getsu ka sui moku kin do you ue shita naka han yama kawa gen ki ten watashi ima ta onna otoko mi i ta_eat no_drink".split(" ").map(key => `kanji_${key}`);
+    const hiragana_audio = "a i u e o ka ki ku ke ko sa shi su se so ta chi tsu te to na ni nu ne no ha hi fu he ho ma mi mu me mo ya yu yo ra ri ru re ro wa wo n ga gi gu ge go za ji zu ze zo da dji dzu de do ba bi bu be bo pa pi pu pe po".split(" ");
+    const katakana_audio = "A I U E O KA KI KU KE KO SA SHI SU SE SO TA CHI TSU TE TO NA NI NU NE NO HA HI FU HE HO MA MI MU ME MO YA YU YO RA RI RU RE RO WA WO N_k GA GI GU GE GO ZA JI ZU ZE ZO DA DJI DZU DE DO BA BI BU BE BO PA PI PU PE PO".split(" ");
+    const kanji_audio = "ichi ni san shi go roku shichi hachi kyuu juu hyaku sen man en ji nichi getsu ka sui moku kin do you ue shita naka han yama kawa gen ki ten watashi ima ta onna otoko mi i ta_eat no_drink".split(" ");
     const words_audio = "neko inu sushi sensei gakkou pen hon tsukue isu kuruma tabemasu nomimasu ikimasu mimasu oishii ookii chiisai hayai aka ao shiro kuro".split(" ");
     const sentences_audio = [
         "kore wa pen desu", "sore wa hon desu",
