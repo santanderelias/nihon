@@ -37,9 +37,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
     // Stash the event so it can be triggered later.
     deferredPrompt = e;
     // Update UI notify the user they can install the PWA
-    if (installButton && !isSectionActive) { // Only show if on home page
-        installButton.style.display = 'flex'; // Use flex to center icon
-    }
+    updateHomeButton(isSectionActive);
 });
 
 if (installButton) {
@@ -921,8 +919,8 @@ function startQuiz(type) {
 
     contentArea.innerHTML = `
         <div class="card text-center shadow-sm">
-            <div id="help-button-container">
-                <img src="/nihon/icons/help.png" alt="Help" id="help-icon">
+            <div id="button-container" class="btn-group" style="position: absolute; top: 10px; right: 10px; z-index: 101;">
+                <!-- Buttons will be injected here -->
             </div>
             <div class="card-body">
                 <div id="feedback-area" class="mb-2" style="height: 24px;"></div>
@@ -937,57 +935,16 @@ function startQuiz(type) {
                 <button class="btn btn-success" id="check-button">Check</button>
                 <button class="btn btn-secondary" id="skip-button">Skip</button>
             </div>
-            <div id="help-card" class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Dakuten and Handakuten Rules</h5>
-                    <h6>Dakuten (゛)</h6>
-                    <table class="table">
-                        <tbody>
-                            <tr><td>K (ka)</td><td>+ ゛</td><td>G (ga)</td></tr>
-                            <tr><td>S (sa)</td><td>+ ゛</td><td>Z (za)</td></tr>
-                            <tr><td>T (ta)</td><td>+ ゛</td><td>D (da)</td></tr>
-                            <tr><td>H (ha)</td><td>+ ゛</td><td>B (ba)</td></tr>
-                        </tbody>
-                    </table>
-                    <h6>Handakuten (゜)</h6>
-                    <table class="table">
-                        <tbody>
-                            <tr><td>H (ha)</td><td>+ ゜</td><td>P (pa)</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div id="help-card" class="card shadow-sm" style="display: none; position: absolute; top: 40px; right: 10px; width: 350px; z-index: 100; font-family: 'Noto Sans JP Embedded', sans-serif;">
+                <!-- Help content will be loaded here -->
             </div>
         </div>
     `;
-    
-    
 
     const answerInput = document.getElementById('answer-input');
     answerInput.oninput = () => {
         replacekana(currentCharset, type);
     };
-
-    const helpIcon = document.getElementById('help-icon');
-    const helpCard = document.getElementById('help-card');
-    const helpContent = getHelpContent(type);
-
-    if (helpContent) {
-        helpCard.innerHTML = `<div class="card-body">${helpContent}</div>`;
-        helpIcon.style.display = 'block';
-
-        helpIcon.addEventListener('click', (event) => {
-            event.stopPropagation();
-            helpCard.style.display = helpCard.style.display === 'block' ? 'none' : 'block';
-        });
-
-        document.addEventListener('click', (event) => {
-            if (!helpCard.contains(event.target) && !helpIcon.contains(event.target)) {
-                helpCard.style.display = 'none';
-            }
-        });
-    } else {
-        helpIcon.style.display = 'none';
-    }
 
     loadQuestion(type);
 }
@@ -1015,8 +972,8 @@ function startFlashcardMode(type) {
 
     contentArea.innerHTML = `
         <div class="card text-center shadow-sm flashcard-container">
-            <div id="help-button-container">
-                <img src="/nihon/icons/help.png" alt="Help" id="help-icon">
+            <div id="button-container" class="btn-group" style="position: absolute; top: 10px; right: 10px; z-index: 101;">
+                <!-- Buttons will be injected here -->
             </div>
             <div class="card-body">
                 <div id="feedback-area" class="mb-2" style="height: 24px;"></div>
@@ -1024,14 +981,6 @@ function startFlashcardMode(type) {
                     <div class="flashcard-inner">
                         <div class="flashcard-front d-flex align-items-center justify-content-center">
                             <h1 id="flashcard-char" class="display-1"></h1>
-                        </div>
-                        <div class="flashcard-back d-flex flex-column align-items-center justify-content-center">
-                            <h2 id="flashcard-reading" class="mb-2"></h2>
-                            <p id="flashcard-meaning" class="lead"></p>
-                        </div>
-                    </div>
-                </div>
-                <button id="play-flashcard-audio" class="btn btn-secondary btn-sm" style="position: absolute; top: 10px; right: 10px; display: none;"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button>
                         </div>
                         <div class="flashcard-back d-flex flex-column align-items-center justify-content-center">
                             <h2 id="flashcard-reading" class="mb-2"></h2>
@@ -1047,7 +996,7 @@ function startFlashcardMode(type) {
                     </div>
                 </div>
             </div>
-            <div id="help-card" class="card shadow-sm">
+            <div id="help-card" class="card shadow-sm" style="display: none; position: absolute; top: 40px; right: 10px; width: 350px; z-index: 100; font-family: 'Noto Sans JP Embedded', sans-serif;">
                 <!-- Help content will be loaded here -->
             </div>
         </div>
@@ -1055,28 +1004,6 @@ function startFlashcardMode(type) {
 
     updateHomeButton(true);
     currentFlashcardType = type;
-
-    const helpIcon = document.getElementById('help-icon');
-    const helpCard = document.getElementById('help-card');
-    const helpContent = getHelpContent(type);
-
-    if (helpContent) {
-        helpCard.innerHTML = `<div class="card-body">${helpContent}</div>`;
-        helpIcon.style.display = 'block';
-
-        helpIcon.addEventListener('click', (event) => {
-            event.stopPropagation();
-            helpCard.style.display = helpCard.style.display === 'block' ? 'none' : 'block';
-        });
-
-        document.addEventListener('click', (event) => {
-            if (!helpCard.contains(event.target) && !helpIcon.contains(event.target)) {
-                helpCard.style.display = 'none';
-            }
-        });
-    } else {
-        helpIcon.style.display = 'none';
-    }
 
     loadFlashcard(type);
 }
@@ -1105,22 +1032,46 @@ function loadFlashcard(type) {
     const flashcardReading = document.getElementById('flashcard-reading');
     const flashcardMeaning = document.getElementById('flashcard-meaning');
     const flashcard = document.getElementById('flashcard');
-    const playAudioButton = document.getElementById('play-flashcard-audio');
-
+    
     flashcardChar.textContent = charToDisplay;
     flashcardReading.textContent = '';
     flashcardMeaning.textContent = '';
 
-    // Add audio button logic
+    // Add audio and help buttons
+    const buttonContainer = document.getElementById('button-container');
+    let buttonsHTML = '';
     const filename = getAudioFilename(charToDisplay, type);
     if (filename) {
-        playAudioButton.style.display = 'inline-block';
-        playAudioButton.onclick = () => {
+        buttonsHTML += `<button id="play-flashcard-audio" class="btn btn-secondary"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button>`;
+    }
+    const helpContent = getHelpContent(type);
+    if (helpContent) {
+        buttonsHTML += `<button id="help-icon" class="btn btn-secondary"><img src="/nihon/icons/help.png" alt="Help" style="height: 1.5rem;"></button>`;
+    }
+    buttonContainer.innerHTML = buttonsHTML;
+
+    if (filename) {
+        document.getElementById('play-flashcard-audio').onclick = () => {
             const audio = new Audio(`audio/${filename}.mp3`);
             audio.play().catch(e => console.error("Error playing audio:", e));
         };
-    } else {
-        playAudioButton.style.display = 'none';
+    }
+
+    if (helpContent) {
+        const helpIcon = document.getElementById('help-icon');
+        const helpCard = document.getElementById('help-card');
+        helpCard.innerHTML = `<div class="card-body">${helpContent}</div>`;
+
+        helpIcon.addEventListener('click', (event) => {
+            event.stopPropagation();
+            helpCard.style.display = helpCard.style.display === 'block' ? 'none' : 'block';
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!helpCard.contains(event.target) && !helpIcon.contains(event.target)) {
+                helpCard.style.display = 'none';
+            }
+        });
     }
 
     // Reset flip state
@@ -1330,14 +1281,18 @@ async function loadQuestion(type) {
     
     document.getElementById('char-display').textContent = charToTest;
 
-    // Add audio button
-    const charDisplayContainer = document.getElementById('char-display-container');
-    let audioButtonHTML = '';
+    // Add audio and help buttons
+    const buttonContainer = document.getElementById('button-container');
+    let buttonsHTML = '';
     const filename = getAudioFilename(charToTest, type);
     if (filename) {
-        audioButtonHTML = `<button id="play-char-audio" class="btn btn-secondary btn-sm" style="position: absolute; top: 10px; right: 10px;"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button>`;
+        buttonsHTML += `<button id="play-char-audio" class="btn btn-secondary"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button>`;
     }
-    charDisplayContainer.innerHTML = `<h1 id="char-display" class="display-1 d-inline-block">${charToTest}</h1>${audioButtonHTML}`;
+    const helpContent = getHelpContent(type);
+    if (helpContent) {
+        buttonsHTML += `<button id="help-icon" class="btn btn-secondary"><img src="/nihon/icons/help.png" alt="Help" style="height: 1.5rem;"></button>`;
+    }
+    buttonContainer.innerHTML = buttonsHTML;
 
     if (filename) {
         document.getElementById('play-char-audio').onclick = () => {
@@ -1345,6 +1300,24 @@ async function loadQuestion(type) {
             audio.play().catch(e => console.error("Error playing audio:", e));
         };
     }
+
+    if (helpContent) {
+        const helpIcon = document.getElementById('help-icon');
+        const helpCard = document.getElementById('help-card');
+        helpCard.innerHTML = `<div class="card-body">${helpContent}</div>`;
+
+        helpIcon.addEventListener('click', (event) => {
+            event.stopPropagation();
+            helpCard.style.display = helpCard.style.display === 'block' ? 'none' : 'block';
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!helpCard.contains(event.target) && !helpIcon.contains(event.target)) {
+                helpCard.style.display = 'none';
+            }
+        });
+    }
+
 
     document.getElementById('feedback-area').innerHTML = '';
 
@@ -1765,10 +1738,10 @@ if (grammarModal) {
                     <h2 class="accordion-header" id="headingOne"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">Basic Sentence Structure</button></h2>
                     <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#grammarAccordion">
                         <div class="accordion-body" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
-                            <p>The basic sentence structure in Japanese is Subject-Object-Verb (SOV).</p>
+                            <p>The basic sentence structure in Japanese is <strong>Subject - Object - Verb (SOV)</strong>.</p>
                             <p class="d-flex justify-content-between align-items-center">
                                 <span>Example: 私はリンゴを食べます (Watashi wa ringo o tabemasu) - I eat an apple.</span>
-                                <button id="play-sov" class="btn btn-secondary btn-sm"><i class="fas fa-volume-up"></i></button>
+                                <button onclick="playReferenceAudio('watashi_wa_ringo_o_tabemasu')" class="btn btn-secondary btn-sm"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button>
                             </p>
                             <ul>
                                 <li>私 (Watashi) - I (Subject)</li>
@@ -1781,62 +1754,64 @@ if (grammarModal) {
                 <!-- Particles -->
                 <div class="accordion-item">
                      <h2 class="accordion-header" id="headingTwo"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">Particles</button></h2>
-                     <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#grammarAccordion"><div class="accordion-body">...</div></div>
+                     <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#grammarAccordion">
+                        <div class="accordion-body" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
+                            <p>Particles are short words that indicate the function of a noun in a sentence.</p>
+                            <ul>
+                                <li><strong>は (wa)</strong>: Marks the topic of the sentence. <em>(Pronounced 'wa')</em></li>
+                                <li><strong>が (ga)</strong>: Marks the subject of the sentence.</li>
+                                <li><strong>を (o)</strong>: Marks the direct object. <em>(Pronounced 'o')</em></li>
+                                <li><strong>に (ni)</strong>: Indicates location (existence), destination, or a specific time.</li>
+                                <li><strong>で (de)</strong>: Indicates the location of an action.</li>
+                            </ul>
+                        </div>
+                     </div>
                 </div>
                 <!-- Verb Conjugation -->
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="headingThree"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">Verb Conjugation</button></h2>
-                    <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#grammarAccordion"><div class="accordion-body">...</div></div>
+                    <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#grammarAccordion">
+                        <div class="accordion-body" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
+                            <p>Japanese verbs are conjugated based on their group. Here's a basic overview of the polite (ます/masu) form.</p>
+                            <h6>Group 1 (u-verbs)</h6>
+                            <p>Example: 読む (yomu) - to read -> 読み<strong>ます</strong> (yomi<strong>masu</strong>) - (I) read.</p>
+                            <h6>Group 2 (ru-verbs)</h6>
+                            <p>Example: 食べる (taberu) - to eat -> 食べ<strong>ます</strong> (tabe<strong>masu</strong>) - (I) eat.</p>
+                            <h6>Group 3 (Irregular verbs)</h6>
+                            <p>Example: する (suru) - to do -> <strong>します</strong> (<strong>shimasu</strong>) - (I) do.</p>
+                        </div>
+                    </div>
                 </div>
-                <!-- Common Phrases -->
+                <!-- I-Adjectives -->
                 <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingFour"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">Common Phrases</button></h2>
+                    <h2 class="accordion-header" id="headingFour"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">I-Adjectives</button></h2>
                     <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#grammarAccordion">
                         <div class="accordion-body" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
-                            <div class="accordion" id="phrasesAccordion">
-                                <!-- Greetings -->
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseOne">Greetings</button></h2>
-                                    <div id="phrasesCollapseOne" class="accordion-collapse collapse" data-bs-parent="#phrasesAccordion"><div class="accordion-body"><ul id="greetings-list"></ul></div></div>
-                                </div>
-                                <!-- Time -->
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseTwo">Time-related</button></h2>
-                                    <div id="phrasesCollapseTwo" class="accordion-collapse collapse" data-bs-parent="#phrasesAccordion"><div class="accordion-body"><ul id="time-list"></ul></div></div>
-                                </div>
-                                <!-- General -->
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#phrasesCollapseThree">General</button></h2>
-                                    <div id="phrasesCollapseThree" class="accordion-collapse collapse" data-bs-parent="#phrasesAccordion"><div class="accordion-body"><ul id="general-list"></ul></div></div>
-                                </div>
-                            </div>
+                            <p>Adjectives ending in <strong>い (i)</strong> are called i-adjectives. They can be conjugated.</p>
+                            <ul>
+                                <li><strong>Present:</strong> 新しい (atarashii) - new</li>
+                                <li><strong>Negative:</strong> 新しくない (atarashikunai) - not new</li>
+                                <li><strong>Past:</strong> 新しかった (atarashikatta) - was new</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!-- Na-Adjectives -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingFive"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive">Na-Adjectives</button></h2>
+                    <div id="collapseFive" class="accordion-collapse collapse" data-bs-parent="#grammarAccordion">
+                        <div class="accordion-body" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
+                            <p>Adjectives that require <strong>な (na)</strong> before a noun are na-adjectives. They use です (desu) for conjugation.</p>
+                            <ul>
+                                <li><strong>Present:</strong> きれい (kirei) - pretty -> きれいです (kirei desu)</li>
+                                <li><strong>Negative:</strong> きれいじゃないです (kirei janai desu) - not pretty</li>
+                                <li><strong>Past:</strong> きれいでした (kirei deshita) - was pretty</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
             </div>
         `;
-
-        // Populate lists
-        document.getElementById('play-sov').onclick = () => playAudio("Watashi wa ringo o tabemasu");
-
-        const greetings = [
-            { text: "おはようございます (Ohayou gozaimasu) - Good morning", audio: "Ohayou gozaimasu" },
-            { text: "こんにちは (Konnichiwa) - Hello/Good afternoon", audio: "Konnichiwa" },
-            { text: "こんばんは (Konbanwa) - Good evening", audio: "Konbanwa" }
-        ];
-        const time = [
-            { text: "今何時ですか (Ima nanji desu ka?) - What time is it now?", audio: "Ima nanji desu ka?" },
-            { text: "昨日 (Kinou) - Yesterday", audio: "Kinou" }
-        ];
-        const general = [
-            { text: "はい (Hai) - Yes", audio: "Hai" },
-            { text: "いいえ (Iie) - No", audio: "Iie" },
-            { text: "お願いします (Onegaishimasu) - Please", audio: "Onegaishimasu" }
-        ];
-
-        greetings.forEach(item => document.getElementById('greetings-list').appendChild(createPhraseItem(item.text, item.audio)));
-        time.forEach(item => document.getElementById('time-list').appendChild(createPhraseItem(item.text, item.audio)));
-        general.forEach(item => document.getElementById('general-list').appendChild(createPhraseItem(item.text, item.audio)));
     });
 }
 
@@ -1852,15 +1827,15 @@ if (referencesModal) {
 
 function populateReferencesModal() {
     const hiraganaTabPane = document.getElementById('hiragana');
-    const dakutenTabPane = document.getElementById('dakuten');
-    const handakutenTabPane = document.getElementById('handakuten');
+    const dakutenHandakutenTabPane = document.getElementById('dakuten-handakuten');
     const katakanaTabPane = document.getElementById('katakana');
     const kanjiTabPane = document.getElementById('kanji');
     const numbersTabPane = document.getElementById('numbers');
 
+    const combinedDakuten = { ...characterSets.dakuten, ...characterSets.handakuten };
+
     hiraganaTabPane.innerHTML = generateCharacterCards(characterSets.hiragana);
-    dakutenTabPane.innerHTML = generateCharacterCards(characterSets.dakuten);
-    handakutenTabPane.innerHTML = generateCharacterCards(characterSets.handakuten);
+    dakutenHandakutenTabPane.innerHTML = generateCharacterCards(combinedDakuten);
     katakanaTabPane.innerHTML = generateCharacterCards(characterSets.katakana);
     kanjiTabPane.innerHTML = generateCharacterCards(characterSets.kanji);
     numbersTabPane.innerHTML = generateCharacterCards(characterSets.numbers);
@@ -1947,17 +1922,26 @@ let isSectionActive = false; // Flag to track if a section is active
 
 function updateHomeButton(isSection) {
     const appTitle = document.getElementById('home-button');
+    isSectionActive = isSection; // Set the global flag
+
     if (isSection) {
         appTitle.innerHTML = '<img src="/nihon/icons/back.png" alt="Back" style="height: 1.5rem; vertical-align: middle;"> Back';
         appTitle.classList.add('back-button');
         appTitle.style.fontSize = ''; // Reset font size as image handles size
-        isSectionActive = true;
-        appTitle.addEventListener('click', (event) => { showHomePage() });
     } else {
         appTitle.textContent = 'Nihon';
         appTitle.classList.remove('back-button');
         appTitle.style.fontSize = '';
-        isSectionActive = false;
+    }
+
+    // Control install button visibility
+    const installButton = document.getElementById('install-button');
+    if (installButton) {
+        if (deferredPrompt && !isSectionActive) {
+            installButton.style.display = 'flex';
+        } else {
+            installButton.style.display = 'none';
+        }
     }
 }
 
