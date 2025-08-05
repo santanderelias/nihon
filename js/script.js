@@ -1785,10 +1785,14 @@ if (grammarModal) {
                     <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#grammarAccordion">
                         <div class="accordion-body" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
                             <p>The basic sentence structure in Japanese is <strong>Subject - Object - Verb (SOV)</strong>.</p>
-                            <p class="d-flex justify-content-between align-items-center">
-                                <span>Example: 私はリンゴを食べます (Watashi wa ringo o tabemasu) - I eat an apple.</span>
-                                <button onclick="playReferenceAudio('watashi_wa_ringo_o_tabemasu')" class="btn btn-secondary btn-sm"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button>
-                            </p>
+                            <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <td>Example: 私はリンゴを食べます (Watashi wa ringo o tabemasu) - I eat an apple.</td>
+                                        <td class="text-center"><button onclick="playReferenceAudio('watashi_wa_ringo_o_tabemasu')" class="btn btn-secondary btn-sm"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                             <ul>
                                 <li>私 (Watashi) - I (Subject)</li>
                                 <li>リンゴ (ringo) - apple (Object)</li>
@@ -1820,11 +1824,32 @@ if (grammarModal) {
                         <div class="accordion-body" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
                             <p>Japanese verbs are conjugated based on their group. Here's a basic overview of the polite (ます/masu) form.</p>
                             <h6>Group 1 (u-verbs)</h6>
-                            <p>Example: 読む (yomu) - to read -> 読み<strong>ます</strong> (yomi<strong>masu</strong>) - (I) read.</p>
+                            <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <td>Example: 読む (yomu) - to read -> 読み<strong>ます</strong> (yomi<strong>masu</strong>) - (I) read.</td>
+                                        <td class="text-center"><button onclick="playReferenceAudio('yomimasu')" class="btn btn-secondary btn-sm"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                             <h6>Group 2 (ru-verbs)</h6>
-                            <p>Example: 食べる (taberu) - to eat -> 食べ<strong>ます</strong> (tabe<strong>masu</strong>) - (I) eat.</p>
+                             <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <td>Example: 食べる (taberu) - to eat -> 食べ<strong>ます</strong> (tabe<strong>masu</strong>) - (I) eat.</td>
+                                        <td class="text-center"><button onclick="playReferenceAudio('tabemasu')" class="btn btn-secondary btn-sm"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                             <h6>Group 3 (Irregular verbs)</h6>
-                            <p>Example: する (suru) - to do -> <strong>します</strong> (<strong>shimasu</strong>) - (I) do.</p>
+                            <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <td>Example: する (suru) - to do -> <strong>します</strong> (<strong>shimasu</strong>) - (I) do.</td>
+                                        <td class="text-center"><button onclick="playReferenceAudio('shimasu')" class="btn btn-secondary btn-sm"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -1834,11 +1859,22 @@ if (grammarModal) {
                     <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#grammarAccordion">
                         <div class="accordion-body" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
                             <p>Adjectives ending in <strong>い (i)</strong> are called i-adjectives. They can be conjugated.</p>
-                            <ul>
-                                <li><strong>Present:</strong> 新しい (atarashii) - new</li>
-                                <li><strong>Negative:</strong> 新しくない (atarashikunai) - not new</li>
-                                <li><strong>Past:</strong> 新しかった (atarashikatta) - was new</li>
-                            </ul>
+                            <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Present:</strong> 新しい (atarashii) - new</td>
+                                        <td class="text-center"><button onclick="playReferenceAudio('atarashii')" class="btn btn-secondary btn-sm"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Negative:</strong> 新しくない (atarashikunai) - not new</td>
+                                        <td class="text-center"><button onclick="playReferenceAudio('atarashikunai')" class="btn btn-secondary btn-sm"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Past:</strong> 新しかった (atarashikatta) - was new</td>
+                                        <td class="text-center"><button onclick="playReferenceAudio('atarashikatta')" class="btn btn-secondary btn-sm"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -1848,16 +1884,27 @@ if (grammarModal) {
                     <div id="collapseFive" class="accordion-collapse collapse" data-bs-parent="#grammarAccordion">
                         <div class="accordion-body" style="font-family: 'Noto Sans JP Embedded', sans-serif;">
                             <p>Adjectives that require <strong>な (na)</strong> before a noun are na-adjectives. They use です (desu) for conjugation.</p>
-                            <ul>
-                                <li><strong>Present:</strong> きれい (kirei) - pretty -> きれいです (kirei desu)</li>
-                                <li><strong>Negative:</strong> きれいじゃないです (kirei janai desu) - not pretty</li>
-                                <li><strong>Past:</strong> きれいでした (kirei deshita) - was pretty</li>
-                            </ul>
+                             <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Present:</strong> きれい (kirei) -> きれいです (kirei desu) - pretty</td>
+                                        <td class="text-center"><button onclick="playReferenceAudio('kirei_desu')" class="btn btn-secondary btn-sm"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Negative:</strong> きれいじゃないです (kirei janai desu) - not pretty</td>
+                                        <td class="text-center"><button onclick="playReferenceAudio('kirei_janai_desu')" class="btn btn-secondary btn-sm"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Past:</strong> きれいでした (kirei deshita) - was pretty</td>
+                                        <td class="text-center"><button onclick="playReferenceAudio('kirei_deshita')" class="btn btn-secondary btn-sm"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
-        `;
+        `;;
     });
 }
 

@@ -36,7 +36,7 @@ hiragana_chars = {
     'za': 'ざ', 'ji': 'じ', 'zu': 'ず', 'ze': 'ぜ', 'zo': 'ぞ',
     'da': 'だ', 'dji': 'ぢ', 'dzu': 'づ', 'de': 'で', 'do': 'ど',
     'ba': 'ば', 'bi': 'び', 'bu': 'ぶ', 'be': 'べ', 'bo': 'ぼ',
-    'pa': 'パ', 'pi': 'ぴ', 'pu': 'ぷ', 'pe': 'ぺ', 'po': 'ぽ'
+    'pa': 'ぱ', 'pi': 'ぴ', 'pu': 'ぷ', 'pe': 'ぺ', 'po': 'ぽ'
 }
 AUDIO_MAP.update(hiragana_chars)
 
@@ -99,16 +99,17 @@ words_and_sentences = [
     "menyuu o kudasai", "okanjou o onegaishimasu", "oishikatta desu",
     "kore o kudasai", "shichaku shite mo ii desu ka", "kurejittokaado wa tsukaemasu ka",
     "eki wa doko desu ka", "massugu itte kudasai", "migi ni magatte kudasai",
-    "watashi wa neko ga suki desu", "kono hon wa omoshiroi desu", "ashita eiga o mi ni ikimasu"
+    "watashi wa neko ga suki desu", "kono hon wa omoshiroi desu", "ashita eiga o mi ni ikimasu",
+    "shimasu", "atarashikunai", "atarashikatta", "kirei desu", "kirei janai desu", "kirei deshita"
 ]
 for item in words_and_sentences:
     # Create a safe filename by replacing spaces with underscores
-    filename = item.lower().replace(" ", "_").replace("...". "desu").replace("?", "")
+    filename = item.lower().replace(" ", "_").replace("...", "desu").replace("?", "")
     AUDIO_MAP[filename] = item
 
 # Grammar examples
 grammar_examples = [
-    "Watashi wa ringo o tabemasu"
+    "Watashi wa ringo o tabemasu", "yomimasu", "tabemasu", "shimasu", "atarashii", "atarashikunai", "atarashikatta", "kirei desu", "kirei janai desu", "kirei deshita"
 ]
 for item in grammar_examples:
     filename = item.lower().replace(" ", "_").replace("?", "")
