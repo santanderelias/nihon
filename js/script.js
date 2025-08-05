@@ -777,11 +777,6 @@ function showHomePage() {
     }
     updateHomeButton(false); // No section is active
 
-    // Show install button if available and not installed
-    if (deferredPrompt && installButton && !isSectionActive) {
-        installButton.style.display = 'flex';
-    }
-
     // Remove IME if it exists
     const suggestionsContainer = document.getElementById('kanji-suggestions-card');
     if (suggestionsContainer) {
@@ -1051,6 +1046,17 @@ function loadFlashcard(type) {
     const flashcard = document.getElementById('flashcard');
     
     flashcardChar.textContent = charToDisplay;
+
+    // Adjust styling based on type
+    flashcardChar.className = ''; // Reset classes
+    if (type === 'words') {
+        flashcardChar.classList.add('quiz-word');
+    } else if (type === 'sentences') {
+        flashcardChar.classList.add('quiz-sentence');
+    } else {
+        flashcardChar.classList.add('display-1');
+    }
+
     flashcardReading.textContent = '';
     flashcardMeaning.textContent = '';
 
@@ -1350,8 +1356,19 @@ async function loadQuestion(type) {
 
     const correctAnswer = (type === 'numbers') ? currentCharset[charToTest].romaji : currentCharset[charToTest];
     const answerInput = document.getElementById('answer-input');
+    const charDisplay = document.getElementById('char-display');
     
-    document.getElementById('char-display').textContent = charToTest;
+    charDisplay.textContent = charToTest;
+
+    // Adjust styling based on type
+    charDisplay.className = ''; // Reset classes
+    if (type === 'words') {
+        charDisplay.classList.add('quiz-word');
+    } else if (type === 'sentences') {
+        charDisplay.classList.add('quiz-sentence');
+    } else {
+        charDisplay.classList.add('display-1');
+    }
 
     // Add audio and help buttons
     const buttonContainer = document.getElementById('button-container');
@@ -1535,7 +1552,6 @@ function checkAnswer(char, correctAnswer, type) {
 
 async function main() {
     showHomePage();
-    updateHomeButton(false);
 
     setupDictionaryPromise();
 
