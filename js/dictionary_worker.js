@@ -1,3 +1,4 @@
+self.process = self.process || {};
 importScripts('/nihon/js/sql-wasm.js');
 
 let SQL;

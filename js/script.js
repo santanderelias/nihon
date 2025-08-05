@@ -771,8 +771,8 @@ function showHomePage() {
     updateHomeButton(false); // No section is active
 
     // Show install button if available and not installed
-    if (deferredPrompt && installButton) {
-        installButton.style.display = 'block';
+    if (deferredPrompt && installButton && !isSectionActive) {
+        installButton.style.display = 'flex';
     }
 
     // Remove IME if it exists
@@ -1031,7 +1031,7 @@ function startFlashcardMode(type) {
                         </div>
                     </div>
                 </div>
-                <button id="play-flashcard-audio" class="btn btn-secondary btn-sm" style="display: none; position: absolute; bottom: 10px; right: 10px;"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button>
+                <button id="play-flashcard-audio" class="btn btn-secondary btn-sm" style="position: absolute; top: 10px; left: 10px; display: none;"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button>
                         </div>
                         <div class="flashcard-back d-flex flex-column align-items-center justify-content-center">
                             <h2 id="flashcard-reading" class="mb-2"></h2>
