@@ -1038,15 +1038,18 @@ function loadFlashcard(type) {
     });
 
     if (helpContent) {
-        const helpIcon = document.getElementById('help-icon');
         const helpCard = document.getElementById('help-card');
         helpCard.innerHTML = `<div class="card-body">${helpContent}</div>`;
-        helpIcon.addEventListener('click', (event) => {
-            event.stopPropagation();
-            helpCard.style.display = helpCard.style.display === 'block' ? 'none' : 'block';
+
+        buttonContainer.addEventListener('click', (event) => {
+            if (event.target.closest('#help-icon')) {
+                event.stopPropagation();
+                helpCard.style.display = helpCard.style.display === 'block' ? 'none' : 'block';
+            }
         });
+
         document.addEventListener('click', (event) => {
-            if (!helpCard.contains(event.target) && !helpIcon.contains(event.target)) {
+            if (!helpCard.contains(event.target) && !event.target.closest('#help-icon')) {
                 helpCard.style.display = 'none';
             }
         });
@@ -1309,24 +1312,24 @@ async function loadQuestion(type) {
     }
 
     document.getElementById('hint-button').addEventListener('click', (e) => handleButtonClick(e, () => {
-        const hintCard = document.getElementById('hint-card');
-        hintCard.innerHTML = `<h5>${correctAnswer}</h5>`;
-        hintCard.style.display = 'block';
-        setTimeout(() => { hintCard.style.display = 'none'; }, 1500);
+        showToast('Hint', correctAnswer);
     }));
 
     if (helpContent) {
-        const helpIcon = document.getElementById('help-icon');
         const helpCard = document.getElementById('help-card');
         helpCard.innerHTML = `<div class="card-body">${helpContent}</div>`;
 
-        helpIcon.addEventListener('click', (e) => handleButtonClick(e, (event) => {
-            event.stopPropagation();
-            helpCard.style.display = helpCard.style.display === 'block' ? 'none' : 'block';
-        }));
+        buttonContainer.addEventListener('click', (event) => {
+            if (event.target.closest('#help-icon')) {
+                handleButtonClick(event, () => {
+                    event.stopPropagation();
+                    helpCard.style.display = helpCard.style.display === 'block' ? 'none' : 'block';
+                });
+            }
+        });
 
         document.addEventListener('click', (event) => {
-            if (!helpCard.contains(event.target) && !helpIcon.contains(event.target)) {
+            if (!helpCard.contains(event.target) && !event.target.closest('#help-icon')) {
                 helpCard.style.display = 'none';
             }
         });
@@ -1369,6 +1372,30 @@ async function loadQuestion(type) {
     }
 }
 
+function getValidKanjiReadings(kanjiChar) {
+    const kanjiData = window.getKanjiData();
+    if (!kanjiData) return [];
+
+    const readings = [];
+    const kanjiNodes = kanjiData.getElementsByTagName('kanji');
+
+    for (let i = 0; i < kanjiNodes.length; i++) {
+        const charNode = kanjiNodes[i].getElementsByTagName('char')[0];
+        if (charNode && charNode.childNodes[0].nodeValue === kanjiChar) {
+            const onNodes = kanjiNodes[i].getElementsByTagName('on');
+            const kunNodes = kanjiNodes[i].getElementsByTagName('kun');
+            for (let j = 0; j < onNodes.length; j++) {
+                readings.push(onNodes[j].childNodes[0].nodeValue);
+            }
+            for (let j = 0; j < kunNodes.length; j++) {
+                readings.push(kunNodes[j].childNodes[0].nodeValue);
+            }
+            break;
+        }
+    }
+    return readings;
+}
+
 function checkAnswer(char, correctAnswer, type) {
     const answerInput = document.getElementById('answer-input');
     let userAnswer = wanakana.toRomaji(answerInput.value.trim());
@@ -1376,7 +1403,15 @@ function checkAnswer(char, correctAnswer, type) {
     const now = Date.now();
     let p = progress[char];
 
-    if (userAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
+    let isCorrect = false;
+    if (type === 'kanji') {
+        const validReadings = getValidKanjiReadings(char);
+        isCorrect = validReadings.includes(userAnswer.toLowerCase());
+    } else {
+        isCorrect = userAnswer.toLowerCase() === correctAnswer.toLowerCase();
+    }
+
+    if (isCorrect) {
         p.correct++;
         p.streak = (p.streak || 0) + 1;
         p.lastAnswer = 'correct';
@@ -1637,6 +1672,43 @@ async function searchDictionary(word) {
     dictionaryWorker.postMessage({ action: 'searchDictionary', word: word });
 }
 
+function backupProgress() {
+    const data = {
+        progress: localStorage.getItem('nihon-progress'),
+        playerState: localStorage.getItem('nihon-player-state')
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `nihon-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Success', 'Progress backed up successfully.');
+}
+
+function restoreProgress(file) {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        try {
+            const data = JSON.parse(event.target.result);
+            if (data.progress && data.playerState) {
+                localStorage.setItem('nihon-progress', data.progress);
+                localStorage.setItem('nihon-player-state', data.playerState);
+                showToast('Success', 'Progress restored successfully. Reloading...');
+                setTimeout(() => window.location.reload(), 2000);
+            } else {
+                showToast('Error', 'Invalid backup file.');
+            }
+        } catch (error) {
+            showToast('Error', 'Could not parse backup file.');
+        }
+    };
+    reader.readAsText(file);
+}
+
     // Initial Setup
     patchPlayerState();
     checkDevMode();
@@ -1732,6 +1804,27 @@ async function searchDictionary(word) {
         });
     }
 
+    const devBackupButton = document.getElementById('dev-backup-button');
+    if (devBackupButton) {
+        devBackupButton.addEventListener('click', backupProgress);
+    }
+
+    const devRestoreButton = document.getElementById('dev-restore-button');
+    if (devRestoreButton) {
+        devRestoreButton.addEventListener('click', () => {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.json';
+            fileInput.onchange = (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    restoreProgress(file);
+                }
+            };
+            fileInput.click();
+        });
+    }
+
     const devModalCloseButton = document.querySelector('#dev-tools-modal .btn-close');
     if(devModalCloseButton) {
         devModalCloseButton.addEventListener('click', (e) => {
@@ -1774,6 +1867,16 @@ async function searchDictionary(word) {
     const referencesModal = document.getElementById('references-modal');
     if (referencesModal) {
         referencesModal.addEventListener('show.bs.modal', populateReferencesModal);
+
+        const referenceTabs = referencesModal.querySelectorAll('button[data-bs-toggle="tab"]');
+        referenceTabs.forEach(tab => {
+            tab.addEventListener('shown.bs.tab', (event) => {
+                const paneId = event.target.getAttribute('data-bs-target').substring(1);
+                const pane = document.getElementById(paneId);
+                const type = paneId; // hiragana, katakana, kanji, numbers
+                setupReferenceListeners(pane, type);
+            });
+        });
     }
 
     // Global click listener for dismissing popovers/cards

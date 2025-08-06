@@ -137,25 +137,26 @@ function changebuttons(sel)
 /* Function that renders the kanji buttons of the chosen level */
 var kanjiData;
 
+window.getKanjiData = function() {
+    if (!kanjiData) {
+        if (window.XMLHttpRequest) {
+            xmlhttp = new XMLHttpRequest();
+        } else {
+            xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+        xmlhttp.open("GET", "js/kanji.xml", false);
+        xmlhttp.send();
+        kanjiData = xmlhttp.responseXML;
+    }
+    return kanjiData;
+};
+
 function kanji(lvl)
 {
 	// Empties the temporary string
 	Buttons_tmp = "";
 
-	if (!kanjiData) {
-		// Opens the xml file containign the kanji
-		if (window.XMLHttpRequest)
-		{// code for IE7+, Firefox, Chrome, Opera, Safari
-			xmlhttp=new XMLHttpRequest();
-		}
-		else
-		{// code for IE6, IE5
-			xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-		}
-		xmlhttp.open("GET","js/kanji.xml",false);
-		xmlhttp.send();
-		kanjiData=xmlhttp.responseXML;
-	}
+    getKanjiData();
 
 	// Gets the kanji of that level
 	kanji_list = kanjiData.getElementsByTagName("category")[lvl-1].getElementsByTagName("kanji");
@@ -354,14 +355,6 @@ function replacekana(charset, quizType) {
     const suggestions = getKanjiSuggestions(inputText, charset);
     const suggestionsContainer = document.getElementById('kanji-suggestions');
 
-    // Hide suggestions if the only suggestion is the same as the converted input
-    if (suggestions.length === 1 && suggestions[0] === convertedText) {
-        if (suggestionsContainer) {
-            suggestionsContainer.innerHTML = '';
-            suggestionsContainer.style.display = 'none';
-        }
-        return;
-    }
 
     if (suggestions.length > 0 && suggestionsContainer) {
         suggestionsContainer.style.display = 'block';
