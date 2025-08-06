@@ -315,7 +315,14 @@ function katakana()
 
 
 /* Function that replaces the roman letters for their corresponding kana */
+let isProgrammaticChange = false;
+
 function replacekana(charset, quizType) {
+    if (isProgrammaticChange) {
+        isProgrammaticChange = false;
+        return;
+    }
+
     const answerInput = document.getElementById("answer-input");
     if (!answerInput) return;
 
@@ -339,6 +346,7 @@ function replacekana(charset, quizType) {
     }
 
     if (answerInput) {
+        isProgrammaticChange = true;
         answerInput.value = convertedText;
     }
 
