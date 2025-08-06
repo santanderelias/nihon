@@ -1028,62 +1028,8 @@ function loadFlashcard(type) {
     }
     buttonContainer.innerHTML = buttonsHTML;
 
-    if (filename) {
-        document.getElementById('play-flashcard-audio').addEventListener('click', () => {
-            const audio = new Audio(`audio/${filename}.mp3`);
-            audio.play().catch(e => console.error("Error playing audio:", e));
-        });
-    }
-
-    document.getElementById('hint-button').addEventListener('click', () => {
-        const hintCard = document.getElementById('hint-card');
-        const correctAnswerText = (type === 'numbers') ? `${currentCharset[currentFlashcardChar].romaji} (${currentCharset[currentFlashcardChar].latin})` : currentCharset[currentFlashcardChar];
-        hintCard.innerHTML = `<h5>${correctAnswerText}</h5>`;
-        hintCard.style.display = 'block';
-        setTimeout(() => { hintCard.style.display = 'none'; }, 1500);
-    });
-
-    if (helpContent) {
-        const helpCard = document.getElementById('help-card');
-        helpCard.innerHTML = `<div class="card-body">${helpContent}</div>`;
-
-        buttonContainer.addEventListener('click', (event) => {
-            if (event.target.closest('#help-icon')) {
-                event.stopPropagation();
-                helpCard.style.display = helpCard.style.display === 'block' ? 'none' : 'block';
-            }
-        });
-
-        document.addEventListener('click', (event) => {
-            if (!helpCard.contains(event.target) && !event.target.closest('#help-icon')) {
-                helpCard.style.display = 'none';
-            }
-        });
-    }
-
-    const grammarButton = document.getElementById('grammar-button');
-    if (grammarButton) {
-        grammarButton.addEventListener('click', async () => {
-            const grammarModalBody = document.querySelector('#grammar-modal .modal-body');
-            if (grammarModalBody) {
-                try {
-                    const response = await fetch('grammar.html');
-                    const content = await response.text();
-                    grammarModalBody.innerHTML = content;
-                } catch (error) {
-                    grammarModalBody.innerHTML = '<p>Error loading grammar section.</p>';
-                }
-            }
-        });
-    }
-
     flashcard.classList.remove('flipped');
     isCurrentCardCorrect = Math.random() < 0.5;
-
-    document.getElementById('flip-button').addEventListener('click', () => flipFlashcard());
-    document.getElementById('flashcard').addEventListener('click', () => flipFlashcard());
-    document.getElementById('true-button').addEventListener('click', () => checkFlashcardAnswer(true, type));
-    document.getElementById('false-button').addEventListener('click', () => checkFlashcardAnswer(false, type));
 
     let reading = '';
     let meaning = '';
@@ -1206,17 +1152,8 @@ function loadListeningQuestion() {
 
     const checkButton = document.getElementById('check-button');
     checkButton.disabled = false;
-    checkButton.addEventListener('click', () => checkAnswer(charToTest, correctAnswer, 'listening'));
-
-    const skipButton = document.getElementById('skip-button');
-    skipButton.addEventListener('click', () => loadListeningQuestion());
 
     const playAudioButton = document.getElementById('play-audio-button');
-    playAudioButton.addEventListener('click', () => {
-        const filename = getAudioFilename(charToTest, 'listening');
-        const audio = new Audio(`audio/${filename}.mp3`);
-        audio.play().catch(e => console.error("Error playing audio:", e));
-    });
 
     answerInput.focus();
 }
@@ -1320,42 +1257,6 @@ async function loadQuestion(type) {
     }
     buttonContainer.innerHTML = buttonsHTML;
 
-    const handleButtonClick = (event, action) => {
-        event.preventDefault();
-        action();
-        answerInput.focus();
-    };
-
-    if (filename) {
-        document.getElementById('play-char-audio').addEventListener('click', (e) => handleButtonClick(e, () => {
-            const audio = new Audio(`audio/${filename}.mp3`);
-            audio.play().catch(err => console.error("Error playing audio:", err));
-        }));
-    }
-
-    document.getElementById('hint-button').addEventListener('click', (e) => handleButtonClick(e, () => {
-        showToast('Hint', correctAnswer);
-    }));
-
-    if (helpContent) {
-        const helpCard = document.getElementById('help-card');
-        helpCard.innerHTML = `<div class="card-body">${helpContent}</div>`;
-
-        buttonContainer.addEventListener('click', (event) => {
-            if (event.target.closest('#help-icon')) {
-                handleButtonClick(event, () => {
-                    event.stopPropagation();
-                    helpCard.style.display = helpCard.style.display === 'block' ? 'none' : 'block';
-                });
-            }
-        });
-
-        document.addEventListener('click', (event) => {
-            if (!helpCard.contains(event.target) && !event.target.closest('#help-icon')) {
-                helpCard.style.display = 'none';
-            }
-        });
-    }
 
     document.getElementById('feedback-area').innerHTML = '';
     const p = progress[charToTest];
@@ -1370,17 +1271,6 @@ async function loadQuestion(type) {
     answerInput.readOnly = false;
     
     document.getElementById('check-button').disabled = false;
-    document.getElementById('check-button').addEventListener('click', () => checkAnswer(charToTest, correctAnswer, type));
-    document.getElementById('skip-button').addEventListener('click', () => {
-        p.incorrect++;
-        p.streak = 0;
-        p.lastAnswer = 'incorrect';
-        p.nextReview = Date.now() + 60 * 60 * 1000;
-        localStorage.setItem('nihon-progress', JSON.stringify(progress));
-        showToast('Skipped', `Marked as incorrect. You'll see it again soon!`);
-        prepareNextQuestion();
-        setTimeout(() => loadQuestion(type), 1200);
-    });
 
     answerInput.focus();
 
@@ -1570,12 +1460,7 @@ function populateStatsModal() {
     }
     playerStatsHTML += '</ul></div><hr>';
 
-    // Remove old stats before inserting new
-    const oldPlayerStats = statsBody.querySelector('#player-stats');
-    if (oldPlayerStats) oldPlayerStats.remove();
-    const oldSkillLevels = statsBody.querySelector('#skill-levels');
-    if (oldSkillLevels) oldSkillLevels.remove();
-
+    statsBody.innerHTML = '';
     statsBody.insertAdjacentHTML('afterbegin', playerStatsHTML);
 
     // Character Stats
@@ -1677,12 +1562,11 @@ function populateReferencesModal() {
         pane.dataset.listenersAttached = true;
     };
 
-    // Initial population of the active tab
-    const activeTabPane = referencesModal.querySelector('.tab-pane.active');
-    if (activeTabPane) {
-        const type = activeTabPane.id;
-        setupReferenceListeners(activeTabPane, type);
-    }
+    const tabPanes = referencesModal.querySelectorAll('.tab-pane');
+    tabPanes.forEach(pane => {
+        const type = pane.id;
+        setupReferenceListeners(pane, type);
+    });
 }
 
 async function searchDictionary(word) {
@@ -1908,6 +1792,70 @@ function restoreProgress(file) {
         const suggestionsContainer = document.getElementById('kanji-suggestions-card');
         if (suggestionsContainer && !suggestionsContainer.contains(event.target) && !document.getElementById('answer-input').contains(event.target)) {
             suggestionsContainer.remove();
+        }
+
+        const target = event.target;
+        const quizContent = target.closest('.card-body');
+        if (!quizContent) return;
+
+        const charDisplay = document.getElementById('char-display');
+        const charToTest = charDisplay ? charDisplay.textContent : null;
+
+        if (target.id === 'check-button') {
+            const correctAnswer = (currentQuizType === 'numbers') ? currentCharset[charToTest].romaji : currentCharset[charToTest];
+            checkAnswer(charToTest, correctAnswer, currentQuizType);
+        }
+
+        if (target.id === 'skip-button') {
+            const p = progress[charToTest];
+            p.incorrect++;
+            p.streak = 0;
+            p.lastAnswer = 'incorrect';
+            p.nextReview = Date.now() + 60 * 60 * 1000;
+            localStorage.setItem('nihon-progress', JSON.stringify(progress));
+            showToast('Skipped', `Marked as incorrect. You'll see it again soon!`);
+            prepareNextQuestion();
+            setTimeout(() => loadQuestion(currentQuizType), 1200);
+        }
+
+        if (target.id === 'hint-button') {
+            const correctAnswer = (currentQuizType === 'numbers') ? currentCharset[charToTest].romaji : currentCharset[charToTest];
+            showToast('Hint', correctAnswer);
+        }
+
+        if (target.closest('#help-icon')) {
+            const helpCard = document.getElementById('help-card');
+            if (helpCard) {
+                helpCard.style.display = helpCard.style.display === 'block' ? 'none' : 'block';
+            }
+        }
+
+        if (target.id === 'play-char-audio') {
+            const filename = getAudioFilename(charToTest, currentQuizType);
+            if (filename) {
+                const audio = new Audio(`audio/${filename}.mp3`);
+                audio.play().catch(err => console.error("Error playing audio:", err));
+            }
+        }
+
+        if (target.id === 'flip-button' || target.closest('.flashcard')) {
+            flipFlashcard();
+        }
+
+        if (target.id === 'true-button') {
+            checkFlashcardAnswer(true, currentFlashcardType);
+        }
+
+        if (target.id === 'false-button') {
+            checkFlashcardAnswer(false, currentFlashcardType);
+        }
+
+        if (target.id === 'play-flashcard-audio') {
+            const filename = getAudioFilename(currentFlashcardChar, currentFlashcardType);
+            if (filename) {
+                const audio = new Audio(`audio/${filename}.mp3`);
+                audio.play().catch(e => console.error("Error playing audio:", e));
+            }
         }
     });
 
