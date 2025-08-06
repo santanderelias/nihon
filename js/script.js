@@ -8,7 +8,6 @@ let isDictionaryReady = false;
 let currentDictionaryStatusMessage = '';
 let currentCharset = {};
 let currentQuizType = '';
-let activeTooltip = null;
 let skipQueue = [];
 let progress = JSON.parse(localStorage.getItem('nihon-progress')) || {};
 let playerState = JSON.parse(localStorage.getItem('nihon-player-state')) || {
@@ -751,10 +750,6 @@ function getNextCharacter() {
 
 function showHomePage() {
     const contentArea = document.getElementById('content-area');
-    if (activeTooltip) {
-        activeTooltip.dispose();
-        activeTooltip = null;
-    }
     updateHomeButton(false);
 
     const suggestionsContainer = document.getElementById('kanji-suggestions-card');
@@ -1340,13 +1335,7 @@ async function loadQuestion(type) {
     document.getElementById('feedback-area').innerHTML = '';
     const p = progress[charToTest];
     if (!p.seen || p.lastAnswer === 'incorrect') {
-        const tooltip = new bootstrap.Tooltip(charDisplay, {
-            title: `Correct Answer: ${correctAnswer}`,
-            placement: 'top',
-            trigger: 'manual'
-        });
-        tooltip.show();
-        activeTooltip = tooltip;
+        showToast('Hint', `Correct Answer: ${correctAnswer}`);
         p.seen = true;
         localStorage.setItem('nihon-progress', JSON.stringify(progress));
     }
@@ -1358,10 +1347,6 @@ async function loadQuestion(type) {
     document.getElementById('check-button').disabled = false;
     document.getElementById('check-button').addEventListener('click', () => checkAnswer(charToTest, correctAnswer, type));
     document.getElementById('skip-button').addEventListener('click', () => {
-        if (activeTooltip) {
-            activeTooltip.dispose();
-            activeTooltip = null;
-        }
         p.incorrect++;
         p.streak = 0;
         p.lastAnswer = 'incorrect';
@@ -1385,10 +1370,6 @@ async function loadQuestion(type) {
 }
 
 function checkAnswer(char, correctAnswer, type) {
-    if (activeTooltip) {
-        activeTooltip.dispose();
-        activeTooltip = null;
-    }
     const answerInput = document.getElementById('answer-input');
     let userAnswer = wanakana.toRomaji(answerInput.value.trim());
     const feedbackArea = document.getElementById('feedback-area');
