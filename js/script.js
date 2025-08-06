@@ -8,6 +8,7 @@ let isDictionaryReady = false;
 let currentDictionaryStatusMessage = '';
 let currentCharset = {};
 let currentQuizType = '';
+let nextChar = null;
 let skipQueue = [];
 let progress = JSON.parse(localStorage.getItem('nihon-progress')) || {};
 let playerState = JSON.parse(localStorage.getItem('nihon-player-state')) || {
@@ -870,6 +871,10 @@ function checkLevelUp(type) {
     }
 }
 
+function prepareNextQuestion() {
+    nextChar = getNextCharacter();
+}
+
 function startQuiz(type) {
     isSectionActive = true;
     currentQuizType = type;
@@ -910,13 +915,14 @@ function startQuiz(type) {
     `;
 
     const answerInput = document.getElementById('answer-input');
-    answerInput.addEventListener('input', () => replacekana(currentCharset, type));
+    wanakana.bind(answerInput, { IMEMode: true });
     answerInput.addEventListener('keypress', (event) => {
         if (event.key === 'Enter') {
             document.getElementById('check-button').click();
         }
     });
 
+    prepareNextQuestion();
     loadQuestion(type);
 }
 
@@ -1055,6 +1061,22 @@ function loadFlashcard(type) {
         });
     }
 
+    const grammarButton = document.getElementById('grammar-button');
+    if (grammarButton) {
+        grammarButton.addEventListener('click', async () => {
+            const grammarModalBody = document.querySelector('#grammar-modal .modal-body');
+            if (grammarModalBody) {
+                try {
+                    const response = await fetch('grammar.html');
+                    const content = await response.text();
+                    grammarModalBody.innerHTML = content;
+                } catch (error) {
+                    grammarModalBody.innerHTML = '<p>Error loading grammar section.</p>';
+                }
+            }
+        });
+    }
+
     flashcard.classList.remove('flipped');
     isCurrentCardCorrect = Math.random() < 0.5;
 
@@ -1152,7 +1174,7 @@ function startListeningQuiz() {
     `;
 
     const answerInput = document.getElementById('answer-input');
-    answerInput.oninput = () => replacekana(currentCharset, 'listening');
+    wanakana.bind(answerInput, { IMEMode: true });
 
     loadListeningQuestion();
 }
@@ -1259,7 +1281,7 @@ function getAudioFilename(char, type) {
 
 async function loadQuestion(type) {
     const contentArea = document.getElementById('content-area');
-    const charToTest = getNextCharacter();
+    const charToTest = nextChar;
 
     if (!charToTest) {
         contentArea.innerHTML = `
@@ -1356,6 +1378,7 @@ async function loadQuestion(type) {
         p.nextReview = Date.now() + 60 * 60 * 1000;
         localStorage.setItem('nihon-progress', JSON.stringify(progress));
         showToast('Skipped', `Marked as incorrect. You'll see it again soon!`);
+        prepareNextQuestion();
         setTimeout(() => loadQuestion(type), 1200);
     });
 
@@ -1435,6 +1458,7 @@ function checkAnswer(char, correctAnswer, type) {
     if (type === 'listening') {
         setTimeout(loadListeningQuestion, nextQuestionDelay);
     } else {
+        prepareNextQuestion();
         setTimeout(() => loadQuestion(type), nextQuestionDelay);
     }
 }
@@ -1639,26 +1663,26 @@ function populateReferencesModal() {
     };
 
     const setupReferenceListeners = (pane, type) => {
-        if (!pane) return;
+        if (!pane || pane.dataset.listenersAttached) return;
+
         const combinedSet = Object.assign({}, ...characterLevels[type].map(l => l.set));
         pane.innerHTML = generateCharacterCards(combinedSet, type);
+
         pane.querySelectorAll('.card').forEach(card => {
             card.addEventListener('click', () => {
                 playReferenceAudio(card.dataset.filename);
             });
         });
+
+        pane.dataset.listenersAttached = true;
     };
 
-    // Combine all levels for each type to pass to generateCharacterCards
-    const combinedHiragana = Object.assign({}, ...characterLevels.hiragana.map(l => l.set));
-    const combinedKatakana = Object.assign({}, ...characterLevels.katakana.map(l => l.set));
-    const combinedKanji = Object.assign({}, ...characterLevels.kanji.map(l => l.set));
-    const combinedNumbers = Object.assign({}, ...characterLevels.numbers.map(l => l.set));
-
-    setupReferenceListeners(document.getElementById('hiragana'), 'hiragana');
-    setupReferenceListeners(document.getElementById('katakana'), 'katakana');
-    setupReferenceListeners(document.getElementById('kanji'), 'kanji');
-    setupReferenceListeners(document.getElementById('numbers'), 'numbers');
+    // Initial population of the active tab
+    const activeTabPane = referencesModal.querySelector('.tab-pane.active');
+    if (activeTabPane) {
+        const type = activeTabPane.id;
+        setupReferenceListeners(activeTabPane, type);
+    }
 }
 
 async function searchDictionary(word) {
