@@ -91,7 +91,6 @@ input, textarea, .form-control {
 
 .quiz-word {
     font-size: 3rem;
-    white-space: nowrap;
     font-family: 'Noto Sans JP Embedded', sans-serif;
 }
 

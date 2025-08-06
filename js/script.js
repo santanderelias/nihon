@@ -1,3 +1,4 @@
+document.addEventListener('DOMContentLoaded', () => {
 // --- GLOBAL SCOPE ---
 let deferredPrompt;
 let isSectionActive = false;
@@ -901,7 +902,7 @@ function startQuiz(type) {
                     </div>
                     <div id="example-word-area" class="mt-3"></div>
                     <div class="mb-3">
-                        <input type="text" class="form-control text-center" id="answer-input" autocomplete="off" onkeypress="if(event.key === 'Enter') document.getElementById('check-button').click()">
+                        <input type="text" class="form-control text-center" id="answer-input" autocomplete="off">
                     </div>
                     <button class="btn btn-success" id="check-button">Check</button>
                     <button class="btn btn-secondary" id="skip-button">Skip</button>
@@ -914,7 +915,12 @@ function startQuiz(type) {
     `;
 
     const answerInput = document.getElementById('answer-input');
-    answerInput.oninput = () => replacekana(currentCharset, type);
+    answerInput.addEventListener('input', () => replacekana(currentCharset, type));
+    answerInput.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            document.getElementById('check-button').click();
+        }
+    });
 
     loadQuestion(type);
 }
@@ -985,9 +991,10 @@ function loadFlashcard(type) {
                 <div class="card-body">
                     <h5 class="card-title">Congratulations!</h5>
                     <p class="card-text">You have reviewed all characters in this set.</p>
-                    <button class="btn btn-secondary" onclick="showHomePage()">Back to Home</button>
+                    <button class="btn btn-secondary" id="back-to-home">Back to Home</button>
                 </div>
             </div>`;
+        document.getElementById('back-to-home').addEventListener('click', showHomePage);
         return;
     }
 
@@ -1002,6 +1009,7 @@ function loadFlashcard(type) {
     flashcardChar.className = 'display-1';
     if (type === 'words') flashcardChar.className = 'quiz-word';
     if (type === 'sentences') flashcardChar.className = 'quiz-sentence';
+    adjustFontSize(flashcardChar);
 
     flashcardReading.textContent = '';
     flashcardMeaning.textContent = '';
@@ -1020,19 +1028,19 @@ function loadFlashcard(type) {
     buttonContainer.innerHTML = buttonsHTML;
 
     if (filename) {
-        document.getElementById('play-flashcard-audio').onclick = () => {
+        document.getElementById('play-flashcard-audio').addEventListener('click', () => {
             const audio = new Audio(`audio/${filename}.mp3`);
             audio.play().catch(e => console.error("Error playing audio:", e));
-        };
+        });
     }
 
-    document.getElementById('hint-button').onclick = () => {
+    document.getElementById('hint-button').addEventListener('click', () => {
         const hintCard = document.getElementById('hint-card');
         const correctAnswerText = (type === 'numbers') ? `${currentCharset[currentFlashcardChar].romaji} (${currentCharset[currentFlashcardChar].latin})` : currentCharset[currentFlashcardChar];
         hintCard.innerHTML = `<h5>${correctAnswerText}</h5>`;
         hintCard.style.display = 'block';
         setTimeout(() => { hintCard.style.display = 'none'; }, 1500);
-    };
+    });
 
     if (helpContent) {
         const helpIcon = document.getElementById('help-icon');
@@ -1052,10 +1060,10 @@ function loadFlashcard(type) {
     flashcard.classList.remove('flipped');
     isCurrentCardCorrect = Math.random() < 0.5;
 
-    document.getElementById('flip-button').onclick = () => flipFlashcard();
-    document.getElementById('flashcard').onclick = () => flipFlashcard();
-    document.getElementById('true-button').onclick = () => checkFlashcardAnswer(true, type);
-    document.getElementById('false-button').onclick = () => checkFlashcardAnswer(false, type);
+    document.getElementById('flip-button').addEventListener('click', () => flipFlashcard());
+    document.getElementById('flashcard').addEventListener('click', () => flipFlashcard());
+    document.getElementById('true-button').addEventListener('click', () => checkFlashcardAnswer(true, type));
+    document.getElementById('false-button').addEventListener('click', () => checkFlashcardAnswer(false, type));
 
     let reading = '';
     let meaning = '';
@@ -1161,9 +1169,10 @@ function loadListeningQuestion() {
                 <div class="card-body">
                     <h5 class="card-title">Congratulations!</h5>
                     <p class="card-text">You have mastered this set.</p>
-                    <button class="btn btn-secondary" onclick="showHomePage()">Back to Home</button>
+                    <button class="btn btn-secondary" id="back-to-home">Back to Home</button>
                 </div>
             </div>`;
+        document.getElementById('back-to-home').addEventListener('click', showHomePage);
         return;
     }
 
@@ -1177,17 +1186,17 @@ function loadListeningQuestion() {
 
     const checkButton = document.getElementById('check-button');
     checkButton.disabled = false;
-    checkButton.onclick = () => checkAnswer(charToTest, correctAnswer, 'listening');
+    checkButton.addEventListener('click', () => checkAnswer(charToTest, correctAnswer, 'listening'));
 
     const skipButton = document.getElementById('skip-button');
-    skipButton.onclick = () => loadListeningQuestion();
+    skipButton.addEventListener('click', () => loadListeningQuestion());
 
     const playAudioButton = document.getElementById('play-audio-button');
-    playAudioButton.onclick = () => {
+    playAudioButton.addEventListener('click', () => {
         const filename = getAudioFilename(charToTest, 'listening');
         const audio = new Audio(`audio/${filename}.mp3`);
         audio.play().catch(e => console.error("Error playing audio:", e));
-    };
+    });
 
     answerInput.focus();
 }
@@ -1260,9 +1269,10 @@ async function loadQuestion(type) {
                 <div class="card-body">
                     <h5 class="card-title">Congratulations!</h5>
                     <p class="card-text">You have mastered this set.</p>
-                    <button class="btn btn-secondary" onclick="showHomePage()">Back to Home</button>
+                    <button class="btn btn-secondary" id="back-to-home">Back to Home</button>
                 </div>
             </div>`;
+        document.getElementById('back-to-home').addEventListener('click', showHomePage);
         return;
     }
 
@@ -1275,6 +1285,7 @@ async function loadQuestion(type) {
     charDisplay.className = 'display-1';
     if (type === 'words') charDisplay.className = 'quiz-word';
     if (type === 'sentences') charDisplay.className = 'quiz-sentence';
+    adjustFontSize(charDisplay);
 
     const buttonContainer = document.getElementById('button-container');
     let buttonsHTML = '';
@@ -1345,8 +1356,8 @@ async function loadQuestion(type) {
     answerInput.readOnly = false;
     
     document.getElementById('check-button').disabled = false;
-    document.getElementById('check-button').onclick = () => checkAnswer(charToTest, correctAnswer, type);
-    document.getElementById('skip-button').onclick = () => {
+    document.getElementById('check-button').addEventListener('click', () => checkAnswer(charToTest, correctAnswer, type));
+    document.getElementById('skip-button').addEventListener('click', () => {
         if (activeTooltip) {
             activeTooltip.dispose();
             activeTooltip = null;
@@ -1358,7 +1369,7 @@ async function loadQuestion(type) {
         localStorage.setItem('nihon-progress', JSON.stringify(progress));
         showToast('Skipped', `Marked as incorrect. You'll see it again soon!`);
         setTimeout(() => loadQuestion(type), 1200);
-    };
+    });
 
     answerInput.focus();
 
@@ -1379,7 +1390,7 @@ function checkAnswer(char, correctAnswer, type) {
         activeTooltip = null;
     }
     const answerInput = document.getElementById('answer-input');
-    let userAnswer = answerInput.value.trim();
+    let userAnswer = wanakana.toRomaji(answerInput.value.trim());
     const feedbackArea = document.getElementById('feedback-area');
     const now = Date.now();
     let p = progress[char];
@@ -1409,6 +1420,21 @@ function checkAnswer(char, correctAnswer, type) {
         setTimeout(loadListeningQuestion, nextQuestionDelay);
     } else {
         setTimeout(() => loadQuestion(type), nextQuestionDelay);
+    }
+}
+
+function adjustFontSize(element) {
+    if (!element) return;
+    const container = element.parentElement;
+    let fontSize = parseFloat(window.getComputedStyle(element, null).getPropertyValue('font-size'));
+
+    // Reset font size to initial value before checking overflow
+    element.style.fontSize = '';
+    fontSize = parseFloat(window.getComputedStyle(element, null).getPropertyValue('font-size'));
+
+    while (element.scrollWidth > container.clientWidth && fontSize > 10) {
+        fontSize -= 1;
+        element.style.fontSize = `${fontSize}px`;
     }
 }
 
@@ -1583,7 +1609,7 @@ function populateReferencesModal() {
             const filename = getAudioFilename(char, type);
             html += `
                 <div class="col">
-                    <div class="card text-center h-100" onclick="playReferenceAudio('${filename}')" style="cursor: pointer;">
+                    <div class="card text-center h-100" data-filename="${filename}" style="cursor: pointer;">
                         <div class="card-body d-flex flex-column justify-content-center align-items-center">
                             <h3 class="card-title" style="font-family: 'Noto Sans JP Embedded', sans-serif;">${char}</h3>
                             <p class="card-text">${displayRomaji}${latinNumber}</p>
@@ -1596,16 +1622,27 @@ function populateReferencesModal() {
         return html;
     };
 
+    const setupReferenceListeners = (pane, type) => {
+        if (!pane) return;
+        const combinedSet = Object.assign({}, ...characterLevels[type].map(l => l.set));
+        pane.innerHTML = generateCharacterCards(combinedSet, type);
+        pane.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', () => {
+                playReferenceAudio(card.dataset.filename);
+            });
+        });
+    };
+
     // Combine all levels for each type to pass to generateCharacterCards
     const combinedHiragana = Object.assign({}, ...characterLevels.hiragana.map(l => l.set));
     const combinedKatakana = Object.assign({}, ...characterLevels.katakana.map(l => l.set));
     const combinedKanji = Object.assign({}, ...characterLevels.kanji.map(l => l.set));
     const combinedNumbers = Object.assign({}, ...characterLevels.numbers.map(l => l.set));
 
-    if(hiraganaTabPane) hiraganaTabPane.innerHTML = generateCharacterCards(combinedHiragana, 'hiragana');
-    if(katakanaTabPane) katakanaTabPane.innerHTML = generateCharacterCards(combinedKatakana, 'katakana');
-    if(kanjiTabPane) kanjiTabPane.innerHTML = generateCharacterCards(combinedKanji, 'kanji');
-    if(numbersTabPane) numbersTabPane.innerHTML = generateCharacterCards(combinedNumbers, 'numbers');
+    setupReferenceListeners(document.getElementById('hiragana'), 'hiragana');
+    setupReferenceListeners(document.getElementById('katakana'), 'katakana');
+    setupReferenceListeners(document.getElementById('kanji'), 'kanji');
+    setupReferenceListeners(document.getElementById('numbers'), 'numbers');
 }
 
 async function searchDictionary(word) {
@@ -1619,8 +1656,6 @@ async function searchDictionary(word) {
     dictionaryWorker.postMessage({ action: 'searchDictionary', word: word });
 }
 
-// --- DOMContentLoaded ---
-document.addEventListener('DOMContentLoaded', () => {
     // Initial Setup
     patchPlayerState();
     checkDevMode();
@@ -1775,8 +1810,3 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
-
-// No additional code needed in this block after refactoring
-
-
-// No additional code needed in this block after refactoring
