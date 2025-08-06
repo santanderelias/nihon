@@ -1063,10 +1063,16 @@ function loadFlashcard(type) {
 
     const grammarButton = document.getElementById('grammar-button');
     if (grammarButton) {
-        grammarButton.addEventListener('click', () => {
+        grammarButton.addEventListener('click', async () => {
             const grammarModalBody = document.querySelector('#grammar-modal .modal-body');
             if (grammarModalBody) {
-                grammarModalBody.innerHTML = '<p>The grammar section is currently under construction. Please check back later!</p>';
+                try {
+                    const response = await fetch('grammar.html');
+                    const content = await response.text();
+                    grammarModalBody.innerHTML = content;
+                } catch (error) {
+                    grammarModalBody.innerHTML = '<p>Error loading grammar section.</p>';
+                }
             }
         });
     }
