@@ -1,19 +1,21 @@
+import { state, playerState, characterLevels, initializeProgress, updateHomeButton, getHelpContent, getNextCharacter, gainXP, progress, getAudioFilename, adjustFontSize } from './script.js';
+
 let currentFlashcardChar = '';
 let isCurrentCardCorrect = true;
 
-function startFlashcardMode(type) {
-    isSectionActive = true;
-    currentQuizType = type;
+export function startFlashcardMode(type) {
+    state.isSectionActive = true;
+    state.currentQuizType = type;
 
     const userLevel = playerState.levels[type];
     const levelsForType = characterLevels[type];
-    currentCharset = {};
+    state.currentCharset = {};
 
     for (let i = 0; i <= userLevel && i < levelsForType.length; i++) {
-        Object.assign(currentCharset, levelsForType[i].set);
+        Object.assign(state.currentCharset, levelsForType[i].set);
     }
 
-    initializeProgress(currentCharset);
+    initializeProgress(state.currentCharset);
     updateHomeButton(true);
 
     const contentArea = document.getElementById('content-area');
@@ -110,15 +112,15 @@ function loadFlashcard(type) {
 
     if (isCurrentCardCorrect) {
         if (type === 'numbers') {
-            reading = currentCharset[currentFlashcardChar].romaji;
-            meaning = currentCharset[currentFlashcardChar].latin;
+            reading = state.currentCharset[currentFlashcardChar].romaji;
+            meaning = state.currentCharset[currentFlashcardChar].latin;
         } else {
-            reading = currentCharset[currentFlashcardChar];
+            reading = state.currentCharset[currentFlashcardChar];
             meaning = '';
         }
     } else {
-        const allReadings = Object.values(currentCharset);
-        const correctReading = (type === 'numbers') ? currentCharset[currentFlashcardChar].romaji : currentCharset[currentFlashcardChar];
+        const allReadings = Object.values(state.currentCharset);
+        const correctReading = (type === 'numbers') ? state.currentCharset[currentFlashcardChar].romaji : state.currentCharset[currentFlashcardChar];
         let incorrectReading;
         do {
             const randomIndex = Math.floor(Math.random() * allReadings.length);

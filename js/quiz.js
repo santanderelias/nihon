@@ -1,16 +1,18 @@
-function startQuiz(type) {
-    isSectionActive = true;
-    currentQuizType = type;
+import { state, playerState, characterLevels, initializeProgress, updateHomeButton, getHelpContent, progress, dictionaryWorker, getAudioFilename, adjustFontSize, showToast } from './script.js';
+
+export function startQuiz(type) {
+    state.isSectionActive = true;
+    state.currentQuizType = type;
 
     const userLevel = playerState.levels[type];
     const levelsForType = characterLevels[type];
-    currentCharset = {};
+    state.currentCharset = {};
 
     for (let i = 0; i <= userLevel && i < levelsForType.length; i++) {
-        Object.assign(currentCharset, levelsForType[i].set);
+        Object.assign(state.currentCharset, levelsForType[i].set);
     }
 
-    initializeProgress(currentCharset);
+    initializeProgress(state.currentCharset);
     updateHomeButton(true);
 
     const contentArea = document.getElementById('content-area');
@@ -54,9 +56,50 @@ function startQuiz(type) {
     loadQuestion(type);
 }
 
+function prepareNextQuestion() {
+    state.nextChar = getNextCharacter();
+}
+
+function getNextCharacter() {
+    const unlockedChars = Object.keys(state.currentCharset);
+    const unseenChars = unlockedChars.filter(char => !progress[char] || !progress[char].seen);
+
+    if (unseenChars.length > 0 && Math.random() < 0.75) {
+        return unseenChars[Math.floor(Math.random() * unseenChars.length)];
+    }
+
+    const now = Date.now();
+    let weightedList = [];
+    let minReviewTime = Infinity;
+    let fallbackChar = null;
+
+    for (const char of unlockedChars) {
+        const p = progress[char];
+        if (!p) continue;
+
+        if (p.nextReview <= now) {
+            const weight = Math.max(1, 1 + (p.incorrect * 5) - (p.correct * 0.5) + (p.streak * 2));
+            for (let i = 0; i < weight; i++) {
+                weightedList.push(char);
+            }
+        }
+
+        if (p.nextReview < minReviewTime) {
+            minReviewTime = p.nextReview;
+            fallbackChar = char;
+        }
+    }
+
+    if (weightedList.length > 0) {
+        return weightedList[Math.floor(Math.random() * weightedList.length)];
+    }
+
+    return fallbackChar || unlockedChars[Math.floor(Math.random() * unlockedChars.length)];
+}
+
 async function loadQuestion(type) {
     const contentArea = document.getElementById('content-area');
-    const charToTest = nextChar;
+    const charToTest = state.nextChar;
 
     if (!charToTest) {
         contentArea.innerHTML = `
@@ -71,7 +114,7 @@ async function loadQuestion(type) {
         return;
     }
 
-    const correctAnswer = (type === 'numbers') ? currentCharset[charToTest].romaji : currentCharset[charToTest];
+    const correctAnswer = (type === 'numbers') ? state.currentCharset[charToTest].romaji : state.currentCharset[charToTest];
     const answerInput = document.getElementById('answer-input');
     const charDisplay = document.getElementById('char-display');
 
@@ -119,10 +162,10 @@ async function loadQuestion(type) {
 
     const exampleWordArea = document.getElementById('example-word-area');
     if (exampleWordArea) {
-        if (!isDictionaryReady) {
-            exampleWordArea.innerHTML = `<div class="d-flex justify-content-center align-items-center mt-3"><div class="spinner-grow text-secondary me-2" role="status"><span class="visually-hidden">Loading...</span></div><span class="dictionary-loading-message">${currentDictionaryStatusMessage || 'Dictionary loading...'}</span></div>`;
+        if (!state.isDictionaryReady) {
+            exampleWordArea.innerHTML = `<div class="d-flex justify-content-center align-items-center mt-3"><div class="spinner-grow text-secondary me-2" role="status"><span class="visually-hidden">Loading...</span></div><span class="dictionary-loading-message">${state.currentDictionaryStatusMessage || 'Dictionary loading...'}</span></div>`;
         } else {
-            await dictionaryReadyPromise;
+            await state.dictionaryReadyPromise;
             dictionaryWorker.postMessage({ action: 'getExampleWord', character: charToTest });
         }
     }
