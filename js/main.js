@@ -1,7 +1,9 @@
-import { startQuiz } from './quiz.js';
-import { startFlashcardMode } from './flashcards.js';
+import { startQuiz, loadQuestion as loadQuizQuestion } from './quiz.js';
+import { startFlashcardMode, flipFlashcard, checkFlashcardAnswer } from './flashcards.js';
 import {
     state,
+    playerState,
+    progress,
     patchPlayerState,
     checkDevMode,
     showHomePage,
@@ -9,7 +11,15 @@ import {
     loadDictionary,
     setDarkMode,
     updateHomeButton,
-    showToast
+    showToast,
+    checkAnswer,
+    populateStatsModal,
+    populateReferencesModal,
+    playReferenceAudio,
+    backupProgress,
+    restoreProgress,
+    searchDictionary,
+    getAudioFilename
 } from './script.js';
 
 function setupHomePageListeners() {
@@ -25,46 +35,98 @@ function setupHomePageListeners() {
     document.getElementById('flashcardKatakana').addEventListener('click', () => startFlashcardMode('katakana'));
     document.getElementById('flashcardKanji').addEventListener('click', () => startFlashcardMode('kanji'));
     document.getElementById('flashcardNumbers').addEventListener('click', () => startFlashcardMode('numbers'));
-    document.getElementById('flashcardListening').addEventListener('click', () => startFlashcardMode('listening'));
+    // document.getElementById('flashcardListening').addEventListener('click', () => startFlashcardMode('listening'));
     document.getElementById('flashcardWords').addEventListener('click', () => startFlashcardMode('words'));
     document.getElementById('flashcardSentences').addEventListener('click', () => startFlashcardMode('sentences'));
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Initial setup
     patchPlayerState();
     checkDevMode();
     showHomePage();
     setupDictionaryPromise();
     loadDictionary();
-
-    // Setup home page listeners after the page is shown
     setupHomePageListeners();
 
-    // Service Worker and PWA
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/nihon/sw.js')
-                .then(reg => {
-                    reg.onupdatefound = () => {
-                        state.newWorker = reg.installing;
-                        state.newWorker.onstatechange = () => {
-                            if (state.newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                showToast('Update Available', 'A new version is available.', true);
-                            }
-                        };
-                    };
-                })
-                .catch(err => console.error('Service Worker registration failed:', err));
+    // --- Global Event Listeners ---
+
+    // Global click listener for dynamic content
+    document.addEventListener('click', (event) => {
+        const target = event.target;
+        const quizContent = target.closest('.card-body');
+
+        if (target.id === 'check-button' && quizContent) {
+            const charDisplay = document.getElementById('char-display');
+            const charToTest = charDisplay ? charDisplay.textContent : null;
+            if (charToTest) {
+                const correctAnswer = (state.currentQuizType === 'numbers') ? state.currentCharset[charToTest].romaji : state.currentCharset[charToTest];
+                // Pass the function to load the next question as a callback to break circular dependency
+                checkAnswer(charToTest, correctAnswer, state.currentQuizType, () => loadQuizQuestion(state.currentQuizType));
+            }
+        }
+
+        if (target.id === 'flip-button' || target.closest('.flashcard')) {
+            flipFlashcard();
+        }
+        if (target.id === 'true-button') {
+            checkFlashcardAnswer(true);
+        }
+        if (target.id === 'false-button') {
+            checkFlashcardAnswer(false);
+        }
+
+        if (target.closest('#play-char-audio')) {
+            const charDisplay = document.getElementById('char-display');
+            const charToTest = charDisplay ? charDisplay.textContent : null;
+            const filename = getAudioFilename(charToTest, state.currentQuizType);
+            if (filename) new Audio(`audio/${filename}.mp3`).play();
+        }
+    });
+
+    // Modal listeners
+    const statsModal = document.getElementById('stats-modal');
+    if (statsModal) statsModal.addEventListener('show.bs.modal', populateStatsModal);
+
+    const referencesModal = document.getElementById('references-modal');
+    if (referencesModal) referencesModal.addEventListener('show.bs.modal', populateReferencesModal);
+
+    const dictionarySearchButton = document.getElementById('dictionary-search-button');
+    const dictionarySearchInput = document.getElementById('dictionary-search-input');
+    if (dictionarySearchButton && dictionarySearchInput) {
+        const triggerSearch = () => {
+            const searchTerm = dictionarySearchInput.value.trim();
+            if (searchTerm) searchDictionary(searchTerm);
+        };
+        dictionarySearchButton.addEventListener('click', triggerSearch);
+        dictionarySearchInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') triggerSearch();
         });
     }
 
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        state.deferredPrompt = e;
-        updateHomeButton(state.isSectionActive);
+    // Dev Tools listeners
+    const devResetButton = document.getElementById('dev-reset-button');
+    if (devResetButton) devResetButton.addEventListener('click', () => {
+        if (confirm('Are you sure you want to reset all progress?')) {
+            localStorage.clear();
+            window.location.reload();
+        }
+    });
+    const devBackupButton = document.getElementById('dev-backup-button');
+    if (devBackupButton) devBackupButton.addEventListener('click', backupProgress);
+    const devRestoreButton = document.getElementById('dev-restore-button');
+    if (devRestoreButton) devRestoreButton.addEventListener('click', () => {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = '.json';
+        fileInput.onchange = (event) => {
+            const file = event.target.files[0];
+            if (file) restoreProgress(file);
+        };
+        fileInput.click();
     });
 
-    // Dark Mode
+    // Other listeners from original script
     const themeToggleIcon = document.getElementById('theme-toggle-icon');
     if (themeToggleIcon) {
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -76,7 +138,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // PWA Install Button
     const installButton = document.getElementById('install-button');
     if (installButton) {
         installButton.addEventListener('click', async () => {
@@ -89,18 +150,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Home Button
     const homeButton = document.getElementById('home-button');
     if (homeButton) {
         homeButton.addEventListener('click', (event) => {
             event.preventDefault();
             if (state.isSectionActive) {
                 showHomePage();
-                // Re-attach listeners after showing home page
                 setupHomePageListeners();
             }
         });
     }
-
-    // ... (Add other global event listeners from the old script.js if they exist)
 });
