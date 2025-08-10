@@ -134,11 +134,11 @@ function loadFlashcard(type) {
     flashcardMeaning.textContent = meaning;
 }
 
-function flipFlashcard() {
+export function flipFlashcard() {
     document.getElementById('flashcard').classList.toggle('flipped');
 }
 
-function checkFlashcardAnswer(userAnswer, type) {
+export function checkFlashcardAnswer(userAnswer, type) {
     const isCorrect = (userAnswer === isCurrentCardCorrect);
     markFlashcardProgress(currentFlashcardChar, isCorrect, type);
 }
