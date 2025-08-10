@@ -46,30 +46,18 @@ Nihon is a comprehensive Progressive Web App (PWA) for learning the Japanese lan
 
 ## Testing
 
-This project uses Cypress for end-to-end testing.
+This project uses [Jest](https://jestjs.io/) and [JSDOM](https://github.com/jsdom/jsdom) to test the application's JavaScript logic without requiring a browser environment. This allows for fast and reliable testing of the core functionality.
 
 ### Setup
 
-1.  Install the project dependencies:
-    ```bash
-    npm install
-    ```
+Install the project dependencies, including the testing libraries:
+```bash
+npm install
+```
 
 ### Running the Tests
 
-1.  Start the local development server:
-    ```bash
-    npm start
-    ```
-
-2.  In a separate terminal, you can run the tests in two ways:
-
-    -   **Headless mode:** This will run all tests in the background.
-        ```bash
-        npm test
-        ```
-
-    -   **Interactive mode:** This will open the Cypress Test Runner, where you can watch the tests run live.
-        ```bash
-        npm run cypress:open
-        ```
+To run the test suite, use the following command:
+```bash
+npm test
+```
