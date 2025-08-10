@@ -1008,6 +1008,8 @@ function getAudioFilename(char, type) {
     else if (type === 'katakana') filename = `k_${filename}`;
     else if (type === 'kanji') filename = `kanji_${filename}`;
     else if (type === 'numbers') filename = `num_${filename}`;
+    else if (type === 'words') filename = `word_${filename}`;
+    else if (type === 'sentences') filename = `sentence_${filename}`;
 
     return filename;
 }
