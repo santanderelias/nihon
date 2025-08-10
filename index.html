@@ -18,8 +18,11 @@
     <link rel="icon" href="/nihon/favicon.ico" sizes="any">
     <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
     <script>
-        eruda.init();
-        eruda.show();
+        eruda.init({
+            defaults: {
+                displaySize: 25
+            }
+        });
     </script>
 </head>
 <body>
