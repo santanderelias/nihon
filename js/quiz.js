@@ -97,7 +97,7 @@ function getNextCharacter() {
     return fallbackChar || unlockedChars[Math.floor(Math.random() * unlockedChars.length)];
 }
 
-async function loadQuestion(type) {
+export async function loadQuestion(type) {
     const contentArea = document.getElementById('content-area');
     const charToTest = state.nextChar;
 
