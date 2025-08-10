@@ -95,11 +95,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Global Event Listeners ---
     document.addEventListener('click', (event) => {
         const target = event.target;
-        showToast('Click Detected', `Target ID: ${target.id}`);
+        console.log(`Click Detected. Target ID: ${target.id}`);
         const quizContent = target.closest('.card-body');
 
         if (target.id === 'check-button' && quizContent) {
-            showToast('Debug', 'Check button condition met.');
+            console.log('Check button condition met.');
             const charDisplay = document.getElementById('char-display');
             const charToTest = charDisplay ? charDisplay.textContent : null;
             if (charToTest) {
@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (target.id === 'flip-button' || target.closest('.flashcard')) {
-            showToast('Debug', 'Flip button condition met.');
+            console.log('Flip button condition met.');
             flipFlashcard();
         }
         if (target.id === 'true-button') {
@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const statsModal = document.getElementById('stats-modal');
     if (statsModal) {
         statsModal.addEventListener('show.bs.modal', () => {
-            showToast('Debug', 'Populating stats modal...');
+            console.log('Populating stats modal...');
             populateStatsModal();
         });
     }
