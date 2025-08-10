@@ -11,7 +11,7 @@ from gtts import gTTS
 # Usage:
 # 1. Delete all files in the `audio/` directory.
 # 2. Run this script from the root of the repository: `python create_audio.py`
-# 3. To generate a specific category: `python create_audio.py [hiragana|katakana|numbers|kanji|words|sentences]`
+# 3. To generate a specific category: `python create_audio.py [hiragana|katakana|numbers|kanji|words|sentences|grammar]`
 # 4. To generate a slice of a category: `python create_audio.py [category] --start [start_index] --end [end_index]`
 
 # --- Configuration ---
@@ -133,6 +133,21 @@ sentences_data = {
     '明日映画を見に行きます': 'ashita eiga o mi ni ikimasu', '週末に何をしますか': 'shuumatsu ni nani o shimasu ka'
 }
 
+# Grammar (no prefix)
+grammar_data = {
+    'watashi_wa_ringo_o_tabemasu': '私はリンゴを食べます',
+    'yomimasu': '読みます',
+    'tabemasu': '食べます',
+    'shimasu': 'します',
+    'atarashii': '新しい',
+    'atarashikunai': '新しくない',
+    'atarashikatta': '新しかった',
+    'kirei_desu': 'きれいです',
+    'kirei_janai_desu': 'きれいじゃないです',
+    'kirei_deshita': 'きれいでした'
+}
+
+
 # --- Script Logic ---
 def generate_audio(text_to_speak, filename):
     """Generates an MP3 file for a given text using gTTS."""
@@ -216,6 +231,12 @@ def main():
             text_to_speak = japanese.replace('...', '、')
             filename = romaji.lower().replace(" ", "_").replace("...", "desu").replace("?", "")
             generate_audio(text_to_speak, f"sentence_{filename}")
+
+    if target_category is None or target_category == 'grammar':
+        print("--- Generating Grammar ---")
+        items = list(grammar_data.items())[start_index:end_index]
+        for filename, japanese in items:
+            generate_audio(japanese, filename)
 
 
     print("\nAudio generation script finished.")
