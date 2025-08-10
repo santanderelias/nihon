@@ -853,7 +853,7 @@ function checkLevelUp(type) {
     const currentLevelChars = Object.keys(levelsForType[userLevel].set);
     const allMastered = currentLevelChars.every(char => {
         const p = progress[char];
-        return p && p.streak >= 3;
+        return p && p.correct >= 5;
     });
 
     if (allMastered) {
@@ -875,288 +875,84 @@ function prepareNextQuestion() {
     nextChar = getNextCharacter();
 }
 
-function startQuiz(type) {
-    isSectionActive = true;
-    currentQuizType = type;
+function getValidKanjiReadings(kanjiChar) {
+    const kanjiData = window.getKanjiData();
+    if (!kanjiData) return [];
 
-    const userLevel = playerState.levels[type];
-    const levelsForType = characterLevels[type];
-    currentCharset = {};
+    const readings = [];
+    const kanjiNodes = kanjiData.getElementsByTagName('kanji');
 
-    for (let i = 0; i <= userLevel && i < levelsForType.length; i++) {
-        Object.assign(currentCharset, levelsForType[i].set);
+    for (let i = 0; i < kanjiNodes.length; i++) {
+        const charNode = kanjiNodes[i].getElementsByTagName('char')[0];
+        if (charNode && charNode.childNodes[0].nodeValue === kanjiChar) {
+            const onNodes = kanjiNodes[i].getElementsByTagName('on');
+            const kunNodes = kanjiNodes[i].getElementsByTagName('kun');
+            for (let j = 0; j < onNodes.length; j++) {
+                readings.push(onNodes[j].childNodes[0].nodeValue);
+            }
+            for (let j = 0; j < kunNodes.length; j++) {
+                readings.push(kunNodes[j].childNodes[0].nodeValue);
+            }
+            break;
+        }
     }
+    return readings;
+}
 
-    initializeProgress(currentCharset);
-    updateHomeButton(true);
-
-    const contentArea = document.getElementById('content-area');
-    contentArea.innerHTML = `
-        <div>
-            <div class="card text-center shadow-sm">
-                <div id="button-container" class="btn-group" style="position: absolute; top: 10px; right: 10px; z-index: 101;"></div>
-                <div class="card-body">
-                    <div id="feedback-area" class="mb-2" style="height: 24px;"></div>
-                    <div id="char-display-container">
-                        <h1 id="char-display" class="display-1"></h1>
-                    </div>
-                    <div id="example-word-area" class="mt-3"></div>
-                    <div class="mb-3">
-                        <input type="text" class="form-control text-center" id="answer-input" autocomplete="off">
-                    </div>
-                    <button class="btn btn-success" id="check-button">Check</button>
-                    <button class="btn btn-secondary" id="skip-button">Skip</button>
-                </div>
-                <div id="help-card" class="card shadow-sm" style="display: none; position: absolute; top: 40px; right: 10px; width: 350px; z-index: 100; font-family: 'Noto Sans JP Embedded', sans-serif;"></div>
-                <div id="hint-card" class="card shadow-sm bg-info text-white" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 200; padding: 1rem;"></div>
-            </div>
-            <div id="kanji-suggestions" class="mt-2"></div>
-        </div>
-    `;
-
+function checkAnswer(char, correctAnswer, type) {
     const answerInput = document.getElementById('answer-input');
-    wanakana.bind(answerInput, { IMEMode: true });
-    answerInput.addEventListener('keypress', (event) => {
-        if (event.key === 'Enter') {
-            document.getElementById('check-button').click();
-        }
-    });
-
-    prepareNextQuestion();
-    loadQuestion(type);
-}
-
-
-
-
-
-function startFlashcardMode(type) {
-    isSectionActive = true;
-    currentQuizType = type; // Use currentQuizType for consistency
-
-    const userLevel = playerState.levels[type];
-    const levelsForType = characterLevels[type];
-    currentCharset = {};
-
-    for (let i = 0; i <= userLevel && i < levelsForType.length; i++) {
-        Object.assign(currentCharset, levelsForType[i].set);
-    }
-
-    initializeProgress(currentCharset);
-    updateHomeButton(true);
-
-    const contentArea = document.getElementById('content-area');
-    contentArea.innerHTML = `
-        <div class="card text-center shadow-sm flashcard-container">
-            <div id="button-container" class="btn-group" style="position: absolute; top: 10px; right: 10px; z-index: 101;"></div>
-            <div class="card-body">
-                <div id="feedback-area" class="mb-2" style="height: 24px;"></div>
-                <div class="flashcard" id="flashcard">
-                    <div class="flashcard-inner">
-                        <div class="flashcard-front d-flex align-items-center justify-content-center">
-                            <h1 id="flashcard-char" class="display-1"></h1>
-                        </div>
-                        <div class="flashcard-back d-flex flex-column align-items-center justify-content-center">
-                            <h2 id="flashcard-reading" class="mb-2"></h2>
-                            <p id="flashcard-meaning" class="lead"></p>
-                        </div>
-                    </div>
-                </div>
-                <div class="d-grid gap-2 mt-3">
-                    <button class="btn btn-primary" id="flip-button">Flip</button>
-                    <div class="d-flex justify-content-around">
-                        <button class="btn btn-danger flex-fill me-2" id="false-button">False</button>
-                        <button class="btn btn-success flex-fill ms-2" id="true-button">True</button>
-                    </div>
-                </div>
-            </div>
-            <div id="help-card" class="card shadow-sm" style="display: none; position: absolute; top: 40px; right: 10px; width: 350px; z-index: 100; font-family: 'Noto Sans JP Embedded', sans-serif;"></div>
-            <div id="hint-card" class="card shadow-sm bg-info text-white" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 200; padding: 1rem;"></div>
-        </div>
-    `;
-
-    loadFlashcard(type);
-}
-
-let currentFlashcardChar = '';
-let currentFlashcardType = '';
-let isCurrentCardCorrect = true;
-
-function loadFlashcard(type) {
-    const contentArea = document.getElementById('content-area');
-    const charToDisplay = getNextCharacter();
-
-    if (!charToDisplay) {
-        contentArea.innerHTML = `
-            <div class="card text-center shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Congratulations!</h5>
-                    <p class="card-text">You have reviewed all characters in this set.</p>
-                    <button class="btn btn-secondary" id="back-to-home">Back to Home</button>
-                </div>
-            </div>`;
-        document.getElementById('back-to-home').addEventListener('click', showHomePage);
-        return;
-    }
-
-    currentFlashcardChar = charToDisplay;
-    const flashcardChar = document.getElementById('flashcard-char');
-    const flashcardReading = document.getElementById('flashcard-reading');
-    const flashcardMeaning = document.getElementById('flashcard-meaning');
-    const flashcard = document.getElementById('flashcard');
-    
-    flashcardChar.textContent = charToDisplay;
-
-    flashcardChar.className = 'display-1';
-    if (type === 'words') flashcardChar.className = 'quiz-word';
-    if (type === 'sentences') flashcardChar.className = 'quiz-sentence';
-    adjustFontSize(flashcardChar);
-
-    flashcardReading.textContent = '';
-    flashcardMeaning.textContent = '';
-
-    const buttonContainer = document.getElementById('button-container');
-    let buttonsHTML = '';
-    const filename = getAudioFilename(charToDisplay, type);
-    if (filename) {
-        buttonsHTML += `<button id="play-flashcard-audio" class="btn btn-secondary"><img src="/nihon/icons/audio.png" alt="Play audio" style="height: 1.5rem;"></button>`;
-    }
-    buttonsHTML += `<button id="hint-button" class="btn btn-secondary"><img src="/nihon/icons/answer.png" alt="Hint" style="height: 1.5rem;"></button>`;
-    const helpContent = getHelpContent(type);
-    if (helpContent) {
-        buttonsHTML += `<button id="help-icon" class="btn btn-secondary"><img src="/nihon/icons/help.png" alt="Help" style="height: 1.5rem;"></button>`;
-    }
-    buttonContainer.innerHTML = buttonsHTML;
-
-    flashcard.classList.remove('flipped');
-    isCurrentCardCorrect = Math.random() < 0.5;
-
-    let reading = '';
-    let meaning = '';
-
-    if (isCurrentCardCorrect) {
-        if (type === 'numbers') {
-            reading = currentCharset[currentFlashcardChar].romaji;
-            meaning = currentCharset[currentFlashcardChar].latin;
-        } else {
-            reading = currentCharset[currentFlashcardChar];
-            meaning = '';
-        }
-    } else {
-        const allReadings = Object.values(currentCharset);
-        const correctReading = (type === 'numbers') ? currentCharset[currentFlashcardChar].romaji : currentCharset[currentFlashcardChar];
-        let incorrectReading;
-        do {
-            const randomIndex = Math.floor(Math.random() * allReadings.length);
-            incorrectReading = (typeof allReadings[randomIndex] === 'object') ? allReadings[randomIndex].romaji : allReadings[randomIndex];
-        } while (incorrectReading === correctReading);
-        reading = incorrectReading;
-        meaning = '';
-    }
-
-    flashcardReading.textContent = reading;
-    flashcardMeaning.textContent = meaning;
-}
-
-function flipFlashcard() {
-    document.getElementById('flashcard').classList.toggle('flipped');
-}
-
-function checkFlashcardAnswer(userAnswer, type) {
-    const isCorrect = (userAnswer === isCurrentCardCorrect);
-    markFlashcardProgress(currentFlashcardChar, isCorrect, type);
-}
-
-function markFlashcardProgress(char, isCorrect, type) {
+    let userAnswer = wanakana.toRomaji(answerInput.value.trim());
     const feedbackArea = document.getElementById('feedback-area');
+    const now = Date.now();
+    let p = progress[char];
+
+    let isCorrect = false;
+    if (type === 'kanji') {
+        const validReadings = getValidKanjiReadings(char);
+        isCorrect = validReadings.includes(userAnswer.toLowerCase());
+    } else {
+        isCorrect = userAnswer.toLowerCase() === correctAnswer.toLowerCase();
+    }
+
     if (isCorrect) {
-        progress[char].correct++;
+        p.correct++;
+        p.streak = (p.streak || 0) + 1;
+        p.lastAnswer = 'correct';
+        p.nextReview = now + Math.pow(2, p.streak) * 60 * 60 * 1000; // Exponential backoff
         feedbackArea.innerHTML = `<span class="text-success">Correct!</span>`;
         gainXP(10);
+        checkLevelUp(type);
+        checkAchievements();
     } else {
-        progress[char].incorrect++;
-        feedbackArea.innerHTML = `<span class="text-danger">Incorrect.</span>`;
+        p.incorrect++;
+        p.streak = 0;
+        p.lastAnswer = 'incorrect';
+        p.nextReview = now; // Review again soon
+        feedbackArea.innerHTML = `<span class="text-danger">Incorrect. It's "${correctAnswer}".</span>`;
     }
+
     localStorage.setItem('nihon-progress', JSON.stringify(progress));
-    setTimeout(() => {
-        feedbackArea.innerHTML = ''; // Clear feedback after a short delay
-        loadFlashcard(type);
-    }, 1200);
-}
+    document.getElementById('check-button').disabled = true;
 
-
-
-
-
-function startListeningQuiz() {
-    isSectionActive = true;
-    currentQuizType = 'listening';
-
-    const userLevel = playerState.levels.listening || 0;
-    const levelsForType = characterLevels.listening;
-    currentCharset = {};
-    for (let i = 0; i <= userLevel && i < levelsForType.length; i++) {
-        Object.assign(currentCharset, levelsForType[i].set);
+    const nextQuestionDelay = 1200;
+    if (type === 'listening') {
+        setTimeout(loadListeningQuestion, nextQuestionDelay);
+    } else {
+        prepareNextQuestion();
+        setTimeout(() => loadQuestion(type), nextQuestionDelay);
     }
-
-    initializeProgress(currentCharset);
-    updateHomeButton(true);
-
-    const contentArea = document.getElementById('content-area');
-    contentArea.innerHTML = `
-        <div class="card text-center shadow-sm">
-            <div class="card-body">
-                <div id="feedback-area" class="mb-2" style="height: 24px;"></div>
-                <button class="btn btn-primary mb-3" id="play-audio-button">
-                    <i class="fas fa-volume-up"></i> Play Audio
-                </button>
-                <div class="mb-3">
-                    <input type="text" class="form-control text-center" id="answer-input" onkeypress="if(event.key === 'Enter') document.getElementById('check-button').click()">
-                </div>
-                <button class="btn btn-success" id="check-button">Check</button>
-                <button class="btn btn-secondary" id="skip-button">Skip</button>
-            </div>
-        </div>
-    `;
-
-    const answerInput = document.getElementById('answer-input');
-    wanakana.bind(answerInput, { IMEMode: true });
-
-    loadListeningQuestion();
 }
 
-function loadListeningQuestion() {
-    const contentArea = document.getElementById('content-area');
-    const charToTest = getNextCharacter();
 
-    if (!charToTest) {
-        contentArea.innerHTML = `
-            <div class="card text-center shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Congratulations!</h5>
-                    <p class="card-text">You have mastered this set.</p>
-                    <button class="btn btn-secondary" id="back-to-home">Back to Home</button>
-                </div>
-            </div>`;
-        document.getElementById('back-to-home').addEventListener('click', showHomePage);
-        return;
-    }
 
-    const correctAnswer = currentCharset[charToTest];
 
-    document.getElementById('feedback-area').innerHTML = '';
 
-    const answerInput = document.getElementById('answer-input');
-    answerInput.value = '';
-    answerInput.readOnly = false;
 
-    const checkButton = document.getElementById('check-button');
-    checkButton.disabled = false;
 
-    const playAudioButton = document.getElementById('play-audio-button');
 
-    answerInput.focus();
-}
+
+
+
 
 function setupHomePageListeners() {
     document.getElementById('quizHiragana').addEventListener('click', () => startQuiz('hiragana'));
@@ -1806,21 +1602,24 @@ function restoreProgress(file) {
             checkAnswer(charToTest, correctAnswer, currentQuizType);
         }
 
-        if (target.id === 'skip-button') {
-            const p = progress[charToTest];
-            p.incorrect++;
-            p.streak = 0;
-            p.lastAnswer = 'incorrect';
-            p.nextReview = Date.now() + 60 * 60 * 1000;
-            localStorage.setItem('nihon-progress', JSON.stringify(progress));
-            showToast('Skipped', `Marked as incorrect. You'll see it again soon!`);
-            prepareNextQuestion();
-            setTimeout(() => loadQuestion(currentQuizType), 1200);
-        }
-
         if (target.id === 'hint-button') {
-            const correctAnswer = (currentQuizType === 'numbers') ? currentCharset[charToTest].romaji : currentCharset[charToTest];
-            showToast('Hint', correctAnswer);
+            const hintDisplay = document.getElementById('hint-display');
+            if (hintDisplay) {
+                let correctAnswer;
+                if (currentQuizType === 'flashcards') {
+                    correctAnswer = (currentFlashcardType === 'numbers') ? currentCharset[currentFlashcardChar].romaji : currentCharset[currentFlashcardChar];
+                } else {
+                    const charDisplay = document.getElementById('char-display');
+                    const charToTest = charDisplay ? charDisplay.textContent : null;
+                    correctAnswer = (currentQuizType === 'numbers') ? currentCharset[charToTest].romaji : currentCharset[charToTest];
+                }
+
+                hintDisplay.textContent = `Hint: ${correctAnswer}`;
+                hintDisplay.style.display = 'block';
+                setTimeout(() => {
+                    hintDisplay.style.display = 'none';
+                }, 2000);
+            }
         }
 
         if (target.closest('#help-icon')) {
