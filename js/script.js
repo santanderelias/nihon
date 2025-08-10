@@ -1236,6 +1236,8 @@ function checkDevMode() {
 
 function populateStatsModal() {
     const statsBody = document.querySelector('#stats-modal .modal-body');
+    const wrongCharsTableBody = document.getElementById('wrong-chars-table-body');
+    const correctCharsTableBody = document.getElementById('correct-chars-table-body');
 
     // Player Stats
     let playerStatsHTML = `
@@ -1255,6 +1257,9 @@ function populateStatsModal() {
         playerStatsHTML += `<li class="list-group-item d-flex justify-content-between align-items-center">${skill.charAt(0).toUpperCase() + skill.slice(1)}<span class="badge bg-primary rounded-pill">${playerState.levels[skill]}</span></li>`;
     }
     playerStatsHTML += '</ul></div><hr>';
+
+    statsBody.innerHTML = '';
+    statsBody.insertAdjacentHTML('afterbegin', playerStatsHTML);
 
     // Character Stats
     const wrongItems = [];
@@ -1281,117 +1286,83 @@ function populateStatsModal() {
     wrongItems.sort((a, b) => b.count - a.count);
     correctItems.sort((a, b) => b.count - a.count);
 
-    const wrongItemsHTML = wrongItems.length === 0
-        ? `<tr><td colspan="3">No items answered incorrectly yet!</td></tr>`
-        : wrongItems.map(item => `<tr><td style="font-family: 'Noto Sans JP Embedded', sans-serif;">${item.item}</td><td>${item.reading}</td><td>${item.count}</td></tr>`).join('');
+    const populateTable = (tbody, items, noItemMessage) => {
+        tbody.innerHTML = '';
+        if (items.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="3">${noItemMessage}</td></tr>`;
+        } else {
+            items.forEach(item => {
+                tbody.innerHTML += `<tr><td style="font-family: 'Noto Sans JP Embedded', sans-serif;">${item.item}</td><td>${item.reading}</td><td>${item.count}</td></tr>`;
+            });
+        }
+    };
 
-    const correctItemsHTML = correctItems.length === 0
-        ? `<tr><td colspan="3">No items answered correctly yet!</td></tr>`
-        : correctItems.map(item => `<tr><td style="font-family: 'Noto Sans JP Embedded', sans-serif;">${item.item}</td><td>${item.reading}</td><td>${item.count}</td></tr>`).join('');
+    populateTable(wrongCharsTableBody, wrongItems, 'No items answered incorrectly yet!');
+    populateTable(correctCharsTableBody, correctItems, 'No items answered correctly yet!');
 
     // Achievements
+    const achievementsTableBody = document.getElementById('achievements-table-body');
     const unlocked = playerState.unlockedAchievements || [];
-    const achievementsHTML = unlocked.length === 0
-        ? '<tr><td colspan="2">No achievements unlocked yet. Keep trying!</td></tr>'
-        : unlocked.map(id => {
+    achievementsTableBody.innerHTML = '';
+    if (unlocked.length === 0) {
+        achievementsTableBody.innerHTML = '<tr><td colspan="2">No achievements unlocked yet. Keep trying!</td></tr>';
+    } else {
+        unlocked.forEach(id => {
             const achievement = achievements[id];
-            return achievement ? `<tr><td>${achievement.name}</td><td>${achievement.description}</td></tr>` : '';
-        }).join('');
-
-    statsBody.innerHTML = `
-        ${playerStatsHTML}
-        <div class="accordion" id="statsAccordion">
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="wrongCharsHeading">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#wrongCharsCollapse" aria-expanded="false" aria-controls="wrongCharsCollapse">
-                        Items Answered Wrong
-                    </button>
-                </h2>
-                <div id="wrongCharsCollapse" class="accordion-collapse collapse" aria-labelledby="wrongCharsHeading" data-bs-parent="#statsAccordion">
-                    <div class="accordion-body">
-                        <table class="table table-striped">
-                            <thead><tr><th>Item</th><th>Reading</th><th>Wrong Count</th></tr></thead>
-                            <tbody id="wrong-chars-table-body">${wrongItemsHTML}</tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="correctCharsHeading">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#correctCharsCollapse" aria-expanded="false" aria-controls="correctCharsCollapse">
-                        Items Answered Correct
-                    </button>
-                </h2>
-                <div id="correctCharsCollapse" class="accordion-collapse collapse" aria-labelledby="correctCharsHeading" data-bs-parent="#statsAccordion">
-                    <div class="accordion-body">
-                        <table class="table table-striped">
-                            <thead><tr><th>Item</th><th>Reading</th><th>Correct Count</th></tr></thead>
-                            <tbody id="correct-chars-table-body">${correctItemsHTML}</tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="achievementsHeading">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#achievementsCollapse" aria-expanded="false" aria-controls="achievementsCollapse">
-                        Achievements
-                    </button>
-                </h2>
-                <div id="achievementsCollapse" class="accordion-collapse collapse" aria-labelledby="achievementsHeading" data-bs-parent="#statsAccordion">
-                    <div class="accordion-body">
-                        <table class="table table-striped">
-                            <thead><tr><th>Name</th><th>Description</th></tr></thead>
-                            <tbody id="achievements-table-body">${achievementsHTML}</tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
+            if (achievement) {
+                achievementsTableBody.innerHTML += `<tr><td>${achievement.name}</td><td>${achievement.description}</td></tr>`;
+            }
+        });
+    }
 }
 
 
-const generateCharacterCards = (characterSet, type) => {
-    let html = '<div class="row row-cols-3 row-cols-md-4 row-cols-lg-5 g-2">';
-    for (const char in characterSet) {
-        const entry = characterSet[char];
-        const displayRomaji = (typeof entry === 'object') ? entry.romaji : entry;
-        const latinNumber = (typeof entry === 'object') ? ` (${entry.latin})` : '';
-        const filename = getAudioFilename(char, type);
-        html += `
-            <div class="col">
-                <div class="card text-center h-100" data-filename="${filename}" style="cursor: pointer;">
-                    <div class="card-body d-flex flex-column justify-content-center align-items-center">
-                        <h3 class="card-title" style="font-family: 'Noto Sans JP Embedded', sans-serif;">${char}</h3>
-                        <p class="card-text">${displayRomaji}${latinNumber}</p>
+function populateReferencesModal() {
+    const hiraganaTabPane = document.getElementById('hiragana-ref');
+    const katakanaTabPane = document.getElementById('katakana-ref');
+    const kanjiTabPane = document.getElementById('kanji-ref');
+    const numbersTabPane = document.getElementById('numbers-ref');
+
+    const generateCharacterCards = (characterSet, type) => {
+        let html = '<div class="row row-cols-3 row-cols-md-4 row-cols-lg-5 g-2">';
+        for (const char in characterSet) {
+            const entry = characterSet[char];
+            const displayRomaji = (typeof entry === 'object') ? entry.romaji : entry;
+            const latinNumber = (typeof entry === 'object') ? ` (${entry.latin})` : '';
+            const filename = getAudioFilename(char, type);
+            html += `
+                <div class="col">
+                    <div class="card text-center h-100" data-filename="${filename}" style="cursor: pointer;">
+                        <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                            <h3 class="card-title" style="font-family: 'Noto Sans JP Embedded', sans-serif;">${char}</h3>
+                            <p class="card-text">${displayRomaji}${latinNumber}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `;
-    }
-    html += '</div>';
-    return html;
-};
+            `;
+        }
+        html += '</div>';
+        return html;
+    };
 
-const setupReferenceListeners = (pane, type) => {
-    if (!pane || pane.dataset.listenersAttached) return;
+    const setupReferenceListeners = (pane, type) => {
+        if (!pane || pane.dataset.listenersAttached) return;
 
-    const combinedSet = Object.assign({}, ...characterLevels[type].map(l => l.set));
-    pane.innerHTML = generateCharacterCards(combinedSet, type);
+        const combinedSet = Object.assign({}, ...characterLevels[type].map(l => l.set));
+        pane.innerHTML = generateCharacterCards(combinedSet, type);
 
-    pane.querySelectorAll('.card').forEach(card => {
-        card.addEventListener('click', () => {
-            playReferenceAudio(card.dataset.filename);
+        pane.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', () => {
+                playReferenceAudio(card.dataset.filename);
+            });
         });
-    });
 
-    pane.dataset.listenersAttached = true;
-};
+        pane.dataset.listenersAttached = true;
+    };
 
-function populateReferencesModal() {
-    const tabPanes = document.querySelectorAll('#references-modal .tab-pane');
+    const tabPanes = referencesModal.querySelectorAll('.tab-pane');
     tabPanes.forEach(pane => {
-        const type = pane.id.replace('-ref', '');
+        const type = pane.id;
         setupReferenceListeners(pane, type);
     });
 }

@@ -46,18 +46,13 @@ Nihon is a comprehensive Progressive Web App (PWA) for learning the Japanese lan
 
 ## Testing
 
-This project uses Playwright for end-to-end testing.
+This project uses Cypress for end-to-end testing.
 
 ### Setup
 
 1.  Install the project dependencies:
     ```bash
     npm install
-    ```
-
-2.  Install the Playwright browsers:
-    ```bash
-    npx playwright install
     ```
 
 ### Running the Tests
@@ -67,15 +62,14 @@ This project uses Playwright for end-to-end testing.
     npm start
     ```
 
-2.  In a separate terminal, run the tests:
+2.  In a separate terminal, you can run the tests in two ways:
 
-    -   To run all tests:
+    -   **Headless mode:** This will run all tests in the background.
         ```bash
         npm test
         ```
 
-    -   To run a specific set of tests (e.g., only the quiz feature):
+    -   **Interactive mode:** This will open the Cypress Test Runner, where you can watch the tests run live.
         ```bash
-        npm test -- --grep "Quiz"
+        npm run cypress:open
         ```
-        You can replace `"Quiz"` with `"Flashcards"` or `"Modals"` to run other specific tests.

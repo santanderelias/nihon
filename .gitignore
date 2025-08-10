@@ -3,3 +3,5 @@ history.txt
 status.txt
 example/
 node_modules/
+cypress/videos/
+cypress/screenshots/
