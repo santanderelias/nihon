@@ -93,5 +93,39 @@ document.addEventListener('DOMContentLoaded', () => {
     showHomePage();
 
     // --- Global Event Listeners ---
-    // ... (The rest of the file remains the same)
+    document.addEventListener('click', (event) => {
+        const target = event.target;
+        showToast('Click Detected', `Target ID: ${target.id}`);
+        const quizContent = target.closest('.card-body');
+
+        if (target.id === 'check-button' && quizContent) {
+            showToast('Debug', 'Check button condition met.');
+            const charDisplay = document.getElementById('char-display');
+            const charToTest = charDisplay ? charDisplay.textContent : null;
+            if (charToTest) {
+                const correctAnswer = (state.currentQuizType === 'numbers') ? state.currentCharset[charToTest].romaji : state.currentCharset[charToTest];
+                checkAnswer(charToTest, correctAnswer, state.currentQuizType, () => loadQuizQuestion(state.currentQuizType));
+            }
+        }
+
+        if (target.id === 'flip-button' || target.closest('.flashcard')) {
+            showToast('Debug', 'Flip button condition met.');
+            flipFlashcard();
+        }
+        if (target.id === 'true-button') {
+            checkFlashcardAnswer(true);
+        }
+        if (target.id === 'false-button') {
+            checkFlashcardAnswer(false);
+        }
+    });
+
+    // Modal listeners
+    const statsModal = document.getElementById('stats-modal');
+    if (statsModal) {
+        statsModal.addEventListener('show.bs.modal', () => {
+            showToast('Debug', 'Populating stats modal...');
+            populateStatsModal();
+        });
+    }
 });
