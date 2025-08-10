@@ -259,23 +259,99 @@ export function getHelpContent(quizType) {
 }
 
 export function showToast(title, message, showRestartButton = false) {
-    // ...
+    const toastLiveExample = document.getElementById('liveToast');
+    const toastTitle = document.getElementById('toast-title');
+    const toastBody = document.getElementById('toast-body');
+
+    if (!toastLiveExample || !toastTitle || !toastBody) return;
+
+    toastTitle.textContent = title;
+    toastBody.innerHTML = message;
+
+    if (showRestartButton) {
+        const restartButton = document.createElement('button');
+        restartButton.className = 'btn btn-primary btn-sm mt-2';
+        restartButton.textContent = 'Restart';
+        restartButton.onclick = () => {
+            if (state.newWorker) {
+                state.newWorker.postMessage({ action: 'skipWaiting' });
+            }
+            window.location.reload();
+        };
+        toastBody.appendChild(document.createElement('br'));
+        toastBody.appendChild(restartButton);
+    }
+
+    const toast = new bootstrap.Toast(toastLiveExample, { autohide: !showRestartButton, delay: 5000 });
+    toast.show();
 }
 
 export function updateHomeButton(isSection) {
-    // ...
+    const appTitle = document.getElementById('home-button');
+    const installButton = document.getElementById('install-button');
+    state.isSectionActive = isSection;
+
+    if (isSection) {
+        appTitle.innerHTML = '<img src="/nihon/icons/back.png" alt="Back" style="height: 1.5rem; vertical-align: middle;"> Back';
+        appTitle.classList.add('back-button');
+    } else {
+        appTitle.textContent = 'Nihon';
+        appTitle.classList.remove('back-button');
+    }
+
+    if (installButton) {
+        installButton.style.display = state.deferredPrompt && !state.isSectionActive ? 'flex' : 'none';
+    }
 }
 
 export function setDarkMode(isDark) {
-    // ...
+    const htmlElement = document.documentElement;
+    const themeToggleIcon = document.getElementById('theme-toggle-icon');
+    htmlElement.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
+    localStorage.setItem('darkMode', isDark);
+    if (themeToggleIcon) {
+        themeToggleIcon.src = isDark ? '/nihon/icons/theme_dark.png' : '/nihon/icons/theme_light.png';
+        themeToggleIcon.alt = isDark ? 'Dark Theme Icon' : 'Light Theme Icon';
+    }
 }
 
 export function checkDevMode() {
-    // ...
+    const devToolsButton = document.getElementById('dev-tools-button');
+    if (localStorage.getItem('nihon-dev-mode') === 'true') {
+        if (devToolsButton) devToolsButton.style.display = 'block';
+    } else {
+        if (devToolsButton) devToolsButton.style.display = 'none';
+    }
 }
 
 export function checkAnswer(char, correctAnswer, type, loadNextQuestionCallback) {
-    // ...
+    const answerInput = document.getElementById('answer-input');
+    let userAnswer = wanakana.toRomaji(answerInput.value.trim());
+    const feedbackArea = document.getElementById('feedback-area');
+    const now = Date.now();
+    let p = progress[char];
+
+    let isCorrect = (userAnswer.toLowerCase() === correctAnswer.toLowerCase());
+
+    if (isCorrect) {
+        p.correct++;
+        p.streak = (p.streak || 0) + 1;
+        p.lastAnswer = 'correct';
+        p.nextReview = now + Math.pow(2, p.streak) * 60 * 60 * 1000;
+        feedbackArea.innerHTML = `<span class="text-success">Correct!</span>`;
+        gainXP(10);
+    } else {
+        p.incorrect++;
+        p.streak = 0;
+        p.lastAnswer = 'incorrect';
+        p.nextReview = now;
+        feedbackArea.innerHTML = `<span class="text-danger">Incorrect. It's "${correctAnswer}".</span>`;
+    }
+    localStorage.setItem('nihon-progress', JSON.stringify(progress));
+    document.getElementById('check-button').disabled = true;
+    setTimeout(() => {
+        if(loadNextQuestionCallback) loadNextQuestionCallback();
+    }, 1200);
 }
 
 export function populateStatsModal() {
@@ -285,7 +361,9 @@ export function populateReferencesModal() {
     // ...
 }
 export function playReferenceAudio(filename) {
-    // ...
+    if (!filename || filename === 'null') return;
+    const audio = new Audio(`audio/${filename}.mp3`);
+    audio.play().catch(e => console.error("Error playing audio:", e));
 }
 export function backupProgress() {
     // ...
