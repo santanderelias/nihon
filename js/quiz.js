@@ -110,7 +110,9 @@ export async function loadQuestion(type) {
                     <button class="btn btn-secondary" id="back-to-home">Back to Home</button>
                 </div>
             </div>`;
-        document.getElementById('back-to-home').addEventListener('click', showHomePage);
+        document.getElementById('back-to-home').addEventListener('click', () => {
+            document.dispatchEvent(new CustomEvent('quiz-complete'));
+        });
         return;
     }
 
