@@ -43,3 +43,39 @@ Nihon is a comprehensive Progressive Web App (PWA) for learning the Japanese lan
     - **Wanakana.js:** For robust Romaji-to-Kana conversion.
     - **Popper.js:** For interactive tooltips.
     - **Bootstrap:** For UI components and styling.
+
+## Testing
+
+This project uses Playwright for end-to-end testing.
+
+### Setup
+
+1.  Install the project dependencies:
+    ```bash
+    npm install
+    ```
+
+2.  Install the Playwright browsers:
+    ```bash
+    npx playwright install
+    ```
+
+### Running the Tests
+
+1.  Start the local development server:
+    ```bash
+    npm start
+    ```
+
+2.  In a separate terminal, run the tests:
+
+    -   To run all tests:
+        ```bash
+        npm test
+        ```
+
+    -   To run a specific set of tests (e.g., only the quiz feature):
+        ```bash
+        npm test -- --grep "Quiz"
+        ```
+        You can replace `"Quiz"` with `"Flashcards"` or `"Modals"` to run other specific tests.

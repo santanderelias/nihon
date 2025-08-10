@@ -1,0 +1,27 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "Nihon is a comprehensive Progressive Web App (PWA) for learning the Japanese language. It offers a modern, gamified experience to help users master everything from basic characters to complex sentences.",
+  "main": "sw.js",
+  "scripts": {
+    "start": "http-server -p 8080",
+    "test": "playwright test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/santanderelias/nihon.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/santanderelias/nihon/issues"
+  },
+  "homepage": "https://github.com/santanderelias/nihon#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.40.1",
+    "http-server": "^14.1.1",
+    "playwright": "^1.54.2"
+  }
+}
